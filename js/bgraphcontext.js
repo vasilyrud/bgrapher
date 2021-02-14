@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const canvasType = '2d';
-const defaultBG = '#ffffff';
+function BgraphContext(canvas) {
+    this.canvas = canvas;
+}
 
-export { canvasType, defaultBG }
+export { BgraphContext }

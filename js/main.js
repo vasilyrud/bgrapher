@@ -14,20 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { drawImage } from './draw.js'
-import { init } from './init.js'
+import { BgraphContext } from './bgraphcontext.js'
+import { BGrapher } from './bgrapher.js'
+
 
 function main() {
 
-    const canvas = document.getElementById('main_canvas');
+    var bgraphContext = new BgraphContext(
+        document.getElementById('main_canvas')
+    );
 
-    var width  = 5000;
-    var height = 5000;
-    var htmlImage = init(width, height);
-
-    htmlImage.onload = function() {
-        drawImage(canvas, htmlImage, 0, 0, width, height);
-    }
+    var bgraph = new BGrapher();
+    bgraph.initTest(bgraphContext, 5000, 5000);
+    bgraph.draw(bgraphContext);
 }
 
 main();
