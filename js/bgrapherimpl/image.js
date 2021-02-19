@@ -30,14 +30,14 @@ function resetBG(context, width, height) {
 }
 
 function imagedataToImage(imagedata) {
-    var tmpCanvas  = document.createElement('canvas');
-    var tmpContext = tmpCanvas.getContext('2d');
+    let tmpCanvas  = document.createElement('canvas');
+    let tmpContext = tmpCanvas.getContext('2d');
 
     tmpCanvas.width  = imagedata.width;
     tmpCanvas.height = imagedata.height;
     tmpContext.putImageData(imagedata, 0, 0);
 
-    var image = new Image();
+    let image = new Image();
     image.src = tmpCanvas.toDataURL();
     tmpCanvas.remove();
 
@@ -45,7 +45,7 @@ function imagedataToImage(imagedata) {
 }
 
 function testBlackPixelArray(img, width, height) {
-    for (var i=0, p=0; i < width*height; i++, p+=4) {
+    for (let i=0, p=0; i < width*height; i++, p+=4) {
         if ((Math.floor(i/2)%2) == 0 && (Math.floor(i/(width*2))%2) == 0) {
             img.data[p+0] = 0;
             img.data[p+1] = 0;
@@ -66,17 +66,17 @@ function ImageBgraph(width, height, img) {
     this.img = img;
 }
 
-var ImageImpl = (function () {
+let ImageImpl = (function () {
     return {
 
         initTestBgraph: function(bgraphContext, width, height) {
-            var tmpCanvas  = document.createElement('canvas');
-            var tmpContext = tmpCanvas.getContext('2d');
+            let tmpCanvas  = document.createElement('canvas');
+            let tmpContext = tmpCanvas.getContext('2d');
  
-            var imagedata = tmpContext.createImageData(width, height);
+            let imagedata = tmpContext.createImageData(width, height);
             testBlackPixelArray(imagedata, width, height);
  
-            var htmlImage = imagedataToImage(imagedata);
+            let htmlImage = imagedataToImage(imagedata);
             tmpCanvas.remove();
 
             return new Promise(function(resolve, reject) {
@@ -85,13 +85,19 @@ var ImageImpl = (function () {
         },
 
         drawBgraph: function(bgraphContext, bgraph) {
-            var canvas = bgraphContext.canvas;
+            let canvas = bgraphContext.canvas;
 
-            var context = canvas.getContext(CANVAS_TYPE);
+            let context = canvas.getContext(CANVAS_TYPE);
             resetBG(context, canvas.width, canvas.height);
-            pixelateImage(context);
 
-            context.drawImage(bgraph.img, 0, 0, bgraph.width, bgraph.height);
+            if (bgraphContext.zoom > 2.5) {
+                pixelateImage(context);
+            }
+
+            context.drawImage(bgraph.img, 0, 0, 
+                bgraphContext.zoom * bgraph.width, 
+                bgraphContext.zoom * bgraph.height
+            );
         }
     };
 })();

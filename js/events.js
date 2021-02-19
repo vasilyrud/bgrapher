@@ -14,24 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { BgraphContext } from './bgraphcontext.js'
-import { BGrapher } from './bgrapher.js'
-import { onMouseWheel } from './events.js'
+function onMouseWheel(bgraphContext, bgraph, event) {
+    let newZoom = bgraphContext.zoom * (1 - event.deltaY/450);
 
+    // 1 pixel blocks no longer possible to tell apart 
+    // when zoomed out.
+    if (newZoom < 1) {
+        newZoom = 1;
+    }
 
-function main() {
-
-    let bgraphContext = new BgraphContext(
-        document.getElementById('main_canvas')
-    );
-
-    let bgraph = new BGrapher();
-    bgraph.initTest(bgraphContext, 5000, 5000);
+    bgraphContext.zoom = newZoom;
     bgraph.draw(bgraphContext);
-
-    bgraphContext.canvas.addEventListener('wheel', 
-        onMouseWheel.bind(null, bgraphContext, bgraph)
-    );
 }
 
-main();
+export { onMouseWheel }

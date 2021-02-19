@@ -16,6 +16,7 @@ limitations under the License.
 
 function BgraphContext(canvas) {
     this.canvas = canvas;
+    this.zoom = 1.0;
 }
 
 export { BgraphContext }
