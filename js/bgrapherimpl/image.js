@@ -104,9 +104,11 @@ let ImageImpl = (function () {
                 pixelateImage(context);
             }
 
-            context.drawImage(bgraph.img, 0, 0, 
-                bgraphContext.zoom * bgraph.width, 
-                bgraphContext.zoom * bgraph.height
+            context.drawImage(bgraph.img,
+                bgraphContext.zoom *  bgraphContext.offsetX,
+                bgraphContext.zoom *  bgraphContext.offsetY,
+                bgraphContext.zoom * (bgraphContext.offsetX + bgraph.width ),
+                bgraphContext.zoom * (bgraphContext.offsetY + bgraph.height)
             );
         }
     };

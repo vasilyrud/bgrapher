@@ -17,6 +17,11 @@ limitations under the License.
 function BgraphContext(canvas) {
     this.canvas = canvas;
     this.zoom = 1.0;
+    this.offsetX = 0;
+    this.offsetY = 0;
+    this.panning = false;
+    this.panningPrevX = 0;
+    this.panningPrevY = 0;
 }
 
 export { BgraphContext }

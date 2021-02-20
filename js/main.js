@@ -16,8 +16,7 @@ limitations under the License.
 
 import { BgraphContext } from './bgraphcontext.js'
 import { BGrapher } from './bgrapher.js'
-import { onMouseWheel } from './events.js'
-
+import { initBgraphEvents } from './events.js'
 
 function main() {
 
@@ -29,9 +28,7 @@ function main() {
     bgraph.initTest(bgraphContext, 2500, 2500);
     bgraph.draw(bgraphContext);
 
-    bgraphContext.canvas.addEventListener('wheel', 
-        onMouseWheel.bind(null, bgraphContext, bgraph)
-    );
+    initBgraphEvents(bgraphContext, bgraph);
 }
 
 main();
