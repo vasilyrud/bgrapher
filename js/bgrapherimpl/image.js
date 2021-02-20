@@ -44,18 +44,25 @@ function imagedataToImage(imagedata) {
     return image;
 }
 
-function testBlackPixelArray(img, width, height) {
-    for (let i=0, p=0; i < width*height; i++, p+=4) {
-        if ((Math.floor(i/2)%2) == 0 && (Math.floor(i/(width*2))%2) == 0) {
-            img.data[p+0] = 0;
-            img.data[p+1] = 0;
-            img.data[p+2] = 0;
+function testPixelArray(img, width, height, pixelSize=2, bgCB=(x,y)=>[0,0,0]) {
+    for (let i=0; i < width*height; i++) {
+        let x = i%width;
+        let y = Math.floor(i/width);
+        let p = i*4;
+        
+        if ((Math.floor(x/pixelSize)%2) == 0 || 
+            (Math.floor(y/pixelSize)%2) == 0
+        ) {
+            let bg = bgCB(x,y);
+            img.data[p+0] = bg[0];
+            img.data[p+1] = bg[1];
+            img.data[p+2] = bg[2];
             img.data[p+3] = 255;
         } else {
             img.data[p+0] = 255;
             img.data[p+1] = 255;
             img.data[p+2] = 255;
-            img.data[p+3] = 255;
+            img.data[p+3] = 255;    
         }
     }
 }
@@ -74,7 +81,10 @@ let ImageImpl = (function () {
             let tmpContext = tmpCanvas.getContext('2d');
  
             let imagedata = tmpContext.createImageData(width, height);
-            testBlackPixelArray(imagedata, width, height);
+            testPixelArray(imagedata, width, height, 4, (x,y)=>{
+                let s = (x+y)*255/(width+height);
+                return [(255-s)/2, (s)/1, (255-s)/1];
+            });
  
             let htmlImage = imagedataToImage(imagedata);
             tmpCanvas.remove();

@@ -26,7 +26,7 @@ function main() {
     );
 
     let bgraph = new BGrapher();
-    bgraph.initTest(bgraphContext, 5000, 5000);
+    bgraph.initTest(bgraphContext, 2500, 2500);
     bgraph.draw(bgraphContext);
 
     bgraphContext.canvas.addEventListener('wheel', 
