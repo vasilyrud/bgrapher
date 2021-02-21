@@ -44,13 +44,22 @@ function imagedataToImage(imagedata) {
     return image;
 }
 
-function testPixelArray(img, width, height, pixelSize=2, bgCB=(x,y)=>[0,0,0]) {
+function testPixelArray(img, width, height, borderWidth=0, pixelSize=2, bgCB=(x,y)=>[0,0,0]) {
     for (let i=0; i < width*height; i++) {
         let x = i%width;
         let y = Math.floor(i/width);
         let p = i*4;
-        
-        if ((Math.floor(x/pixelSize)%2) == 0 || 
+
+        if (borderWidth !== 0 && (
+            x <= borderWidth || x >= (width -borderWidth-1) || 
+            y <= borderWidth || y >= (height-borderWidth-1)
+        )) {
+            img.data[p+0] = 255;
+            img.data[p+1] = 0;
+            img.data[p+2] = 0;
+            img.data[p+3] = 255;
+        } else if (
+            (Math.floor(x/pixelSize)%2) == 0 || 
             (Math.floor(y/pixelSize)%2) == 0
         ) {
             let bg = bgCB(x,y);
@@ -62,7 +71,7 @@ function testPixelArray(img, width, height, pixelSize=2, bgCB=(x,y)=>[0,0,0]) {
             img.data[p+0] = 255;
             img.data[p+1] = 255;
             img.data[p+2] = 255;
-            img.data[p+3] = 255;    
+            img.data[p+3] = 255;
         }
     }
 }
@@ -81,7 +90,7 @@ let ImageImpl = (function () {
             let tmpContext = tmpCanvas.getContext('2d');
  
             let imagedata = tmpContext.createImageData(width, height);
-            testPixelArray(imagedata, width, height, 4, (x,y)=>{
+            testPixelArray(imagedata, width, height, 4, 4, (x,y)=>{
                 let s = (x+y)*255/(width+height);
                 return [(255-s)/2, (s)/1, (255-s)/1];
             });
@@ -95,8 +104,7 @@ let ImageImpl = (function () {
         },
 
         drawBgraph: function(bgraphContext, bgraph) {
-            let canvas = bgraphContext.canvas;
-
+            let canvas = bgraphContext.canvas;            
             let context = canvas.getContext(CANVAS_TYPE);
             resetBG(context, canvas.width, canvas.height);
 
@@ -105,10 +113,10 @@ let ImageImpl = (function () {
             }
 
             context.drawImage(bgraph.img,
-                bgraphContext.zoom *  bgraphContext.offsetX,
-                bgraphContext.zoom *  bgraphContext.offsetY,
-                bgraphContext.zoom * (bgraphContext.offsetX + bgraph.width ),
-                bgraphContext.zoom * (bgraphContext.offsetY + bgraph.height)
+                bgraphContext.zoom * bgraphContext.offset.x,
+                bgraphContext.zoom * bgraphContext.offset.y,
+                bgraphContext.zoom * bgraph.width ,
+                bgraphContext.zoom * bgraph.height,
             );
         }
     };

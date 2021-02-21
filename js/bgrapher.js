@@ -20,6 +20,8 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
     this.GrapherImpl = GrapherImpl;
 
     this.initTest = function(bgraphContext, width, height) {
+        this.width  = width;
+        this.height = height;
         this.bgraph = this.GrapherImpl.initTestBgraph(bgraphContext, width, height);
     }
 

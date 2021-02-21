@@ -25,7 +25,7 @@ function main() {
     );
 
     let bgraph = new BGrapher();
-    bgraph.initTest(bgraphContext, 2500, 2500);
+    bgraph.initTest(bgraphContext, 1.5*820, 1.5*865);
     bgraph.draw(bgraphContext);
 
     initBgraphEvents(bgraphContext, bgraph);

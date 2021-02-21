@@ -14,6 +14,50 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+function coordValues(coord, bgraphContext, bgraph, event) {
+    if (coord === 'x') {
+        return [
+            event.clientX,
+            bgraph.width,
+            bgraphContext.canvas.clientWidth,
+        ]
+    } else if (coord === 'y') {
+        return [
+            event.clientY,
+            bgraph.height,
+            bgraphContext.canvas.clientHeight,
+        ]
+    }
+}
+
+function innerEdge(bgraphContext) {
+    return 0;
+}
+
+function outerEdge(bgraphContext, bgraphSize, canvasSize) {
+    return canvasSize / bgraphContext.zoom - bgraphSize;
+}
+
+function getNewOffset(coord, bgraphContext, bgraph, event) {
+    const [curPos, bgraphSize, canvasSize] = 
+        coordValues(coord, bgraphContext, bgraph, event);
+
+    let offset = bgraphContext.offset[coord] + 
+        (curPos - bgraphContext.panningPrev[coord]) / bgraphContext.zoom;
+
+    // Prevent panning past left/top
+    if (offset > innerEdge(bgraphContext)) {
+        offset = innerEdge(bgraphContext);
+
+    // Prevent panning past right/bottom
+    } else 
+    if (offset < outerEdge(bgraphContext, bgraphSize, canvasSize)) {
+        offset = outerEdge(bgraphContext, bgraphSize, canvasSize);
+    }
+
+    return offset;
+}
+
 let BgraphEvents = (function () {
     return {
         wheel: function(bgraphContext, bgraph, event) {
@@ -33,8 +77,8 @@ let BgraphEvents = (function () {
             if (event.button !== 0) return;
 
             bgraphContext.panning = true;
-            bgraphContext.panningPrevX = event.pageX;
-            bgraphContext.panningPrevY = event.pageY;
+            bgraphContext.panningPrev.x = event.clientX;
+            bgraphContext.panningPrev.y = event.clientY;
         },
         mouseup: function(bgraphContext, bgraph, event) {
             bgraphContext.panning = false;
@@ -45,18 +89,13 @@ let BgraphEvents = (function () {
         mousemove: function(bgraphContext, bgraph, event) {
             if (!bgraphContext.panning) return;
 
-            let offsetX = bgraphContext.offsetX + 
-                (event.pageX - bgraphContext.panningPrevX) / bgraphContext.zoom;
-            let offsetY = bgraphContext.offsetY + 
-                (event.pageY - bgraphContext.panningPrevY) / bgraphContext.zoom;
-
-            bgraphContext.offsetX = offsetX;
-            bgraphContext.offsetY = offsetY;
+            bgraphContext.offset.x = getNewOffset('x', bgraphContext, bgraph, event);
+            bgraphContext.offset.y = getNewOffset('y', bgraphContext, bgraph, event);
             
             bgraph.draw(bgraphContext);
 
-            bgraphContext.panningPrevX = event.pageX;
-            bgraphContext.panningPrevY = event.pageY;
+            bgraphContext.panningPrev.x = event.clientX;
+            bgraphContext.panningPrev.y = event.clientY;
         },
     };
 })();
