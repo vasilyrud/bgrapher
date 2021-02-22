@@ -14,6 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 100;
+const ZOOM_SPEED = 550; // Higher number means lower speed
+
+function getZoom(bgraphContext, event) {
+    let newZoom = bgraphContext.zoom * (1 - event.deltaY / ZOOM_SPEED);
+
+    // 1 pixel blocks no longer possible to tell apart 
+    // when zoomed out.
+    if (newZoom < ZOOM_MIN) {
+        newZoom = ZOOM_MIN;
+    } else
+    if (newZoom > ZOOM_MAX) {
+        newZoom = ZOOM_MAX;
+    }
+
+    let deltaUsed = ZOOM_SPEED * (1 - newZoom / bgraphContext.zoom);
+
+    return [newZoom, deltaUsed];
+}
+
 function coordValues(coord, bgraphContext, bgraph, event) {
     if (coord === 'x') {
         return [
@@ -38,38 +59,54 @@ function outerEdge(bgraphContext, bgraphSize, canvasSize) {
     return canvasSize / bgraphContext.zoom - bgraphSize;
 }
 
-function getNewOffset(coord, bgraphContext, bgraph, event) {
+function constrainOffset(offset, bgraphContext, bgraphSize, canvasSize) {
+    let innerLimit = innerEdge(bgraphContext);
+    let outerLimit = outerEdge(bgraphContext, bgraphSize, canvasSize);
+
+    // Prevent going past left/top
+    if (offset > innerLimit) {
+        return innerLimit;
+
+    // Prevent going past right/bottom
+    } else if (offset < outerLimit) {
+        return outerLimit;
+    }
+
+    // Not out of bounds
+    return offset;
+}
+
+function getPanOffset(coord, bgraphContext, bgraph, event) {
     const [curPos, bgraphSize, canvasSize] = 
         coordValues(coord, bgraphContext, bgraph, event);
 
-    let offset = bgraphContext.offset[coord] + 
+    let newOffset = bgraphContext.offset[coord] + 
         (curPos - bgraphContext.panningPrev[coord]) / bgraphContext.zoom;
 
-    // Prevent panning past left/top
-    if (offset > innerEdge(bgraphContext)) {
-        offset = innerEdge(bgraphContext);
+    return constrainOffset(newOffset, bgraphContext, bgraphSize, canvasSize);
+}
 
-    // Prevent panning past right/bottom
-    } else 
-    if (offset < outerEdge(bgraphContext, bgraphSize, canvasSize)) {
-        offset = outerEdge(bgraphContext, bgraphSize, canvasSize);
-    }
+function getZoomOffset(coord, bgraphContext, bgraph, event, deltaUsed) {
+    const [curPos, bgraphSize, canvasSize] = 
+        coordValues(coord, bgraphContext, bgraph, event);
 
-    return offset;
+    let newOffset = bgraphContext.offset[coord] + 
+        ((curPos * deltaUsed) / (bgraphContext.zoom * ZOOM_SPEED));
+
+    return constrainOffset(newOffset, bgraphContext, bgraphSize, canvasSize);
 }
 
 let BgraphEvents = (function () {
     return {
         wheel: function(bgraphContext, bgraph, event) {
-            let newZoom = bgraphContext.zoom * (1 - event.deltaY/450);
-
-            // 1 pixel blocks no longer possible to tell apart 
-            // when zoomed out.
-            if (newZoom < 1) {
-                newZoom = 1;
-            }
-        
+            // Offset depends on new zoom value 
+            // and on how much of the "scroll" was used for zoom.
+            const [newZoom, deltaUsed] = getZoom(bgraphContext, event);
             bgraphContext.zoom = newZoom;
+
+            bgraphContext.offset.x = getZoomOffset('x', bgraphContext, bgraph, event, deltaUsed);
+            bgraphContext.offset.y = getZoomOffset('y', bgraphContext, bgraph, event, deltaUsed);
+
             bgraph.draw(bgraphContext);
         },
         mousedown: function(bgraphContext, bgraph, event) {
@@ -89,8 +126,8 @@ let BgraphEvents = (function () {
         mousemove: function(bgraphContext, bgraph, event) {
             if (!bgraphContext.panning) return;
 
-            bgraphContext.offset.x = getNewOffset('x', bgraphContext, bgraph, event);
-            bgraphContext.offset.y = getNewOffset('y', bgraphContext, bgraph, event);
+            bgraphContext.offset.x = getPanOffset('x', bgraphContext, bgraph, event);
+            bgraphContext.offset.y = getPanOffset('y', bgraphContext, bgraph, event);
             
             bgraph.draw(bgraphContext);
 
