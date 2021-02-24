@@ -16,19 +16,21 @@ limitations under the License.
 
 import { BgraphContext } from './bgraphcontext.js'
 import { BGrapher } from './bgrapher.js'
-import { initBgraphEvents } from './events.js'
+import { initBgraphEvents, firstDrawEvent } from './events.js'
 
 function main() {
 
     let bgraphContext = new BgraphContext(
         document.getElementById('main_canvas')
     );
-
-    let bgraph = new BGrapher();
-    bgraph.initTest(bgraphContext, 1.5*820, 1.5*865);
-    bgraph.draw(bgraphContext);
+    let bgraph = new BGrapher(firstDrawEvent);
 
     initBgraphEvents(bgraphContext, bgraph);
+
+    // bgraph.initTest(bgraphContext, 1.5*820, 1.5*865);
+    bgraph.initTest(bgraphContext, 100, 100);
+    bgraph.draw(bgraphContext);
+
 }
 
 main();

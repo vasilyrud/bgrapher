@@ -17,6 +17,9 @@ limitations under the License.
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 100;
 const ZOOM_SPEED = 550; // Higher number means lower speed
+const MARGIN_PIXELS = 100;
+
+let firstDrawEvent = new CustomEvent('bgraphFirstDraw');
 
 function getZoom(bgraphContext, event) {
     let newZoom = bgraphContext.zoom * (1 - event.deltaY / ZOOM_SPEED);
@@ -51,17 +54,17 @@ function coordValues(coord, bgraphContext, bgraph, event) {
     }
 }
 
-function innerEdge(bgraphContext) {
-    return 0;
-}
-
-function outerEdge(bgraphContext, bgraphSize, canvasSize) {
-    return canvasSize / bgraphContext.zoom - bgraphSize;
+function getMargin(bgraphContext, bgraphSize, canvasSize) {
+    return Math.max(
+        MARGIN_PIXELS / bgraphContext.zoom,
+        (canvasSize - (bgraphSize * bgraphContext.zoom)) / (2 * bgraphContext.zoom)
+    );
 }
 
 function constrainOffset(offset, bgraphContext, bgraphSize, canvasSize) {
-    let innerLimit = innerEdge(bgraphContext);
-    let outerLimit = outerEdge(bgraphContext, bgraphSize, canvasSize);
+    let margin = getMargin(bgraphContext, bgraphSize, canvasSize)
+    let innerLimit = margin;
+    let outerLimit = (canvasSize / bgraphContext.zoom - bgraphSize) - margin;
 
     // Prevent going past left/top
     if (offset > innerLimit) {
@@ -74,6 +77,13 @@ function constrainOffset(offset, bgraphContext, bgraphSize, canvasSize) {
 
     // Not out of bounds
     return offset;
+}
+
+function getInitOffset(coord, bgraphContext, bgraph, event) {
+    const [, bgraphSize, canvasSize] = 
+        coordValues(coord, bgraphContext, bgraph, event);
+
+    return constrainOffset(0, bgraphContext, bgraphSize, canvasSize);
 }
 
 function getPanOffset(coord, bgraphContext, bgraph, event) {
@@ -98,6 +108,10 @@ function getZoomOffset(coord, bgraphContext, bgraph, event, deltaUsed) {
 
 let BgraphEvents = (function () {
     return {
+        bgraphFirstDraw: function(bgraphContext, bgraph, event) {
+            bgraphContext.offset.x = getInitOffset('x', bgraphContext, bgraph, event);
+            bgraphContext.offset.y = getInitOffset('y', bgraphContext, bgraph, event);
+        },
         wheel: function(bgraphContext, bgraph, event) {
             // Offset depends on new zoom value 
             // and on how much of the "scroll" was used for zoom.
@@ -145,4 +159,4 @@ function initBgraphEvents(bgraphContext, bgraph) {
     }
 }
 
-export { initBgraphEvents }
+export { initBgraphEvents, firstDrawEvent }

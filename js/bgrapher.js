@@ -16,13 +16,15 @@ limitations under the License.
 
 import { ImageImpl } from './bgrapherimpl/image.js'
 
-var BGrapher = function(GrapherImpl = ImageImpl) {
+var BGrapher = function(firstDrawEvent, GrapherImpl = ImageImpl) {
     this.GrapherImpl = GrapherImpl;
+    this.firstDrawEvent = firstDrawEvent;
 
     this.initTest = function(bgraphContext, width, height) {
         this.width  = width;
         this.height = height;
         this.bgraph = this.GrapherImpl.initTestBgraph(bgraphContext, width, height);
+        bgraphContext.didFirstDraw = false;
     }
 
     this.draw = function(bgraphContext) {
@@ -30,6 +32,10 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
         bgraphContext.canvas.height = document.body.clientHeight;
 
         this.bgraph.then(function(bgraph) {
+            if (!bgraphContext.didFirstDraw) {
+                bgraphContext.didFirstDraw = true;
+                bgraphContext.canvas.dispatchEvent(this.firstDrawEvent);
+            }
             this.GrapherImpl.drawBgraph(bgraphContext, bgraph)
         }.bind(this));
     }
