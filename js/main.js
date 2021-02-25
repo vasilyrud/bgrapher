@@ -18,18 +18,28 @@ import { BgraphContext } from './bgraphcontext.js'
 import { BGrapher } from './bgrapher.js'
 import { initBgraphEvents, firstDrawEvent } from './events.js'
 
-function main() {
+function setupBgraph(bgraphForm, event) {
+    event.preventDefault();
+    // console.log(event.target.elements.bgraphJSON.value);
+    bgraphForm.remove();
 
-    let bgraphContext = new BgraphContext(
-        document.getElementById('main_canvas')
-    );
+    let mainCanvas = document.createElement('canvas', {id: 'mainCanvas'});
+    document.body.appendChild(mainCanvas);
+
+    let bgraphContext = new BgraphContext(mainCanvas);
     let bgraph = new BGrapher(firstDrawEvent);
 
     initBgraphEvents(bgraphContext, bgraph);
 
     // bgraph.initTest(bgraphContext, 1.5*820, 1.5*865);
     bgraph.initTest(bgraphContext, 100, 100);
-    bgraph.draw(bgraphContext);
+    bgraph.draw(bgraphContext);    
+}
+
+function main() {
+
+    let bgraphForm = document.getElementById('bgraphJSONForm');
+    bgraphForm.addEventListener('submit', setupBgraph.bind(null, bgraphForm));
 
 }
 

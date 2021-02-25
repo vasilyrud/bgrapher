@@ -83,7 +83,9 @@ function getInitOffset(coord, bgraphContext, bgraph, event) {
     const [, bgraphSize, canvasSize] = 
         coordValues(coord, bgraphContext, bgraph, event);
 
-    return constrainOffset(0, bgraphContext, bgraphSize, canvasSize);
+    let newOffset = bgraphContext.offset[coord];
+
+    return constrainOffset(newOffset, bgraphContext, bgraphSize, canvasSize);
 }
 
 function getPanOffset(coord, bgraphContext, bgraph, event) {
@@ -148,12 +150,22 @@ let BgraphEvents = (function () {
             bgraphContext.panningPrev.x = event.clientX;
             bgraphContext.panningPrev.y = event.clientY;
         },
+        resize: function(bgraphContext, bgraph, event) {
+            bgraphContext.offset.x = getInitOffset('x', bgraphContext, bgraph, event);
+            bgraphContext.offset.y = getInitOffset('y', bgraphContext, bgraph, event);
+
+            bgraph.draw(bgraphContext);
+        },
     };
 })();
 
 function initBgraphEvents(bgraphContext, bgraph) {
+
     for (let eventType in BgraphEvents) {
-        bgraphContext.canvas.addEventListener(eventType, 
+        let target = bgraphContext.canvas;
+        if (eventType === 'resize') { target = window; }
+
+        target.addEventListener(eventType, 
             BgraphEvents[eventType].bind(null, bgraphContext, bgraph)
         );
     }
