@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Locations } from './locations.js'
+
 const CANVAS_TYPE = '2d';
 const DEFAULT_BG = '#ffffff';
 
@@ -76,16 +78,76 @@ function testPixelArray(img, width, height, borderWidth=0, pixelSize=2, bgCB=(x,
     }
 }
 
-function ImageBgraph(width, height, img) {
+function color2RGB(color) {
+    let r = color.substring(1,3);
+    let g = color.substring(3,5);
+    let b = color.substring(5,7);
+    return [parseInt(r,16), parseInt(g,16), parseInt(b,16)];
+}
+
+function generatePixels(img, locs) {
+    let depths = new Array(locs.height).fill(Array(locs.width).fill(0));
+
+    for (const block of Object.values(locs.data.blocks)) {
+        for (let y = block.y; y < block.y + block.height; y++) {
+            for (let x = block.x; x < block.x + block.width; x++) {
+                if (block.depth < depths[y][x]) {
+                    continue;
+                }
+
+                let p = (y * locs.width + x) * 4;
+                let [r, g, b] = color2RGB(block.color);
+
+                img.data[p+0] = r;
+                img.data[p+1] = g;
+                img.data[p+2] = b;
+                img.data[p+3] = 255;
+
+                depths[y][x] = block.depth
+            }
+        }
+    }
+
+    for (const edge_end of Object.values(locs.data.edge_ends)) {
+        let p = (edge_end.y * locs.width + edge_end.x) * 4;
+
+        img.data[p+0] = 0;
+        img.data[p+1] = 0;
+        img.data[p+2] = 0;
+        img.data[p+3] = 255;
+    }
+}
+
+function ImageBgraph(width, height, img, locs=null) {
     this.width  = width;
     this.height = height;
     this.img = img;
+    this.locs = locs;
 }
 
 let ImageImpl = (function () {
     return {
 
-        initTestBgraph: function(bgraphContext, width, height) {
+        initBgraph: function(bgraphStr) {
+            let tmpCanvas  = document.createElement('canvas');
+            let tmpContext = tmpCanvas.getContext('2d');
+ 
+            let locs = new Locations(bgraphStr);
+            let imagedata = tmpContext.createImageData(locs.width, locs.height);
+            generatePixels(imagedata, locs);
+            
+            let htmlImage = imagedataToImage(imagedata);
+            tmpCanvas.remove();
+
+            return new ImageBgraph(
+                locs.width, locs.height,
+                new Promise(function(resolve, reject) {
+                    htmlImage.onload = resolve(htmlImage);
+                }), locs
+            );
+        },
+
+        initTestBgraph: function(width, height) {
             let tmpCanvas  = document.createElement('canvas');
             let tmpContext = tmpCanvas.getContext('2d');
  
@@ -98,12 +160,15 @@ let ImageImpl = (function () {
             let htmlImage = imagedataToImage(imagedata);
             tmpCanvas.remove();
 
-            return new Promise(function(resolve, reject) {
-                htmlImage.onload = resolve(new ImageBgraph(width, height, htmlImage));
-            })
+            return new ImageBgraph(
+                width, height, 
+                new Promise(function(resolve, reject) {
+                    htmlImage.onload = resolve(htmlImage);
+                })
+            );
         },
 
-        drawBgraph: function(bgraphContext, bgraph) {
+        drawBgraph: function(bgraphContext, imgBgraph) {
             let canvas = bgraphContext.canvas;            
             let context = canvas.getContext(CANVAS_TYPE);
             resetBG(context, canvas.width, canvas.height);
@@ -112,12 +177,14 @@ let ImageImpl = (function () {
                 pixelateImage(context);
             }
 
-            context.drawImage(bgraph.img,
-                bgraphContext.zoom * bgraphContext.offset.x,
-                bgraphContext.zoom * bgraphContext.offset.y,
-                bgraphContext.zoom * bgraph.width ,
-                bgraphContext.zoom * bgraph.height,
-            );
+            imgBgraph.img.then(function(bgraphContext, imgBgraph, img) {
+                context.drawImage(img,
+                    bgraphContext.zoom * bgraphContext.offset.x,
+                    bgraphContext.zoom * bgraphContext.offset.y,
+                    bgraphContext.zoom * imgBgraph.width ,
+                    bgraphContext.zoom * imgBgraph.height,
+                );
+            }.bind(null, bgraphContext, imgBgraph));
         }
     };
 })();

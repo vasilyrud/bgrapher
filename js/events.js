@@ -19,8 +19,6 @@ const ZOOM_MAX = 100;
 const ZOOM_SPEED = 550; // Higher number means lower speed
 const MARGIN_PIXELS = 100;
 
-let firstDrawEvent = new CustomEvent('bgraphFirstDraw');
-
 function getZoom(bgraphContext, event) {
     let newZoom = bgraphContext.zoom * (1 - event.deltaY / ZOOM_SPEED);
 
@@ -42,13 +40,13 @@ function coordValues(coord, bgraphContext, bgraph, event) {
     if (coord === 'x') {
         return [
             event.clientX,
-            bgraph.width,
+            bgraph.width(),
             bgraphContext.canvas.clientWidth,
         ]
     } else if (coord === 'y') {
         return [
             event.clientY,
-            bgraph.height,
+            bgraph.height(),
             bgraphContext.canvas.clientHeight,
         ]
     }
@@ -171,4 +169,4 @@ function initBgraphEvents(bgraphContext, bgraph) {
     }
 }
 
-export { initBgraphEvents, firstDrawEvent }
+export { initBgraphEvents }

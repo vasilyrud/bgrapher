@@ -16,14 +16,26 @@ limitations under the License.
 
 import { ImageImpl } from './bgrapherimpl/image.js'
 
-var BGrapher = function(firstDrawEvent, GrapherImpl = ImageImpl) {
+const firstDrawEvent = new CustomEvent('bgraphFirstDraw');
+
+var BGrapher = function(GrapherImpl = ImageImpl) {
     this.GrapherImpl = GrapherImpl;
-    this.firstDrawEvent = firstDrawEvent;
+
+    this.width = function() {
+        return this.bgraph.width;
+    }
+
+    this.height = function() {
+        return this.bgraph.height;
+    }
+
+    this.initBgraph = function(bgraphContext, bgraphStr) {
+        this.bgraph = this.GrapherImpl.initBgraph(bgraphStr);
+        bgraphContext.didFirstDraw = false;
+    }
 
     this.initTest = function(bgraphContext, width, height) {
-        this.width  = width;
-        this.height = height;
-        this.bgraph = this.GrapherImpl.initTestBgraph(bgraphContext, width, height);
+        this.bgraph = this.GrapherImpl.initTestBgraph(width, height);
         bgraphContext.didFirstDraw = false;
     }
 
@@ -31,13 +43,11 @@ var BGrapher = function(firstDrawEvent, GrapherImpl = ImageImpl) {
         bgraphContext.canvas.width  = document.body.clientWidth;
         bgraphContext.canvas.height = document.body.clientHeight;
 
-        this.bgraph.then(function(bgraph) {
-            if (!bgraphContext.didFirstDraw) {
-                bgraphContext.didFirstDraw = true;
-                bgraphContext.canvas.dispatchEvent(this.firstDrawEvent);
-            }
-            this.GrapherImpl.drawBgraph(bgraphContext, bgraph)
-        }.bind(this));
+        if (!bgraphContext.didFirstDraw) {
+            bgraphContext.didFirstDraw = true;
+            bgraphContext.canvas.dispatchEvent(firstDrawEvent);
+        }
+        this.GrapherImpl.drawBgraph(bgraphContext, this.bgraph);
     }
 };
 
