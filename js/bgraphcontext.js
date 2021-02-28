@@ -27,6 +27,10 @@ function BgraphContext(canvas) {
         x: 0,
         y: 0,
     };
+    this.cur = {
+        x: 0,
+        y: 0,
+    };
 }
 
 export { BgraphContext }

@@ -85,25 +85,32 @@ function color2RGB(color) {
     return [parseInt(r,16), parseInt(g,16), parseInt(b,16)];
 }
 
-function generatePixels(img, locs) {
-    let depths = new Array(locs.height).fill(Array(locs.width).fill(0));
+function yxArray(height, width) {
+    return new Array(height).fill(0).map(() => new Array(width).fill(0));
+}
 
-    for (const block of Object.values(locs.data.blocks)) {
+function generatePixels(img, locs) {
+    let depths = yxArray(locs.height, locs.width);
+    let lookup = yxArray(locs.height, locs.width);
+
+    for (const [blockID, block] of Object.entries(locs.data.blocks)) {
+
+        let [r, g, b] = color2RGB(block.color);
         for (let y = block.y; y < block.y + block.height; y++) {
             for (let x = block.x; x < block.x + block.width; x++) {
+
                 if (block.depth < depths[y][x]) {
                     continue;
                 }
 
                 let p = (y * locs.width + x) * 4;
-                let [r, g, b] = color2RGB(block.color);
-
                 img.data[p+0] = r;
                 img.data[p+1] = g;
                 img.data[p+2] = b;
                 img.data[p+3] = 255;
 
-                depths[y][x] = block.depth
+                depths[y][x] = block.depth;
+                lookup[y][x] = blockID;
             }
         }
     }
@@ -116,13 +123,16 @@ function generatePixels(img, locs) {
         img.data[p+2] = 0;
         img.data[p+3] = 255;
     }
+
+    return lookup;
 }
 
-function ImageBgraph(width, height, img, locs=null) {
+function ImageBgraph(width, height, img, locs=null, blocksLookup=null) {
     this.width  = width;
     this.height = height;
     this.img = img;
     this.locs = locs;
+    this.blocksLookup = blocksLookup;
 }
 
 let ImageImpl = (function () {
@@ -134,7 +144,7 @@ let ImageImpl = (function () {
  
             let locs = new Locations(bgraphStr);
             let imagedata = tmpContext.createImageData(locs.width, locs.height);
-            generatePixels(imagedata, locs);
+            let lookup = generatePixels(imagedata, locs);
             
             let htmlImage = imagedataToImage(imagedata);
             tmpCanvas.remove();
@@ -143,7 +153,7 @@ let ImageImpl = (function () {
                 locs.width, locs.height,
                 new Promise(function(resolve, reject) {
                     htmlImage.onload = resolve(htmlImage);
-                }), locs
+                }), locs, lookup
             );
         },
 
@@ -185,7 +195,20 @@ let ImageImpl = (function () {
                     bgraphContext.zoom * imgBgraph.height,
                 );
             }.bind(null, bgraphContext, imgBgraph));
-        }
+        },
+
+        getCurBlock: function(bgraphContext, imgBgraph) {
+            let x = Math.floor(
+                (bgraphContext.cur.x / bgraphContext.zoom) - bgraphContext.offset.x);
+            let y = Math.floor(
+                (bgraphContext.cur.y / bgraphContext.zoom) - bgraphContext.offset.y);
+
+            if (y < 0 || y >= imgBgraph.height) { return [null, null]; }
+            if (x < 0 || x >= imgBgraph.width)  { return [null, null]; }
+
+            let blockID = imgBgraph.blocksLookup[y][x];
+            return [blockID, imgBgraph.locs.data.blocks[blockID]];
+        },
     };
 })();
 

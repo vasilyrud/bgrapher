@@ -138,15 +138,26 @@ let BgraphEvents = (function () {
             bgraphContext.panning = false;
         },
         mousemove: function(bgraphContext, bgraph, event) {
-            if (!bgraphContext.panning) return;
+            if (bgraphContext.panning) {
 
-            bgraphContext.offset.x = getPanOffset('x', bgraphContext, bgraph, event);
-            bgraphContext.offset.y = getPanOffset('y', bgraphContext, bgraph, event);
-            
-            bgraph.draw(bgraphContext);
+                bgraphContext.offset.x = getPanOffset('x', bgraphContext, bgraph, event);
+                bgraphContext.offset.y = getPanOffset('y', bgraphContext, bgraph, event);
+                
+                bgraph.draw(bgraphContext);
 
-            bgraphContext.panningPrev.x = event.clientX;
-            bgraphContext.panningPrev.y = event.clientY;
+                bgraphContext.panningPrev.x = event.clientX;
+                bgraphContext.panningPrev.y = event.clientY;
+
+            } else {
+                bgraphContext.cur.x = event.clientX;
+                bgraphContext.cur.y = event.clientY;
+
+                let [hoveredBlockID, hoveredBlock] = bgraph.curBlock(bgraphContext);
+
+                if (hoveredBlockID) {
+                    console.log(hoveredBlockID);
+                }
+            }
         },
         resize: function(bgraphContext, bgraph, event) {
             bgraphContext.offset.x = getInitOffset('x', bgraphContext, bgraph, event);
