@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Locations } from './locations.js'
-
 const CANVAS_TYPE = '2d';
 const DEFAULT_BG = '#ffffff';
 
@@ -31,151 +29,208 @@ function resetBG(context, width, height) {
     context.fillRect(0, 0, width, height);
 }
 
-function imagedataToImage(imagedata) {
-    let tmpCanvas  = document.createElement('canvas');
-    let tmpContext = tmpCanvas.getContext('2d');
+function xyArray(width, height) {
+    /*
+        (x,y)-indexed array of 32-bit (4-byte) by numbers.
+    */
+    this.width  = width;
+    this.height = height;
+    this.buffer = new ArrayBuffer(4 * this.height * this.width);
+    this.data   = new Uint32Array(this.buffer).fill(0);
 
-    tmpCanvas.width  = imagedata.width;
-    tmpCanvas.height = imagedata.height;
-    tmpContext.putImageData(imagedata, 0, 0);
-
-    let image = new Image();
-    image.src = tmpCanvas.toDataURL();
-    tmpCanvas.remove();
-
-    return image;
+    this.get = function(x, y) {
+        return this.data[y * this.width + x];
+    };
+    this.set = function(x, y, val) {
+        this.data[y * this.width + x] = val;
+    };
 }
 
-function testPixelArray(img, width, height, borderWidth=0, pixelSize=2, bgCB=(x,y)=>[0,0,0]) {
-    for (let i=0; i < width*height; i++) {
-        let x = i%width;
-        let y = Math.floor(i/width);
-        let p = i*4;
+function generateBlockPixels(img, lookup, inputData, depths, id) {
+    let blockData = inputData.blocks[id-1];
 
-        if (borderWidth !== 0 && (
-            x <= borderWidth || x >= (width -borderWidth-1) || 
-            y <= borderWidth || y >= (height-borderWidth-1)
-        )) {
-            img.data[p+0] = 255;
-            img.data[p+1] = 0;
-            img.data[p+2] = 0;
-            img.data[p+3] = 255;
-        } else if (
-            (Math.floor(x/pixelSize)%2) == 0 || 
-            (Math.floor(y/pixelSize)%2) == 0
-        ) {
-            let bg = bgCB(x,y);
-            img.data[p+0] = bg[0];
-            img.data[p+1] = bg[1];
-            img.data[p+2] = bg[2];
-            img.data[p+3] = 255;
-        } else {
-            img.data[p+0] = 255;
-            img.data[p+1] = 255;
-            img.data[p+2] = 255;
-            img.data[p+3] = 255;
-        }
-    }
-}
+    let imgWidth = inputData.width;
+    let width  = blockData.width;
+    let height = blockData.height;
+    let depth = blockData.depth;
+    let color = blockData.color;
+    let minY = blockData.y;
+    let minX = blockData.x;
+    let maxY = minY + height;
+    let maxX = minX + width;
 
-function color2RGB(color) {
-    let r = color.substring(1,3);
-    let g = color.substring(3,5);
-    let b = color.substring(5,7);
-    return [parseInt(r,16), parseInt(g,16), parseInt(b,16)];
-}
+    for (let y = minY; y < maxY; y++) {
+        for (let x = minX; x < maxX; x++) {
 
-function yxArray(height, width) {
-    return new Array(height).fill(0).map(() => new Array(width).fill(0));
-}
-
-function generatePixels(img, locs) {
-    let depths = yxArray(locs.height, locs.width);
-    let lookup = yxArray(locs.height, locs.width);
-
-    for (const [blockID, block] of Object.entries(locs.data.blocks)) {
-
-        let [r, g, b] = color2RGB(block.color);
-        for (let y = block.y; y < block.y + block.height; y++) {
-            for (let x = block.x; x < block.x + block.width; x++) {
-
-                if (block.depth < depths[y][x]) {
-                    continue;
-                }
-
-                let p = (y * locs.width + x) * 4;
-                img.data[p+0] = r;
-                img.data[p+1] = g;
-                img.data[p+2] = b;
-                img.data[p+3] = 255;
-
-                depths[y][x] = block.depth;
-                lookup[y][x] = blockID;
+            if (depth < depths.get(x,y)) {
+                continue;
             }
+
+            let p = (y * imgWidth + x) * 4;
+            img.data[p+0] = color >> 16 & 255;
+            img.data[p+1] = color >>  8 & 255;
+            img.data[p+2] = color >>  0 & 255;
+            img.data[p+3] = 255;
+
+            depths.set(x,y,depth);
+            lookup.set(x,y,id);
         }
     }
+}
 
-    for (const edge_end of Object.values(locs.data.edge_ends)) {
-        let p = (edge_end.y * locs.width + edge_end.x) * 4;
+function generateEdgeEndPixels(img, inputData, id) {
+    let edgeEndData = inputData.edgeEnds[id-1];
+
+    let imgWidth = inputData.width;
+    let y = edgeEndData.y;
+    let x = edgeEndData.x;
+
+    let p = (y * imgWidth + x) * 4;
+    img.data[p+0] = 0;
+    img.data[p+1] = 0;
+    img.data[p+2] = 0;
+    img.data[p+3] = 255;
+}
+
+function generatePixels(img, lookup, inputData) {
+    let imgWidth  = inputData.width;
+    let imgHeight = inputData.height;
+    let maxBlockID   = inputData.blocks.length   + 1;
+    let maxEdgeEndID = inputData.edgeEnds.length + 1;
+
+    let depths = new xyArray(imgWidth, imgHeight);
+    for (let id = 1; id < maxBlockID; id++) {
+        generateBlockPixels(img, lookup, inputData, depths, id);
+    }
+
+    for (let id = 1; id < maxEdgeEndID; id++) {
+        generateEdgeEndPixels(img, inputData, id);
+    }
+}
+
+function generateTestPixels(img, lookup, numBlocks) {
+    let width  = lookup.width;
+    let height = lookup.height;
+    let maxID = numBlocks + 1;
+    let id = 1, x = 0, y = 0, i = 0, p = 0;
+
+    while (id < maxID) {
+        i = y * width + x;
+        p = i * 4;
 
         img.data[p+0] = 0;
         img.data[p+1] = 0;
         img.data[p+2] = 0;
         img.data[p+3] = 255;
+
+        lookup.data[i] = id;
+
+        id += 1;
+        x += 2;
+        if (x >= width) {
+            x = 0;
+            y += 2;
+        }
     }
 
-    return lookup;
+    if (x != 0 || y < height) {
+        throw 'Image dimensions don\'t match number of rows and columns.';
+    }
 }
 
-function ImageBgraph(width, height, img, locs=null, blocksLookup=null) {
+function ImageBgraph(
+    width,  height, 
+    buffer, blocksLookup, 
+    blockData=null, edgeEndData=null
+) {
     this.width  = width;
     this.height = height;
-    this.img = img;
-    this.locs = locs;
+    this.buffer = buffer;
     this.blocksLookup = blocksLookup;
+
+    this.blockData   = blockData;
+    this.edgeEndData = edgeEndData;
 }
 
 let ImageImpl = (function () {
     return {
 
-        initBgraph: function(bgraphStr) {
-            let tmpCanvas  = document.createElement('canvas');
-            let tmpContext = tmpCanvas.getContext('2d');
- 
-            let locs = new Locations(bgraphStr);
-            let imagedata = tmpContext.createImageData(locs.width, locs.height);
-            let lookup = generatePixels(imagedata, locs);
+        initBgraph: function(inputData) {
+            let width  = inputData.width;
+            let height = inputData.height;
             
-            let htmlImage = imagedataToImage(imagedata);
-            tmpCanvas.remove();
+            let buffer = document.createElement('canvas');
+            let bufferContext = buffer.getContext(CANVAS_TYPE);
+ 
+            buffer.width  = width;
+            buffer.height = height;
+            let imagedata = bufferContext.createImageData(width, height);
+            let lookup = new xyArray(width, height);
+
+            generatePixels(imagedata, lookup, inputData);
+            bufferContext.putImageData(imagedata, 0, 0);
 
             return new ImageBgraph(
-                locs.width, locs.height,
-                new Promise(function(resolve, reject) {
-                    htmlImage.onload = resolve(htmlImage);
-                }), locs, lookup
+                width,  height,
+                buffer, lookup, 
             );
         },
 
-        initTestBgraph: function(width, height) {
-            let tmpCanvas  = document.createElement('canvas');
-            let tmpContext = tmpCanvas.getContext('2d');
- 
-            let imagedata = tmpContext.createImageData(width, height);
-            testPixelArray(imagedata, width, height, 4, 4, (x,y)=>{
-                let s = (x+y)*255/(width+height);
-                return [(255-s)/2, (s)/1, (255-s)/1];
-            });
- 
-            let htmlImage = imagedataToImage(imagedata);
-            tmpCanvas.remove();
+        initTestBgraphLarge: function(numCols, numRows) {
+            let width  = numCols * 2;
+            let height = numRows * 2;
+            let numBlocks = numCols * numRows;
+            console.log('Making ' + numBlocks + ' test blocks.');
+
+            let buffer = document.createElement('canvas');
+            let bufferContext = buffer.getContext(CANVAS_TYPE);
+
+            buffer.width  = width;
+            buffer.height = height;
+            let imagedata = bufferContext.createImageData(width, height);
+            let lookup = new xyArray(width, height);
+
+            generateTestPixels(imagedata, lookup, numBlocks);
+            bufferContext.putImageData(imagedata, 0, 0);
 
             return new ImageBgraph(
-                width, height, 
-                new Promise(function(resolve, reject) {
-                    htmlImage.onload = resolve(htmlImage);
-                })
+                width,  height,
+                buffer, lookup, 
             );
+        },
+
+        initTestBgraph: function(numCols, numRows) {
+            let width  = numCols * 2;
+            let height = numRows * 2;
+            let numBlocks = numCols * numRows;
+            console.log('Making ' + numBlocks + ' test blocks.');
+
+            let testInput = {
+                width : width, height  : height,
+                blocks:    [], edgeEnds:     [],
+            }
+            
+            let maxID = numBlocks + 1;
+            let id = 1, x = 0, y = 0;
+            while (id < maxID) {
+
+                testInput.blocks.push({
+                    x    : x, y     : y,
+                    width: 1, height: 1,
+                    depth: 1, color : 0,
+                    text: 'This is block ' + x.toString() + ' ' + y.toString(),
+                    edgeEnds: [],
+                });
+
+                id += 1;
+                x += 2;
+                if (x >= width) {
+                    x = 0;
+                    y += 2;
+                }
+            }
+
+            return ImageImpl.initBgraph(testInput);
         },
 
         drawBgraph: function(bgraphContext, imgBgraph) {
@@ -187,14 +242,12 @@ let ImageImpl = (function () {
                 pixelateImage(context);
             }
 
-            imgBgraph.img.then(function(bgraphContext, imgBgraph, img) {
-                context.drawImage(img,
-                    bgraphContext.zoom * bgraphContext.offset.x,
-                    bgraphContext.zoom * bgraphContext.offset.y,
-                    bgraphContext.zoom * imgBgraph.width ,
-                    bgraphContext.zoom * imgBgraph.height,
-                );
-            }.bind(null, bgraphContext, imgBgraph));
+            context.drawImage(imgBgraph.buffer,
+                bgraphContext.zoom * bgraphContext.offset.x,
+                bgraphContext.zoom * bgraphContext.offset.y,
+                bgraphContext.zoom * imgBgraph.width ,
+                bgraphContext.zoom * imgBgraph.height,
+            );
         },
 
         getCurBlock: function(bgraphContext, imgBgraph) {
@@ -206,8 +259,8 @@ let ImageImpl = (function () {
             if (y < 0 || y >= imgBgraph.height) { return [null, null]; }
             if (x < 0 || x >= imgBgraph.width)  { return [null, null]; }
 
-            let blockID = imgBgraph.blocksLookup[y][x];
-            return [blockID, imgBgraph.locs.data.blocks[blockID]];
+            let blockID = imgBgraph.blocksLookup.get(x,y);
+            return [blockID, null];
         },
     };
 })();

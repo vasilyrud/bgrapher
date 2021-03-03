@@ -30,9 +30,10 @@ function setupBgraph(bgraphForm, event) {
 
     initBgraphEvents(bgraphContext, bgraph);
 
-    // bgraph.initTest(bgraphContext, 1.5*820, 1.5*865);
-    // bgraph.initTest(bgraphContext, 100, 100);
+    // bgraph.initTestBgraph(bgraphContext, 1000, 10000);
+    // bgraph.initTestBgraphLarge(bgraphContext, 5000, 10000);
     bgraph.initBgraph(bgraphContext, event.target.elements.bgraphJSON.value);
+
     bgraph.draw(bgraphContext);    
 }
 

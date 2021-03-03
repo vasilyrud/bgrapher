@@ -30,12 +30,17 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
     }
 
     this.initBgraph = function(bgraphContext, bgraphStr) {
-        this.bgraph = this.GrapherImpl.initBgraph(bgraphStr);
+        this.bgraph = this.GrapherImpl.initBgraph(JSON.parse(bgraphStr));
         bgraphContext.didFirstDraw = false;
     }
 
-    this.initTest = function(bgraphContext, width, height) {
-        this.bgraph = this.GrapherImpl.initTestBgraph(width, height);
+    this.initTestBgraph = function(bgraphContext, numCols, numRows) {
+        this.bgraph = this.GrapherImpl.initTestBgraph(numCols, numRows);
+        bgraphContext.didFirstDraw = false;
+    }
+
+    this.initTestBgraphLarge = function(bgraphContext, numCols, numRows) {
+        this.bgraph = this.GrapherImpl.initTestBgraphLarge(numCols, numRows);
         bgraphContext.didFirstDraw = false;
     }
 
