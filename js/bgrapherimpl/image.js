@@ -92,64 +92,85 @@ function generateEdgeEndPixels(img, inputData, id) {
     img.data[p+3] = 255;
 }
 
-function generatePixels(img, lookup, inputData) {
-    let imgWidth  = inputData.width;
-    let imgHeight = inputData.height;
-    let maxBlockID   = inputData.blocks.length   + 1;
-    let maxEdgeEndID = inputData.edgeEnds.length + 1;
+function generatePixels(inputData) {
+    return (img, lookup) => {
+        let imgWidth  = inputData.width;
+        let imgHeight = inputData.height;
+        let maxBlockID   = inputData.blocks.length   + 1;
+        let maxEdgeEndID = inputData.edgeEnds.length + 1;
 
-    let depths = new xyArray(imgWidth, imgHeight);
-    for (let id = 1; id < maxBlockID; id++) {
-        generateBlockPixels(img, lookup, inputData, depths, id);
-    }
+        let depths = new xyArray(imgWidth, imgHeight);
+        for (let id = 1; id < maxBlockID; id++) {
+            generateBlockPixels(img, lookup, inputData, depths, id);
+        }
 
-    for (let id = 1; id < maxEdgeEndID; id++) {
-        generateEdgeEndPixels(img, inputData, id);
+        for (let id = 1; id < maxEdgeEndID; id++) {
+            generateEdgeEndPixels(img, inputData, id);
+        }
     }
 }
 
-function generateTestPixels(img, lookup, numBlocks) {
-    let width  = lookup.width;
-    let height = lookup.height;
-    let maxID = numBlocks + 1;
-    let id = 1, x = 0, y = 0, i = 0, p = 0;
+function generateTestPixels(numBlocks) {
+    return (img, lookup) => {
+        let width  = lookup.width;
+        let height = lookup.height;
+        let maxID = numBlocks + 1;
+        let id = 1, x = 0, y = 0, i = 0, p = 0;
 
-    while (id < maxID) {
-        i = y * width + x;
-        p = i * 4;
+        while (id < maxID) {
+            i = y * width + x;
+            p = i * 4;
 
-        img.data[p+0] = 0;
-        img.data[p+1] = 0;
-        img.data[p+2] = 0;
-        img.data[p+3] = 255;
+            img.data[p+0] = 0;
+            img.data[p+1] = 0;
+            img.data[p+2] = 0;
+            img.data[p+3] = 255;
 
-        lookup.data[i] = id;
+            lookup.data[i] = id;
 
-        id += 1;
-        x += 2;
-        if (x >= width) {
-            x = 0;
-            y += 2;
+            id += 1;
+            x += 2;
+            if (x >= width) {
+                x = 0;
+                y += 2;
+            }
         }
-    }
 
-    if (x != 0 || y < height) {
-        throw 'Image dimensions don\'t match number of rows and columns.';
+        if (x != 0 || y < height) {
+            throw 'Image dimensions don\'t match number of rows and columns.';
+        }
     }
 }
 
 function ImageBgraph(
     width,  height, 
     buffer, blocksLookup, 
-    blockData=null, edgeEndData=null
 ) {
     this.width  = width;
     this.height = height;
     this.buffer = buffer;
     this.blocksLookup = blocksLookup;
 
-    this.blockData   = blockData;
-    this.edgeEndData = edgeEndData;
+    this.blockData   = null;
+    this.edgeEndData = null;
+}
+
+function generateImage(width, height, cbPixels) {
+    let buffer = document.createElement('canvas');
+    let bufferContext = buffer.getContext(CANVAS_TYPE);
+
+    buffer.width  = width;
+    buffer.height = height;
+    let imagedata = bufferContext.createImageData(width, height);
+    let lookup = new xyArray(width, height);
+
+    cbPixels(imagedata, lookup);
+    bufferContext.putImageData(imagedata, 0, 0);
+
+    return new ImageBgraph(
+        width,  height,
+        buffer, lookup, 
+    );
 }
 
 let ImageImpl = (function () {
@@ -159,21 +180,7 @@ let ImageImpl = (function () {
             let width  = inputData.width;
             let height = inputData.height;
             
-            let buffer = document.createElement('canvas');
-            let bufferContext = buffer.getContext(CANVAS_TYPE);
- 
-            buffer.width  = width;
-            buffer.height = height;
-            let imagedata = bufferContext.createImageData(width, height);
-            let lookup = new xyArray(width, height);
-
-            generatePixels(imagedata, lookup, inputData);
-            bufferContext.putImageData(imagedata, 0, 0);
-
-            return new ImageBgraph(
-                width,  height,
-                buffer, lookup, 
-            );
+            return generateImage(width, height, generatePixels(inputData));
         },
 
         initTestBgraphLarge: function(numCols, numRows) {
@@ -182,21 +189,7 @@ let ImageImpl = (function () {
             let numBlocks = numCols * numRows;
             console.log('Making ' + numBlocks + ' test blocks.');
 
-            let buffer = document.createElement('canvas');
-            let bufferContext = buffer.getContext(CANVAS_TYPE);
-
-            buffer.width  = width;
-            buffer.height = height;
-            let imagedata = bufferContext.createImageData(width, height);
-            let lookup = new xyArray(width, height);
-
-            generateTestPixels(imagedata, lookup, numBlocks);
-            bufferContext.putImageData(imagedata, 0, 0);
-
-            return new ImageBgraph(
-                width,  height,
-                buffer, lookup, 
-            );
+            return generateImage(width, height, generateTestPixels(numBlocks));
         },
 
         initTestBgraph: function(numCols, numRows) {
