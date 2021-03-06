@@ -152,11 +152,15 @@ let BgraphEvents = (function () {
                 bgraphContext.cur.x = event.clientX;
                 bgraphContext.cur.y = event.clientY;
 
-                let [hoveredBlockID, hoveredBlock] = bgraph.curBlock(bgraphContext);
+                let [hoveredBlockID, hoveredBlockData] = bgraph.curBlock(bgraphContext);
+                if (hoveredBlockID === null) { return; }
 
-                if (hoveredBlockID) {
-                    console.log(hoveredBlockID);
+                if (hoveredBlockData && hoveredBlockData.text) {
+                    console.log('ID: ' + hoveredBlockID + ', text: ' + hoveredBlockData.text);
+                    return;
                 }
+
+                console.log(hoveredBlockID);
             }
         },
         resize: function(bgraphContext, bgraph, event) {
