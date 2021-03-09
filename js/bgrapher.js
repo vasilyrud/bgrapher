@@ -55,6 +55,10 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
         this.GrapherImpl.drawBgraph(bgraphContext, this.bgraph);
     }
 
+    this.drawEdges = function(bgraphContext, blockID) {
+        this.GrapherImpl.drawEdges(bgraphContext, this.bgraph, blockID);
+    }
+
     this.curBlock = function(bgraphContext) {
         return this.GrapherImpl.getCurBlock(bgraphContext, this.bgraph);
     }

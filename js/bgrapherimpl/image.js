@@ -31,7 +31,7 @@ function resetBG(context, width, height) {
 
 function xyArray(width, height) {
     /*
-        (x,y)-indexed array of 32-bit (4-byte) by numbers.
+        (x,y)-indexed array of 32-bit (4-byte) numbers.
     */
     this.width  = width;
     this.height = height;
@@ -172,6 +172,23 @@ function generateImage(width, height, cbPixels) {
     );
 }
 
+function drawLine(context, lineWidth, points) {
+    for (let i = 0; i < points.length-1; i+=6) {
+        context.beginPath();
+        context.moveTo(
+            points[i+0], points[i+1]
+        );
+        context.bezierCurveTo(
+            points[i+2], points[i+3], 
+            points[i+4], points[i+5], 
+            points[i+6], points[i+7]
+        );
+        context.strokeStyle = '#000000';
+        context.lineWidth = lineWidth;
+        context.stroke();
+    }
+}
+
 let ImageImpl = (function () {
     return {
 
@@ -194,7 +211,10 @@ let ImageImpl = (function () {
 
             for (let id = 0; id < maxEdgeEndID; id++) {
                 bgraph.edgeEndsData[id] = {
-                    edgeEnds: inputData.edgeEnds[id].edgeEnds,
+                    x: inputData.edgeEnds[id].x,
+                    y: inputData.edgeEnds[id].y,
+                    direction: inputData.edgeEnds[id].direction,
+                    edgeEnds:  inputData.edgeEnds[id].edgeEnds,
                 };
             }
 
@@ -258,6 +278,58 @@ let ImageImpl = (function () {
                 bgraphContext.zoom * imgBgraph.width ,
                 bgraphContext.zoom * imgBgraph.height,
             );
+        },
+
+        drawEdges: function(bgraphContext, imgBgraph, blockID) {
+            let canvas  = bgraphContext.canvas;            
+            let context = canvas.getContext(CANVAS_TYPE);
+            let lineWidth = (bgraphContext.zoom / 50) + 0.5;
+
+            for (const startEdgeEndID of imgBgraph.blocksData[blockID].edgeEnds) {
+                let startEdgeEnd = imgBgraph.edgeEndsData[startEdgeEndID];
+
+                for (const endEdgeEndID of startEdgeEnd.edgeEnds) {
+                    let endEdgeEnd = imgBgraph.edgeEndsData[endEdgeEndID];
+
+                    if (
+                        startEdgeEnd.direction == 'down' && 
+                        endEdgeEnd.direction   == 'down'
+                    ) {
+                        if (startEdgeEnd.y > endEdgeEnd.y) {
+
+                            let startX = (startEdgeEnd.x + 0.5 + bgraphContext.offset.x) * bgraphContext.zoom;
+                            let startY = (startEdgeEnd.y + 0   + bgraphContext.offset.y) * bgraphContext.zoom;
+                            let endX   = (endEdgeEnd.x   + 0.5 + bgraphContext.offset.x) * bgraphContext.zoom;
+                            let endY   = (endEdgeEnd.y   + 1   + bgraphContext.offset.y) * bgraphContext.zoom;
+
+                            drawLine(context, lineWidth, [
+                                startX, startY,
+                                startX, endY  , 
+                                endX  , startY, 
+                                endX  , endY
+                            ]);
+                        }
+                    } else if (
+                        startEdgeEnd.direction == 'right' && 
+                        endEdgeEnd.direction   == 'right'
+                    ) {
+                        if (startEdgeEnd.x > endEdgeEnd.x) {
+
+                            let startX = (startEdgeEnd.x + 1   + bgraphContext.offset.x) * bgraphContext.zoom;
+                            let startY = (startEdgeEnd.y + 0.5 + bgraphContext.offset.y) * bgraphContext.zoom;
+                            let endX   = (endEdgeEnd.x   + 0   + bgraphContext.offset.x) * bgraphContext.zoom;
+                            let endY   = (endEdgeEnd.y   + 0.5 + bgraphContext.offset.y) * bgraphContext.zoom;
+
+                            drawLine(context, lineWidth, [
+                                startX, startY,
+                                endX  , startY, 
+                                startX, endY, 
+                                endX  , endY
+                            ]);
+                        }
+                    }
+                }
+            }
         },
 
         getCurBlock: function(bgraphContext, imgBgraph) {

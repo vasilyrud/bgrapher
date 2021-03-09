@@ -155,6 +155,10 @@ let BgraphEvents = (function () {
                 let [hoveredBlockID, hoveredBlockData] = bgraph.curBlock(bgraphContext);
                 if (hoveredBlockID === null) { return; }
 
+                if (hoveredBlockData) {
+                    bgraph.drawEdges(bgraphContext, hoveredBlockID);
+                }
+
                 if (hoveredBlockData && hoveredBlockData.text) {
                     console.log('ID: ' + hoveredBlockID + ', text: ' + hoveredBlockData.text);
                     return;
