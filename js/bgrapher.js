@@ -62,6 +62,10 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
     this.curBlock = function(bgraphContext) {
         return this.GrapherImpl.getCurBlock(bgraphContext, this.bgraph);
     }
+
+    this.printCoords = function(bgraphContext) {
+        return this.GrapherImpl.printCoords(bgraphContext);
+    }
 };
 
 export { BGrapher }

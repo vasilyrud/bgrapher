@@ -18,6 +18,7 @@ const ZOOM_MIN = 1;
 const ZOOM_MAX = 100;
 const ZOOM_SPEED = 550; // Higher number means lower speed
 const MARGIN_PIXELS = 100;
+const BGRAPH_DEBUG = true;
 
 function getZoom(bgraphContext, event) {
     let newZoom = bgraphContext.zoom * (1 - event.deltaY / ZOOM_SPEED);
@@ -36,16 +37,14 @@ function getZoom(bgraphContext, event) {
     return [newZoom, deltaUsed];
 }
 
-function coordValues(coord, bgraphContext, bgraph, event) {
+function coordValues(coord, bgraphContext, bgraph) {
     if (coord === 'x') {
         return [
-            event.clientX,
             bgraph.width(),
             bgraphContext.canvas.clientWidth,
         ]
     } else if (coord === 'y') {
         return [
-            event.clientY,
             bgraph.height(),
             bgraphContext.canvas.clientHeight,
         ]
@@ -77,51 +76,84 @@ function constrainOffset(offset, bgraphContext, bgraphSize, canvasSize) {
     return offset;
 }
 
-function getInitOffset(coord, bgraphContext, bgraph, event) {
-    const [, bgraphSize, canvasSize] = 
-        coordValues(coord, bgraphContext, bgraph, event);
+function getInitOffset(coord, bgraphContext, bgraph) {
+    const [bgraphSize, canvasSize] = 
+        coordValues(coord, bgraphContext, bgraph);
 
     let newOffset = bgraphContext.offset[coord];
 
     return constrainOffset(newOffset, bgraphContext, bgraphSize, canvasSize);
 }
 
-function getPanOffset(coord, bgraphContext, bgraph, event) {
-    const [curPos, bgraphSize, canvasSize] = 
-        coordValues(coord, bgraphContext, bgraph, event);
+function getPanOffset(coord, bgraphContext, bgraph) {
+    const [bgraphSize, canvasSize] = 
+        coordValues(coord, bgraphContext, bgraph);
 
     let newOffset = bgraphContext.offset[coord] + 
-        (curPos - bgraphContext.panningPrev[coord]) / bgraphContext.zoom;
+        (bgraphContext.cur[coord] - bgraphContext.panningPrev[coord]) / bgraphContext.zoom;
 
     return constrainOffset(newOffset, bgraphContext, bgraphSize, canvasSize);
 }
 
-function getZoomOffset(coord, bgraphContext, bgraph, event, deltaUsed) {
-    const [curPos, bgraphSize, canvasSize] = 
-        coordValues(coord, bgraphContext, bgraph, event);
+function getZoomOffset(coord, bgraphContext, bgraph, deltaUsed) {
+    const [bgraphSize, canvasSize] = 
+        coordValues(coord, bgraphContext, bgraph);
 
     let newOffset = bgraphContext.offset[coord] + 
-        ((curPos * deltaUsed) / (bgraphContext.zoom * ZOOM_SPEED));
+        ((bgraphContext.cur[coord] * deltaUsed) / (bgraphContext.zoom * ZOOM_SPEED));
 
     return constrainOffset(newOffset, bgraphContext, bgraphSize, canvasSize);
+}
+
+function mousemovePan(bgraphContext, bgraph, event) {
+    bgraphContext.offset.x = getPanOffset('x', bgraphContext, bgraph);
+    bgraphContext.offset.y = getPanOffset('y', bgraphContext, bgraph);
+    
+    bgraph.draw(bgraphContext);
+
+    bgraphContext.panningPrev.x = event.clientX;
+    bgraphContext.panningPrev.y = event.clientY;
+}
+
+function mousemoveHover(bgraphContext, bgraph, event) {
+    let [hoveredBlockID, hoveredBlockData] = bgraph.curBlock(bgraphContext);
+    if (hoveredBlockID === null) {
+        return;
+    }
+
+    if (hoveredBlockData) {
+        bgraph.drawEdges(bgraphContext, hoveredBlockID);
+    }
+
+    if (hoveredBlockData && hoveredBlockData.text) {
+        console.log('ID: ' + hoveredBlockID + ', text: ' + hoveredBlockData.text);
+        return;
+    }
+    
+    console.log(hoveredBlockID);
 }
 
 let BgraphEvents = (function () {
     return {
         bgraphFirstDraw: function(bgraphContext, bgraph, event) {
-            bgraphContext.offset.x = getInitOffset('x', bgraphContext, bgraph, event);
-            bgraphContext.offset.y = getInitOffset('y', bgraphContext, bgraph, event);
+            bgraphContext.offset.x = getInitOffset('x', bgraphContext, bgraph);
+            bgraphContext.offset.y = getInitOffset('y', bgraphContext, bgraph);
         },
         wheel: function(bgraphContext, bgraph, event) {
+            bgraphContext.cur.x = event.clientX;
+            bgraphContext.cur.y = event.clientY;
+
             // Offset depends on new zoom value 
             // and on how much of the "scroll" was used for zoom.
             const [newZoom, deltaUsed] = getZoom(bgraphContext, event);
             bgraphContext.zoom = newZoom;
 
-            bgraphContext.offset.x = getZoomOffset('x', bgraphContext, bgraph, event, deltaUsed);
-            bgraphContext.offset.y = getZoomOffset('y', bgraphContext, bgraph, event, deltaUsed);
+            bgraphContext.offset.x = getZoomOffset('x', bgraphContext, bgraph, deltaUsed);
+            bgraphContext.offset.y = getZoomOffset('y', bgraphContext, bgraph, deltaUsed);
 
             bgraph.draw(bgraphContext);
+            
+            if (BGRAPH_DEBUG) { bgraph.printCoords(bgraphContext); }
         },
         mousedown: function(bgraphContext, bgraph, event) {
             // Ignore non-left clicks
@@ -138,38 +170,20 @@ let BgraphEvents = (function () {
             bgraphContext.panning = false;
         },
         mousemove: function(bgraphContext, bgraph, event) {
+            bgraphContext.cur.x = event.clientX;
+            bgraphContext.cur.y = event.clientY;
+
             if (bgraphContext.panning) {
-
-                bgraphContext.offset.x = getPanOffset('x', bgraphContext, bgraph, event);
-                bgraphContext.offset.y = getPanOffset('y', bgraphContext, bgraph, event);
-                
-                bgraph.draw(bgraphContext);
-
-                bgraphContext.panningPrev.x = event.clientX;
-                bgraphContext.panningPrev.y = event.clientY;
-
+                mousemovePan(bgraphContext, bgraph, event);
             } else {
-                bgraphContext.cur.x = event.clientX;
-                bgraphContext.cur.y = event.clientY;
-
-                let [hoveredBlockID, hoveredBlockData] = bgraph.curBlock(bgraphContext);
-                if (hoveredBlockID === null) { return; }
-
-                if (hoveredBlockData) {
-                    bgraph.drawEdges(bgraphContext, hoveredBlockID);
-                }
-
-                if (hoveredBlockData && hoveredBlockData.text) {
-                    console.log('ID: ' + hoveredBlockID + ', text: ' + hoveredBlockData.text);
-                    return;
-                }
-
-                console.log(hoveredBlockID);
+                mousemoveHover(bgraphContext, bgraph, event);
             }
+
+            if (BGRAPH_DEBUG) { bgraph.printCoords(bgraphContext); }
         },
         resize: function(bgraphContext, bgraph, event) {
-            bgraphContext.offset.x = getInitOffset('x', bgraphContext, bgraph, event);
-            bgraphContext.offset.y = getInitOffset('y', bgraphContext, bgraph, event);
+            bgraphContext.offset.x = getInitOffset('x', bgraphContext, bgraph);
+            bgraphContext.offset.y = getInitOffset('y', bgraphContext, bgraph);
 
             bgraph.draw(bgraphContext);
         },

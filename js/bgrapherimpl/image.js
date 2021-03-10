@@ -46,6 +46,12 @@ function xyArray(width, height) {
     };
 }
 
+function toBgraph(bgraphContext, value, coord) {
+    return Math.floor(
+        (bgraphContext[value][coord] / bgraphContext.zoom) - bgraphContext.offset[coord]
+    );
+}
+
 function generateBlockPixels(img, lookup, inputData, depths, id) {
     let blockData = inputData.blocks[id];
 
@@ -214,6 +220,7 @@ let ImageImpl = (function () {
                     x: inputData.edgeEnds[id].x,
                     y: inputData.edgeEnds[id].y,
                     direction: inputData.edgeEnds[id].direction,
+                    isSource:  inputData.edgeEnds[id].isSource,
                     edgeEnds:  inputData.edgeEnds[id].edgeEnds,
                 };
             }
@@ -333,10 +340,8 @@ let ImageImpl = (function () {
         },
 
         getCurBlock: function(bgraphContext, imgBgraph) {
-            let x = Math.floor(
-                (bgraphContext.cur.x / bgraphContext.zoom) - bgraphContext.offset.x);
-            let y = Math.floor(
-                (bgraphContext.cur.y / bgraphContext.zoom) - bgraphContext.offset.y);
+            let x = toBgraph(bgraphContext, 'cur', 'x');
+            let y = toBgraph(bgraphContext, 'cur', 'y');
 
             if (y < 0 || y >= imgBgraph.height) { return [null, null]; }
             if (x < 0 || x >= imgBgraph.width)  { return [null, null]; }
@@ -350,6 +355,20 @@ let ImageImpl = (function () {
             }
 
             return [blockID, blockData];
+        },
+
+        printCoords: function(bgraphContext) {
+            let context = bgraphContext.canvas.getContext(CANVAS_TYPE);
+
+            context.fillStyle = '#ffffff';
+            context.fillRect(5, 5, 50, 20);
+
+            context.fillStyle = '#000000';
+            context.font = '16px';
+            context.fillText(
+                `${toBgraph(bgraphContext, 'cur', 'x')} ${toBgraph(bgraphContext, 'cur', 'y')}`, 
+                10, 20
+            );
         },
     };
 })();
