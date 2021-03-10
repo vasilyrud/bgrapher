@@ -46,9 +46,13 @@ function xyArray(width, height) {
     };
 }
 
-function toBgraph(bgraphContext, value, coord) {
+function toCanvas(bgraphContext, coord, value) {
+    return ((value + bgraphContext.offset[coord]) * bgraphContext.zoom);
+}
+
+function curBgraphPixel(bgraphContext, coord) {
     return Math.floor(
-        (bgraphContext[value][coord] / bgraphContext.zoom) - bgraphContext.offset[coord]
+        (bgraphContext.cur[coord] / bgraphContext.zoom) - bgraphContext.offset[coord]
     );
 }
 
@@ -178,7 +182,10 @@ function generateImage(width, height, cbPixels) {
     );
 }
 
-function drawLine(context, lineWidth, points) {
+function drawLine(bgraphContext, points) {
+    let context = bgraphContext.canvas.getContext(CANVAS_TYPE);
+    let lineWidth = (bgraphContext.zoom / 50) + 0.5;
+
     for (let i = 0; i < points.length-1; i+=6) {
         context.beginPath();
         context.moveTo(
@@ -189,9 +196,90 @@ function drawLine(context, lineWidth, points) {
             points[i+4], points[i+5], 
             points[i+6], points[i+7]
         );
-        context.strokeStyle = '#000000';
+        context.strokeStyle = '#ff0000';
         context.lineWidth = lineWidth;
         context.stroke();
+    }
+}
+
+function drawEdge(bgraphContext, startEdgeEnd, endEdgeEnd) {
+
+    if (startEdgeEnd.isSource) {
+        if (
+            startEdgeEnd.direction == 'down' && 
+            endEdgeEnd.direction   == 'down'
+        ) {
+            if (startEdgeEnd.y < endEdgeEnd.y) {
+
+                let startX = toCanvas(bgraphContext, 'x', startEdgeEnd.x + 0.5);
+                let startY = toCanvas(bgraphContext, 'y', startEdgeEnd.y + 1);
+                let endX   = toCanvas(bgraphContext, 'x', endEdgeEnd.x   + 0.5);
+                let endY   = toCanvas(bgraphContext, 'y', endEdgeEnd.y   + 0);
+
+                drawLine(bgraphContext, [
+                    startX, startY,
+                    startX, endY  , 
+                    endX  , startY, 
+                    endX  , endY
+                ]);
+            }
+        } else if (
+            startEdgeEnd.direction == 'right' && 
+            endEdgeEnd.direction   == 'right'
+        ) {
+            if (startEdgeEnd.x < endEdgeEnd.x) {
+
+                let startX = toCanvas(bgraphContext, 'x', startEdgeEnd.x + 1);
+                let startY = toCanvas(bgraphContext, 'y', startEdgeEnd.y + 0.5);
+                let endX   = toCanvas(bgraphContext, 'x', endEdgeEnd.x   + 0);
+                let endY   = toCanvas(bgraphContext, 'y', endEdgeEnd.y   + 0.5);
+
+                drawLine(bgraphContext, [
+                    startX, startY,
+                    endX  , startY, 
+                    startX, endY, 
+                    endX  , endY
+                ]);
+            }
+        }
+    } else {
+        if (
+            startEdgeEnd.direction == 'down' && 
+            endEdgeEnd.direction   == 'down'
+        ) {
+            if (startEdgeEnd.y > endEdgeEnd.y) {
+
+                let startX = toCanvas(bgraphContext, 'x', startEdgeEnd.x + 0.5);
+                let startY = toCanvas(bgraphContext, 'y', startEdgeEnd.y + 0);
+                let endX   = toCanvas(bgraphContext, 'x', endEdgeEnd.x   + 0.5);
+                let endY   = toCanvas(bgraphContext, 'y', endEdgeEnd.y   + 1);
+
+                drawLine(bgraphContext, [
+                    startX, startY,
+                    startX, endY  , 
+                    endX  , startY, 
+                    endX  , endY
+                ]);
+            }
+        } else if (
+            startEdgeEnd.direction == 'right' && 
+            endEdgeEnd.direction   == 'right'
+        ) {
+            if (startEdgeEnd.x > endEdgeEnd.x) {
+
+                let startX = toCanvas(bgraphContext, 'x', startEdgeEnd.x + 0);
+                let startY = toCanvas(bgraphContext, 'y', startEdgeEnd.y + 0.5);
+                let endX   = toCanvas(bgraphContext, 'x', endEdgeEnd.x   + 1);
+                let endY   = toCanvas(bgraphContext, 'y', endEdgeEnd.y   + 0.5);
+
+                drawLine(bgraphContext, [
+                    startX, startY,
+                    endX  , startY, 
+                    startX, endY, 
+                    endX  , endY
+                ]);
+            }
+        }
     }
 }
 
@@ -288,60 +376,20 @@ let ImageImpl = (function () {
         },
 
         drawEdges: function(bgraphContext, imgBgraph, blockID) {
-            let canvas  = bgraphContext.canvas;            
-            let context = canvas.getContext(CANVAS_TYPE);
-            let lineWidth = (bgraphContext.zoom / 50) + 0.5;
-
             for (const startEdgeEndID of imgBgraph.blocksData[blockID].edgeEnds) {
                 let startEdgeEnd = imgBgraph.edgeEndsData[startEdgeEndID];
 
                 for (const endEdgeEndID of startEdgeEnd.edgeEnds) {
                     let endEdgeEnd = imgBgraph.edgeEndsData[endEdgeEndID];
 
-                    if (
-                        startEdgeEnd.direction == 'down' && 
-                        endEdgeEnd.direction   == 'down'
-                    ) {
-                        if (startEdgeEnd.y > endEdgeEnd.y) {
-
-                            let startX = (startEdgeEnd.x + 0.5 + bgraphContext.offset.x) * bgraphContext.zoom;
-                            let startY = (startEdgeEnd.y + 0   + bgraphContext.offset.y) * bgraphContext.zoom;
-                            let endX   = (endEdgeEnd.x   + 0.5 + bgraphContext.offset.x) * bgraphContext.zoom;
-                            let endY   = (endEdgeEnd.y   + 1   + bgraphContext.offset.y) * bgraphContext.zoom;
-
-                            drawLine(context, lineWidth, [
-                                startX, startY,
-                                startX, endY  , 
-                                endX  , startY, 
-                                endX  , endY
-                            ]);
-                        }
-                    } else if (
-                        startEdgeEnd.direction == 'right' && 
-                        endEdgeEnd.direction   == 'right'
-                    ) {
-                        if (startEdgeEnd.x > endEdgeEnd.x) {
-
-                            let startX = (startEdgeEnd.x + 1   + bgraphContext.offset.x) * bgraphContext.zoom;
-                            let startY = (startEdgeEnd.y + 0.5 + bgraphContext.offset.y) * bgraphContext.zoom;
-                            let endX   = (endEdgeEnd.x   + 0   + bgraphContext.offset.x) * bgraphContext.zoom;
-                            let endY   = (endEdgeEnd.y   + 0.5 + bgraphContext.offset.y) * bgraphContext.zoom;
-
-                            drawLine(context, lineWidth, [
-                                startX, startY,
-                                endX  , startY, 
-                                startX, endY, 
-                                endX  , endY
-                            ]);
-                        }
-                    }
+                    drawEdge(bgraphContext, startEdgeEnd, endEdgeEnd);
                 }
             }
         },
 
         getCurBlock: function(bgraphContext, imgBgraph) {
-            let x = toBgraph(bgraphContext, 'cur', 'x');
-            let y = toBgraph(bgraphContext, 'cur', 'y');
+            let x = curBgraphPixel(bgraphContext, 'x');
+            let y = curBgraphPixel(bgraphContext, 'y');
 
             if (y < 0 || y >= imgBgraph.height) { return [null, null]; }
             if (x < 0 || x >= imgBgraph.width)  { return [null, null]; }
@@ -366,7 +414,7 @@ let ImageImpl = (function () {
             context.fillStyle = '#000000';
             context.font = '16px';
             context.fillText(
-                `${toBgraph(bgraphContext, 'cur', 'x')} ${toBgraph(bgraphContext, 'cur', 'y')}`, 
+                `${curBgraphPixel(bgraphContext, 'x')} ${curBgraphPixel(bgraphContext, 'y')}`, 
                 10, 20
             );
         },
