@@ -126,11 +126,11 @@ function mousemoveHover(bgraphContext, bgraph, event) {
     }
 
     if (hoveredBlockData && hoveredBlockData.text) {
-        console.log('ID: ' + hoveredBlockID + ', text: ' + hoveredBlockData.text);
+        // console.log('ID: ' + hoveredBlockID + ', text: ' + hoveredBlockData.text);
         return;
     }
     
-    console.log(hoveredBlockID);
+    // console.log(hoveredBlockID);
 }
 
 let BgraphEvents = (function () {

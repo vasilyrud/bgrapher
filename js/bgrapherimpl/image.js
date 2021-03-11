@@ -209,12 +209,12 @@ function drawEdge(bgraphContext, startEdgeEnd, endEdgeEnd) {
             startEdgeEnd.direction == 'down' && 
             endEdgeEnd.direction   == 'down'
         ) {
-            if (startEdgeEnd.y < endEdgeEnd.y) {
+            let startX = toCanvas(bgraphContext, 'x', startEdgeEnd.x + 0.5);
+            let startY = toCanvas(bgraphContext, 'y', startEdgeEnd.y + 1);
+            let endX   = toCanvas(bgraphContext, 'x', endEdgeEnd.x   + 0.5);
+            let endY   = toCanvas(bgraphContext, 'y', endEdgeEnd.y   + 0);
 
-                let startX = toCanvas(bgraphContext, 'x', startEdgeEnd.x + 0.5);
-                let startY = toCanvas(bgraphContext, 'y', startEdgeEnd.y + 1);
-                let endX   = toCanvas(bgraphContext, 'x', endEdgeEnd.x   + 0.5);
-                let endY   = toCanvas(bgraphContext, 'y', endEdgeEnd.y   + 0);
+            if (startEdgeEnd.y < endEdgeEnd.y) {
 
                 drawLine(bgraphContext, [
                     startX, startY,
@@ -222,17 +222,60 @@ function drawEdge(bgraphContext, startEdgeEnd, endEdgeEnd) {
                     endX  , startY, 
                     endX  , endY
                 ]);
+            } else {
+
+                if (Math.abs(endEdgeEnd.x - startEdgeEnd.x) < 5) {
+                    let xDiff = Math.abs(endX-startX);
+                    let curveDistance  = 2 * bgraphContext.zoom;
+                    let bigCurveIntensity   = 2 * bgraphContext.zoom + xDiff;
+                    let smallCurveIntensity = 2 * bgraphContext.zoom;
+
+                    if (startEdgeEnd.x > endEdgeEnd.x) {
+                        drawLine(bgraphContext, [
+                            startX, startY, startX, startY+smallCurveIntensity, startX-curveDistance-xDiff, startY+smallCurveIntensity, 
+                            startX-curveDistance-xDiff, startY, endX-curveDistance, endY, startX-curveDistance-xDiff, startY, 
+                            endX-curveDistance, endY, endX-curveDistance, endY-bigCurveIntensity, endX, endY-bigCurveIntensity, 
+                            endX, endY
+                        ]);
+                    } else {
+                        drawLine(bgraphContext, [
+                            startX, startY, startX, startY+smallCurveIntensity, startX-curveDistance, startY+smallCurveIntensity, 
+                            startX-curveDistance, startY, endX-curveDistance-xDiff, endY, startX-curveDistance, startY, 
+                            endX-curveDistance-xDiff, endY, endX-curveDistance-xDiff, endY-bigCurveIntensity, endX, endY-bigCurveIntensity, 
+                            endX, endY
+                        ]);
+                    }
+                } else {
+                    let xDiff = Math.abs(endX-startX)/2;
+                    let curveIntensity = 2 * bgraphContext.zoom + xDiff/2;
+
+                    if (startEdgeEnd.x > endEdgeEnd.x) {
+                        drawLine(bgraphContext, [
+                            startX, startY, startX, startY+curveIntensity, startX-xDiff, startY+curveIntensity, 
+                            startX-xDiff, startY, endX+xDiff, endY, startX-xDiff, startY, 
+                            endX+xDiff, endY, endX+xDiff, endY-curveIntensity, endX, endY-curveIntensity, 
+                            endX, endY
+                        ]);
+                    } else {
+                        drawLine(bgraphContext, [
+                            startX, startY, startX, startY+curveIntensity, startX+xDiff, startY+curveIntensity, 
+                            startX+xDiff, startY, endX-xDiff, endY, startX+xDiff, startY, 
+                            endX-xDiff, endY, endX-xDiff, endY-curveIntensity, endX, endY-curveIntensity, 
+                            endX, endY
+                        ]);
+                    }
+                }
             }
         } else if (
             startEdgeEnd.direction == 'right' && 
             endEdgeEnd.direction   == 'right'
         ) {
-            if (startEdgeEnd.x < endEdgeEnd.x) {
+            let startX = toCanvas(bgraphContext, 'x', startEdgeEnd.x + 1);
+            let startY = toCanvas(bgraphContext, 'y', startEdgeEnd.y + 0.5);
+            let endX   = toCanvas(bgraphContext, 'x', endEdgeEnd.x   + 0);
+            let endY   = toCanvas(bgraphContext, 'y', endEdgeEnd.y   + 0.5);
 
-                let startX = toCanvas(bgraphContext, 'x', startEdgeEnd.x + 1);
-                let startY = toCanvas(bgraphContext, 'y', startEdgeEnd.y + 0.5);
-                let endX   = toCanvas(bgraphContext, 'x', endEdgeEnd.x   + 0);
-                let endY   = toCanvas(bgraphContext, 'y', endEdgeEnd.y   + 0.5);
+            if (startEdgeEnd.x < endEdgeEnd.x) {
 
                 drawLine(bgraphContext, [
                     startX, startY,
@@ -240,6 +283,49 @@ function drawEdge(bgraphContext, startEdgeEnd, endEdgeEnd) {
                     startX, endY, 
                     endX  , endY
                 ]);
+            } else {
+
+                if (Math.abs(endEdgeEnd.y - startEdgeEnd.y) < 5) {
+                    let yDiff = Math.abs(endY-startY);
+                    let curveDistance  = 2 * bgraphContext.zoom;
+                    let bigCurveIntensity   = 2 * bgraphContext.zoom + yDiff;
+                    let smallCurveIntensity = 2 * bgraphContext.zoom;
+
+                    if (startEdgeEnd.y > endEdgeEnd.y) {
+                        drawLine(bgraphContext, [
+                            startX, startY, startX+bigCurveIntensity, startY, startX+bigCurveIntensity, startY-curveDistance-yDiff, 
+                            startX, startY-curveDistance-yDiff, endX, endY-curveDistance, startX, startY-curveDistance-yDiff, 
+                            endX, endY-curveDistance, endX-smallCurveIntensity, endY-curveDistance, endX-smallCurveIntensity, endY, 
+                            endX, endY
+                        ]);
+                    } else {
+                        drawLine(bgraphContext, [
+                            startX, startY, startX+smallCurveIntensity, startY, startX+smallCurveIntensity, startY-curveDistance, 
+                            startX, startY-curveDistance, endX, endY-curveDistance-yDiff, startX, startY-curveDistance, 
+                            endX, endY-curveDistance-yDiff, endX-bigCurveIntensity, endY-curveDistance-yDiff, endX-bigCurveIntensity, endY, 
+                            endX, endY
+                        ]);
+                    }
+                } else {
+                    let yDiff = Math.abs(endY-startY)/2;
+                    let curveIntensity = 2 * bgraphContext.zoom + yDiff/2;
+
+                    if (startEdgeEnd.y > endEdgeEnd.y) {
+                        drawLine(bgraphContext, [
+                            startX, startY, startX+curveIntensity, startY, startX+curveIntensity, startY-yDiff, 
+                            startX, startY-yDiff, endX, endY+yDiff, startX, startY-yDiff, 
+                            endX, endY+yDiff, endX-curveIntensity, endY+yDiff, endX-curveIntensity, endY, 
+                            endX, endY
+                        ]);
+                    } else {
+                        drawLine(bgraphContext, [
+                            startX, startY, startX+curveIntensity, startY, startX+curveIntensity, startY+yDiff, 
+                            startX, startY+yDiff, endX, endY-yDiff, startX, startY+yDiff, 
+                            endX, endY-yDiff, endX-curveIntensity, endY-yDiff, endX-curveIntensity, endY, 
+                            endX, endY
+                        ]);
+                    }
+                }
             }
         }
     } else {
