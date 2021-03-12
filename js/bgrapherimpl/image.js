@@ -189,12 +189,12 @@ function drawLine(bgraphContext, points) {
     for (let i = 0; i < points.length-1; i+=6) {
         context.beginPath();
         context.moveTo(
-            points[i+0], points[i+1]
+            toCanvas(bgraphContext, 'x', points[i+0]), toCanvas(bgraphContext, 'y', points[i+1])
         );
         context.bezierCurveTo(
-            points[i+2], points[i+3], 
-            points[i+4], points[i+5], 
-            points[i+6], points[i+7]
+            toCanvas(bgraphContext, 'x', points[i+2]), toCanvas(bgraphContext, 'y', points[i+3]), 
+            toCanvas(bgraphContext, 'x', points[i+4]), toCanvas(bgraphContext, 'y', points[i+5]), 
+            toCanvas(bgraphContext, 'x', points[i+6]), toCanvas(bgraphContext, 'y', points[i+7])
         );
         context.strokeStyle = '#ff0000';
         context.lineWidth = lineWidth;
@@ -202,171 +202,136 @@ function drawLine(bgraphContext, points) {
     }
 }
 
-function drawEdge(bgraphContext, startEdgeEnd, endEdgeEnd) {
+function makeForwardCurve(x, y) {
+    return [
+        0, 0, 0, y, x, 0, 
+        x, y
+    ];
+}
 
-    if (startEdgeEnd.isSource) {
-        if (
-            startEdgeEnd.direction == 'down' && 
-            endEdgeEnd.direction   == 'down'
-        ) {
-            let startX = toCanvas(bgraphContext, 'x', startEdgeEnd.x + 0.5);
-            let startY = toCanvas(bgraphContext, 'y', startEdgeEnd.y + 1);
-            let endX   = toCanvas(bgraphContext, 'x', endEdgeEnd.x   + 0.5);
-            let endY   = toCanvas(bgraphContext, 'y', endEdgeEnd.y   + 0);
+function makeBackCurveDirect(x, y) {
+    let diff = x/2;
+    let curveIntensity = 2 + Math.abs(diff)/2;
 
-            if (startEdgeEnd.y < endEdgeEnd.y) {
+    return [
+        0, 0, 0, curveIntensity, diff, curveIntensity, 
+        diff, 0, x-diff, y, diff, 0, 
+        x-diff, y, x-diff, y-curveIntensity, x, y-curveIntensity, 
+        x, y
+    ];
+}
 
-                drawLine(bgraphContext, [
-                    startX, startY,
-                    startX, endY  , 
-                    endX  , startY, 
-                    endX  , endY
-                ]);
-            } else {
+function makeBackCurveAround(x, y) {
+    let curveDistance = 2;
+    let small = 2;
+    let big   = 2 + Math.abs(x);
+    let [startCurveIntensity, endCurveIntensity] = (x < 0) ? [big, small] : [small, big]
+    let c = (x < 0) ? x : 0;
 
-                if (Math.abs(endEdgeEnd.x - startEdgeEnd.x) < 5) {
-                    let xDiff = Math.abs(endX-startX);
-                    let curveDistance  = 2 * bgraphContext.zoom;
-                    let bigCurveIntensity   = 2 * bgraphContext.zoom + xDiff;
-                    let smallCurveIntensity = 2 * bgraphContext.zoom;
+    return [
+        0, 0, 0, startCurveIntensity, c-curveDistance, startCurveIntensity, 
+        c-curveDistance, 0, c-curveDistance, y, c-curveDistance, 0, 
+        c-curveDistance, y, c-curveDistance, y-endCurveIntensity, x, y-endCurveIntensity, 
+        x, y
+    ]
+}
 
-                    if (startEdgeEnd.x > endEdgeEnd.x) {
-                        drawLine(bgraphContext, [
-                            startX, startY, startX, startY+smallCurveIntensity, startX-curveDistance-xDiff, startY+smallCurveIntensity, 
-                            startX-curveDistance-xDiff, startY, endX-curveDistance, endY, startX-curveDistance-xDiff, startY, 
-                            endX-curveDistance, endY, endX-curveDistance, endY-bigCurveIntensity, endX, endY-bigCurveIntensity, 
-                            endX, endY
-                        ]);
-                    } else {
-                        drawLine(bgraphContext, [
-                            startX, startY, startX, startY+smallCurveIntensity, startX-curveDistance, startY+smallCurveIntensity, 
-                            startX-curveDistance, startY, endX-curveDistance-xDiff, endY, startX-curveDistance, startY, 
-                            endX-curveDistance-xDiff, endY, endX-curveDistance-xDiff, endY-bigCurveIntensity, endX, endY-bigCurveIntensity, 
-                            endX, endY
-                        ]);
-                    }
-                } else {
-                    let xDiff = Math.abs(endX-startX)/2;
-                    let curveIntensity = 2 * bgraphContext.zoom + xDiff/2;
+function isX(i) {
+    return (i % 2 == 0);
+}
 
-                    if (startEdgeEnd.x > endEdgeEnd.x) {
-                        drawLine(bgraphContext, [
-                            startX, startY, startX, startY+curveIntensity, startX-xDiff, startY+curveIntensity, 
-                            startX-xDiff, startY, endX+xDiff, endY, startX-xDiff, startY, 
-                            endX+xDiff, endY, endX+xDiff, endY-curveIntensity, endX, endY-curveIntensity, 
-                            endX, endY
-                        ]);
-                    } else {
-                        drawLine(bgraphContext, [
-                            startX, startY, startX, startY+curveIntensity, startX+xDiff, startY+curveIntensity, 
-                            startX+xDiff, startY, endX-xDiff, endY, startX+xDiff, startY, 
-                            endX-xDiff, endY, endX-xDiff, endY-curveIntensity, endX, endY-curveIntensity, 
-                            endX, endY
-                        ]);
-                    }
-                }
-            }
-        } else if (
-            startEdgeEnd.direction == 'right' && 
-            endEdgeEnd.direction   == 'right'
-        ) {
-            let startX = toCanvas(bgraphContext, 'x', startEdgeEnd.x + 1);
-            let startY = toCanvas(bgraphContext, 'y', startEdgeEnd.y + 0.5);
-            let endX   = toCanvas(bgraphContext, 'x', endEdgeEnd.x   + 0);
-            let endY   = toCanvas(bgraphContext, 'y', endEdgeEnd.y   + 0.5);
+function pointsFlipYAxis(points) {
+    return points.map((val, i) => {
+        return (isX(i) ? -val : val);
+    });
+}
 
-            if (startEdgeEnd.x < endEdgeEnd.x) {
+function pointsMove(points, x, y) {
+    return points.map((val, i) => {
+        return (isX(i) ? val+x : val+y);
+    });
+}
 
-                drawLine(bgraphContext, [
-                    startX, startY,
-                    endX  , startY, 
-                    startX, endY, 
-                    endX  , endY
-                ]);
-            } else {
-
-                if (Math.abs(endEdgeEnd.y - startEdgeEnd.y) < 5) {
-                    let yDiff = Math.abs(endY-startY);
-                    let curveDistance  = 2 * bgraphContext.zoom;
-                    let bigCurveIntensity   = 2 * bgraphContext.zoom + yDiff;
-                    let smallCurveIntensity = 2 * bgraphContext.zoom;
-
-                    if (startEdgeEnd.y > endEdgeEnd.y) {
-                        drawLine(bgraphContext, [
-                            startX, startY, startX+bigCurveIntensity, startY, startX+bigCurveIntensity, startY-curveDistance-yDiff, 
-                            startX, startY-curveDistance-yDiff, endX, endY-curveDistance, startX, startY-curveDistance-yDiff, 
-                            endX, endY-curveDistance, endX-smallCurveIntensity, endY-curveDistance, endX-smallCurveIntensity, endY, 
-                            endX, endY
-                        ]);
-                    } else {
-                        drawLine(bgraphContext, [
-                            startX, startY, startX+smallCurveIntensity, startY, startX+smallCurveIntensity, startY-curveDistance, 
-                            startX, startY-curveDistance, endX, endY-curveDistance-yDiff, startX, startY-curveDistance, 
-                            endX, endY-curveDistance-yDiff, endX-bigCurveIntensity, endY-curveDistance-yDiff, endX-bigCurveIntensity, endY, 
-                            endX, endY
-                        ]);
-                    }
-                } else {
-                    let yDiff = Math.abs(endY-startY)/2;
-                    let curveIntensity = 2 * bgraphContext.zoom + yDiff/2;
-
-                    if (startEdgeEnd.y > endEdgeEnd.y) {
-                        drawLine(bgraphContext, [
-                            startX, startY, startX+curveIntensity, startY, startX+curveIntensity, startY-yDiff, 
-                            startX, startY-yDiff, endX, endY+yDiff, startX, startY-yDiff, 
-                            endX, endY+yDiff, endX-curveIntensity, endY+yDiff, endX-curveIntensity, endY, 
-                            endX, endY
-                        ]);
-                    } else {
-                        drawLine(bgraphContext, [
-                            startX, startY, startX+curveIntensity, startY, startX+curveIntensity, startY+yDiff, 
-                            startX, startY+yDiff, endX, endY-yDiff, startX, startY+yDiff, 
-                            endX, endY-yDiff, endX-curveIntensity, endY-yDiff, endX-curveIntensity, endY, 
-                            endX, endY
-                        ]);
-                    }
-                }
-            }
-        }
-    } else {
-        if (
-            startEdgeEnd.direction == 'down' && 
-            endEdgeEnd.direction   == 'down'
-        ) {
-            if (startEdgeEnd.y > endEdgeEnd.y) {
-
-                let startX = toCanvas(bgraphContext, 'x', startEdgeEnd.x + 0.5);
-                let startY = toCanvas(bgraphContext, 'y', startEdgeEnd.y + 0);
-                let endX   = toCanvas(bgraphContext, 'x', endEdgeEnd.x   + 0.5);
-                let endY   = toCanvas(bgraphContext, 'y', endEdgeEnd.y   + 1);
-
-                drawLine(bgraphContext, [
-                    startX, startY,
-                    startX, endY  , 
-                    endX  , startY, 
-                    endX  , endY
-                ]);
-            }
-        } else if (
-            startEdgeEnd.direction == 'right' && 
-            endEdgeEnd.direction   == 'right'
-        ) {
-            if (startEdgeEnd.x > endEdgeEnd.x) {
-
-                let startX = toCanvas(bgraphContext, 'x', startEdgeEnd.x + 0);
-                let startY = toCanvas(bgraphContext, 'y', startEdgeEnd.y + 0.5);
-                let endX   = toCanvas(bgraphContext, 'x', endEdgeEnd.x   + 1);
-                let endY   = toCanvas(bgraphContext, 'y', endEdgeEnd.y   + 0.5);
-
-                drawLine(bgraphContext, [
-                    startX, startY,
-                    endX  , startY, 
-                    startX, endY, 
-                    endX  , endY
-                ]);
-            }
-        }
+function pointsRotateCounterCW(points) {
+    let newPoints = [];
+    for (let i = 0; i < points.length; i+=2) {
+        newPoints.push(points[i+1]);
+        newPoints.push(-points[i]);
     }
+    return newPoints;
+}
+
+function pointsRotateCW(points) {
+    let newPoints = [];
+    for (let i = 0; i < points.length; i+=2) {
+        newPoints.push(-points[i+1]);
+        newPoints.push(points[i]);
+    }
+    return newPoints;
+}
+
+function drawEdge(bgraphContext, startEdgeEndIn, endEdgeEndIn) {
+    let points;
+
+    let [startEdgeEnd  , endEdgeEnd] = ((startEdgeEndIn.isSource) ? 
+        [startEdgeEndIn, endEdgeEndIn] : 
+        [endEdgeEndIn  , startEdgeEndIn]);
+
+    if (
+        startEdgeEnd.direction == 'down' && 
+        endEdgeEnd.direction   == 'down'
+    ) {
+        let [startX, startY, endX, endY] = [
+            startEdgeEnd.x + 0.5, 
+            startEdgeEnd.y + 1, 
+            endEdgeEnd.x   + 0.5, 
+            endEdgeEnd.y   + 0,
+        ];
+
+        let x = endX - startX;
+        let y = endY - startY;
+
+        if (startEdgeEnd.y < endEdgeEnd.y) {
+            points = makeForwardCurve(x, y);
+        } else {
+            if (Math.abs(endEdgeEnd.x - startEdgeEnd.x) < 5) {
+                points = makeBackCurveAround(x, y);
+            } else {
+                points = makeBackCurveDirect(x, y);
+            }
+        }
+
+        points = pointsMove(points, startX, startY);
+
+    } else if (
+        startEdgeEnd.direction == 'right' && 
+        endEdgeEnd.direction   == 'right'
+    ) {
+        let [startX, startY, endX, endY] = pointsRotateCounterCW(pointsFlipYAxis([
+            startEdgeEnd.x + 1,
+            startEdgeEnd.y + 0.5,
+            endEdgeEnd.x   + 0,
+            endEdgeEnd.y   + 0.5,
+        ]));
+
+        let x = endX - startX;
+        let y = endY - startY;
+
+        if (startEdgeEnd.y < endEdgeEnd.y) {
+            points = makeForwardCurve(x, y);
+        } else {
+            if (Math.abs(endEdgeEnd.x - startEdgeEnd.x) < 5) {
+                points = makeBackCurveAround(x, y);
+            } else {
+                points = makeBackCurveDirect(x, y);
+            }
+        }
+
+        points = pointsMove(points, startX, startY);
+        points = pointsFlipYAxis(pointsRotateCW(points));
+    }
+
+    drawLine(bgraphContext, points);
 }
 
 let ImageImpl = (function () {
