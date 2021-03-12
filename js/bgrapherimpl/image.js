@@ -270,6 +270,24 @@ function pointsRotateCW(points) {
     return newPoints;
 }
 
+function makeCurve(startX, startY, endX, endY) {
+    let points;
+    let x = endX - startX;
+    let y = endY - startY;
+
+    if (startY < endY) {
+        points = makeForwardCurve(x, y);
+    } else {
+        if (Math.abs(endX - startX) < 5) {
+            points = makeBackCurveAround(x, y);
+        } else {
+            points = makeBackCurveDirect(x, y);
+        }
+    }
+
+    return pointsMove(points, startX, startY);
+}
+
 function drawEdge(bgraphContext, startEdgeEndIn, endEdgeEndIn) {
     let points;
 
@@ -288,20 +306,7 @@ function drawEdge(bgraphContext, startEdgeEndIn, endEdgeEndIn) {
             endEdgeEnd.y   + 0,
         ];
 
-        let x = endX - startX;
-        let y = endY - startY;
-
-        if (startEdgeEnd.y < endEdgeEnd.y) {
-            points = makeForwardCurve(x, y);
-        } else {
-            if (Math.abs(endEdgeEnd.x - startEdgeEnd.x) < 5) {
-                points = makeBackCurveAround(x, y);
-            } else {
-                points = makeBackCurveDirect(x, y);
-            }
-        }
-
-        points = pointsMove(points, startX, startY);
+        points = makeCurve(startX, startY, endX, endY);
 
     } else if (
         startEdgeEnd.direction == 'right' && 
@@ -314,20 +319,7 @@ function drawEdge(bgraphContext, startEdgeEndIn, endEdgeEndIn) {
             endEdgeEnd.y   + 0.5,
         ]));
 
-        let x = endX - startX;
-        let y = endY - startY;
-
-        if (startEdgeEnd.y < endEdgeEnd.y) {
-            points = makeForwardCurve(x, y);
-        } else {
-            if (Math.abs(endEdgeEnd.x - startEdgeEnd.x) < 5) {
-                points = makeBackCurveAround(x, y);
-            } else {
-                points = makeBackCurveDirect(x, y);
-            }
-        }
-
-        points = pointsMove(points, startX, startY);
+        points = makeCurve(startX, startY, endX, endY);
         points = pointsFlipYAxis(pointsRotateCW(points));
     }
 
