@@ -56,10 +56,8 @@ function curBgraphPixel(bgraphContext, coord) {
     );
 }
 
-function generateBlockPixels(img, lookup, inputData, depths, id) {
-    let blockData = inputData.blocks[id];
-
-    let imgWidth = inputData.width;
+function generateBlockPixels(img, imgWidth, blockData, lookup, depths) {
+    let id = blockData.id;
     let width  = blockData.width;
     let height = blockData.height;
     let depth = blockData.depth;
@@ -88,10 +86,7 @@ function generateBlockPixels(img, lookup, inputData, depths, id) {
     }
 }
 
-function generateEdgeEndPixels(img, inputData, id) {
-    let edgeEndData = inputData.edgeEnds[id];
-
-    let imgWidth = inputData.width;
+function generateEdgeEndPixels(img, imgWidth, edgeEndData) {
     let y = edgeEndData.y;
     let x = edgeEndData.x;
 
@@ -106,16 +101,18 @@ function generatePixels(inputData) {
     return (img, lookup) => {
         let imgWidth  = inputData.width;
         let imgHeight = inputData.height;
-        let maxBlockID   = inputData.blocks.length;
-        let maxEdgeEndID = inputData.edgeEnds.length;
+        let numBlocks = inputData.blocks.length;
+        let numEdgeEnds = inputData.edgeEnds.length;
 
         let depths = new xyArray(imgWidth, imgHeight);
-        for (let id = 0; id < maxBlockID; id++) {
-            generateBlockPixels(img, lookup, inputData, depths, id);
+        for (let i = 0; i < numBlocks; i++) {
+            let block = inputData.blocks[i];
+            generateBlockPixels(img, imgWidth, block, lookup, depths);
         }
 
-        for (let id = 0; id < maxEdgeEndID; id++) {
-            generateEdgeEndPixels(img, inputData, id);
+        for (let i = 0; i < numEdgeEnds; i++) {
+            let edgeEnd = inputData.edgeEnds[i];
+            generateEdgeEndPixels(img, imgWidth, edgeEnd);
         }
     }
 }
@@ -332,27 +329,31 @@ let ImageImpl = (function () {
         initBgraph: function(inputData) {
             let width  = inputData.width;
             let height = inputData.height;
-            let maxBlockID   = inputData.blocks.length;
+            let numBlocks = inputData.blocks.length;
             let maxEdgeEndID = inputData.edgeEnds.length;
 
             let bgraph = generateImage(width, height, generatePixels(inputData));
             bgraph.blocksData = {};
             bgraph.edgeEndsData = {};
 
-            for (let id = 0; id < maxBlockID; id++) {
-                bgraph.blocksData[id] = {
-                    text:     inputData.blocks[id].text,
-                    edgeEnds: inputData.blocks[id].edgeEnds,
+            for (let i = 0; i < numBlocks; i++) {
+                let block = inputData.blocks[i];
+
+                bgraph.blocksData[block.id] = {
+                    text:     block.text,
+                    edgeEnds: block.edgeEnds,
                 };
             }
 
-            for (let id = 0; id < maxEdgeEndID; id++) {
-                bgraph.edgeEndsData[id] = {
-                    x: inputData.edgeEnds[id].x,
-                    y: inputData.edgeEnds[id].y,
-                    direction: inputData.edgeEnds[id].direction,
-                    isSource:  inputData.edgeEnds[id].isSource,
-                    edgeEnds:  inputData.edgeEnds[id].edgeEnds,
+            for (let i = 0; i < maxEdgeEndID; i++) {
+                let edgeEnd = inputData.edgeEnds[i];
+
+                bgraph.edgeEndsData[edgeEnd.id] = {
+                    x: edgeEnd.x,
+                    y: edgeEnd.y,
+                    direction: edgeEnd.direction,
+                    isSource:  edgeEnd.isSource,
+                    edgeEnds:  edgeEnd.edgeEnds,
                 };
             }
 
@@ -379,18 +380,19 @@ let ImageImpl = (function () {
                 blocks:    [], edgeEnds:     [],
             }
 
-            let id = 0, x = 0, y = 0;
-            while (id < numBlocks) {
+            let i = 0, x = 0, y = 0;
+            while (i < numBlocks) {
 
-                testInput.blocks.push({
+                testInput.blocks[i] = {
+                    id   : i,
                     x    : x, y     : y,
                     width: 1, height: 1,
                     depth: 1, color : 0,
                     text: 'This is block ' + x.toString() + ' ' + y.toString(),
                     edgeEnds: [],
-                });
+                };
 
-                id += 1;
+                i += 1;
                 x += 2;
                 if (x >= width) {
                     x = 0;
