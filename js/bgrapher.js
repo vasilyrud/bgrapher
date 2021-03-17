@@ -37,49 +37,48 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
         return this.GrapherImpl.getClientHeight(this.bgraph);
     }
 
-    this.initBgraph = function(bgraphContext, bgraphStr) {
+    this.initBgraph = function(bgraphState, bgraphStr) {
         this.bgraph = this.GrapherImpl.initBgraph(JSON.parse(bgraphStr));
-        bgraphContext.didFirstDraw = false;
+        bgraphState.didFirstDraw = false;
     }
 
-    this.initTestBgraph = function(bgraphContext, numCols, numRows) {
+    this.initTestBgraph = function(bgraphState, numCols, numRows) {
         this.bgraph = this.GrapherImpl.initTestBgraph(numCols, numRows);
-        bgraphContext.didFirstDraw = false;
+        bgraphState.didFirstDraw = false;
     }
 
-    this.initTestBgraphLarge = function(bgraphContext, numCols, numRows) {
+    this.initTestBgraphLarge = function(bgraphState, numCols, numRows) {
         this.bgraph = this.GrapherImpl.initTestBgraphLarge(numCols, numRows);
-        bgraphContext.didFirstDraw = false;
+        bgraphState.didFirstDraw = false;
     }
 
     this.populateDiv = function(bgraphDiv) {
         this.GrapherImpl.populateDiv(this.bgraph, bgraphDiv);
     }
 
-    this.draw = function(bgraphContext, bgraphDiv) {
-        console.log(bgraphDiv);
+    this.draw = function(bgraphState, bgraphDiv) {
         this.GrapherImpl.setClientSize(this.bgraph, 
             bgraphDiv.clientWidth, 
             bgraphDiv.clientHeight
         );
 
-        if (!bgraphContext.didFirstDraw) {
-            bgraphContext.didFirstDraw = true;
+        if (!bgraphState.didFirstDraw) {
+            bgraphState.didFirstDraw = true;
             bgraphDiv.dispatchEvent(firstDrawEvent);
         }
-        this.GrapherImpl.drawBgraph(bgraphContext, this.bgraph);
+        this.GrapherImpl.drawBgraph(bgraphState, this.bgraph);
     }
 
-    this.drawEdges = function(bgraphContext, blockID) {
-        this.GrapherImpl.drawEdges(bgraphContext, this.bgraph, blockID);
+    this.drawEdges = function(bgraphState, blockID) {
+        this.GrapherImpl.drawEdges(bgraphState, this.bgraph, blockID);
     }
 
-    this.curBlock = function(bgraphContext) {
-        return this.GrapherImpl.getCurBlock(bgraphContext, this.bgraph);
+    this.curBlock = function(bgraphState) {
+        return this.GrapherImpl.getCurBlock(bgraphState, this.bgraph);
     }
 
-    this.printCoords = function(bgraphContext) {
-        return this.GrapherImpl.printCoords(bgraphContext, this.bgraph);
+    this.printCoords = function(bgraphState) {
+        return this.GrapherImpl.printCoords(bgraphState, this.bgraph);
     }
 };
 

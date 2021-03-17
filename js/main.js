@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { BgraphContext } from './bgraphcontext.js'
+import { BgraphState } from './bgraphcontext.js'
 import { BGrapher } from './bgrapher.js'
 import { initBgraphEvents } from './events.js'
 
@@ -22,21 +22,21 @@ function setupBgraph(bgraphForm, event) {
     event.preventDefault();
     bgraphForm.remove();
 
-    let bgraphContext = new BgraphContext();
+    let bgraphState = new BgraphState();
     let bgrapher = new BGrapher();
     let bgraphDiv = document.createElement('div');
     bgraphDiv.setAttribute('id', 'bgraphDiv');
     document.body.appendChild(bgraphDiv);
 
-    initBgraphEvents(bgraphContext, bgrapher, bgraphDiv);
+    initBgraphEvents(bgraphState, bgrapher, bgraphDiv);
 
-    // bgrapher.initTestBgraph(bgraphContext, 1000, 10000);
-    // bgrapher.initTestBgraphLarge(bgraphContext, 5000, 10000);
-    bgrapher.initBgraph(bgraphContext, event.target.elements.bgraphJSON.value);
+    // bgrapher.initTestBgraph(bgraphState, 1000, 10000);
+    // bgrapher.initTestBgraphLarge(bgraphState, 5000, 10000);
+    bgrapher.initBgraph(bgraphState, event.target.elements.bgraphJSON.value);
 
     bgrapher.populateDiv(bgraphDiv);
 
-    bgrapher.draw(bgraphContext, bgraphDiv);
+    bgrapher.draw(bgraphState, bgraphDiv);
 }
 
 function main() {

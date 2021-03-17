@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-function BgraphContext() {
+function BgraphState() {
     this.didFirstDraw = false;
     this.zoom = 1.0;
     this.offset = {
@@ -32,4 +32,4 @@ function BgraphContext() {
     };
 }
 
-export { BgraphContext }
+export { BgraphState }

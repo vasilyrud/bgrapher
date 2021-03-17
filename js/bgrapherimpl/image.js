@@ -61,13 +61,13 @@ function xyArray(width, height) {
     };
 }
 
-function toCanvas(bgraphContext, coord, value) {
-    return ((value + bgraphContext.offset[coord]) * bgraphContext.zoom);
+function toCanvas(bgraphState, coord, value) {
+    return ((value + bgraphState.offset[coord]) * bgraphState.zoom);
 }
 
-function curBgraphPixel(bgraphContext, coord) {
+function curBgraphPixel(bgraphState, coord) {
     return Math.floor(
-        (bgraphContext.cur[coord] / bgraphContext.zoom) - bgraphContext.offset[coord]
+        (bgraphState.cur[coord] / bgraphState.zoom) - bgraphState.offset[coord]
     );
 }
 
@@ -181,18 +181,18 @@ function generateImage(imageWidth, imageHeight, cbPixels) {
     );
 }
 
-function drawLine(bgraphContext, context, points) {
-    let lineWidth = (bgraphContext.zoom / 50) + 0.5;
+function drawLine(bgraphState, context, points) {
+    let lineWidth = (bgraphState.zoom / 50) + 0.5;
 
     for (let i = 0; i < points.length-1; i+=6) {
         context.beginPath();
         context.moveTo(
-            toCanvas(bgraphContext, 'x', points[i+0]), toCanvas(bgraphContext, 'y', points[i+1])
+            toCanvas(bgraphState, 'x', points[i+0]), toCanvas(bgraphState, 'y', points[i+1])
         );
         context.bezierCurveTo(
-            toCanvas(bgraphContext, 'x', points[i+2]), toCanvas(bgraphContext, 'y', points[i+3]), 
-            toCanvas(bgraphContext, 'x', points[i+4]), toCanvas(bgraphContext, 'y', points[i+5]), 
-            toCanvas(bgraphContext, 'x', points[i+6]), toCanvas(bgraphContext, 'y', points[i+7])
+            toCanvas(bgraphState, 'x', points[i+2]), toCanvas(bgraphState, 'y', points[i+3]), 
+            toCanvas(bgraphState, 'x', points[i+4]), toCanvas(bgraphState, 'y', points[i+5]), 
+            toCanvas(bgraphState, 'x', points[i+6]), toCanvas(bgraphState, 'y', points[i+7])
         );
         context.strokeStyle = '#ff0000';
         context.lineWidth = lineWidth;
@@ -286,7 +286,7 @@ function makeCurve(startX, startY, endX, endY) {
     return pointsMove(points, startX, startY);
 }
 
-function drawEdge(bgraphContext, context, startEdgeEndIn, endEdgeEndIn) {
+function drawEdge(bgraphState, context, startEdgeEndIn, endEdgeEndIn) {
     let points;
 
     let [startEdgeEnd  , endEdgeEnd] = ((startEdgeEndIn.isSource) ? 
@@ -321,7 +321,7 @@ function drawEdge(bgraphContext, context, startEdgeEndIn, endEdgeEndIn) {
         points = pointsFlipYAxis(pointsRotateCW(points));
     }
 
-    drawLine(bgraphContext, context, points);
+    drawLine(bgraphState, context, points);
 }
 
 let ImageImpl = (function () {
@@ -408,24 +408,24 @@ let ImageImpl = (function () {
             bgraphDiv.appendChild(imgBgraph.canvas);
         },
 
-        drawBgraph: function(bgraphContext, imgBgraph) {
+        drawBgraph: function(bgraphState, imgBgraph) {
             let canvas = imgBgraph.canvas;            
             let context = canvas.getContext(CANVAS_TYPE);
             resetBG(context, canvas.width, canvas.height);
             
-            if (bgraphContext.zoom > 2.5) {
+            if (bgraphState.zoom > 2.5) {
                 pixelateImage(context);
             }
 
             context.drawImage(imgBgraph.buffer,
-                bgraphContext.zoom * bgraphContext.offset.x,
-                bgraphContext.zoom * bgraphContext.offset.y,
-                bgraphContext.zoom * imgBgraph.imageWidth ,
-                bgraphContext.zoom * imgBgraph.imageHeight,
+                bgraphState.zoom * bgraphState.offset.x,
+                bgraphState.zoom * bgraphState.offset.y,
+                bgraphState.zoom * imgBgraph.imageWidth ,
+                bgraphState.zoom * imgBgraph.imageHeight,
             );
         },
 
-        drawEdges: function(bgraphContext, imgBgraph, blockID) {
+        drawEdges: function(bgraphState, imgBgraph, blockID) {
             let context = imgBgraph.canvas.getContext(CANVAS_TYPE);
 
             for (const startEdgeEndID of imgBgraph.blocksData[blockID].edgeEnds) {
@@ -434,14 +434,14 @@ let ImageImpl = (function () {
                 for (const endEdgeEndID of startEdgeEnd.edgeEnds) {
                     let endEdgeEnd = imgBgraph.edgeEndsData[endEdgeEndID];
 
-                    drawEdge(bgraphContext, context, startEdgeEnd, endEdgeEnd);
+                    drawEdge(bgraphState, context, startEdgeEnd, endEdgeEnd);
                 }
             }
         },
 
-        getCurBlock: function(bgraphContext, imgBgraph) {
-            let x = curBgraphPixel(bgraphContext, 'x');
-            let y = curBgraphPixel(bgraphContext, 'y');
+        getCurBlock: function(bgraphState, imgBgraph) {
+            let x = curBgraphPixel(bgraphState, 'x');
+            let y = curBgraphPixel(bgraphState, 'y');
 
             if (y < 0 || y >= imgBgraph.imageHeight) { return [null, null]; }
             if (x < 0 || x >= imgBgraph.imageWidth)  { return [null, null]; }
@@ -457,7 +457,7 @@ let ImageImpl = (function () {
             return [blockID, blockData];
         },
 
-        printCoords: function(bgraphContext, imgBgraph) {
+        printCoords: function(bgraphState, imgBgraph) {
             let context = imgBgraph.canvas.getContext(CANVAS_TYPE);
 
             context.fillStyle = '#ffffff';
@@ -466,7 +466,7 @@ let ImageImpl = (function () {
             context.fillStyle = '#000000';
             context.font = '16px';
             context.fillText(
-                `${curBgraphPixel(bgraphContext, 'x')} ${curBgraphPixel(bgraphContext, 'y')}`, 
+                `${curBgraphPixel(bgraphState, 'x')} ${curBgraphPixel(bgraphState, 'y')}`, 
                 10, 20
             );
         },
