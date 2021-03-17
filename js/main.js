@@ -26,15 +26,15 @@ function setupBgraph(bgraphForm, event) {
     document.body.appendChild(mainCanvas);
 
     let bgraphContext = new BgraphContext(mainCanvas);
-    let bgraph = new BGrapher();
+    let bgrapher = new BGrapher();
 
-    initBgraphEvents(bgraphContext, bgraph);
+    initBgraphEvents(bgraphContext, bgrapher);
 
-    // bgraph.initTestBgraph(bgraphContext, 1000, 10000);
-    // bgraph.initTestBgraphLarge(bgraphContext, 5000, 10000);
-    bgraph.initBgraph(bgraphContext, event.target.elements.bgraphJSON.value);
+    // bgrapher.initTestBgraph(bgraphContext, 1000, 10000);
+    // bgrapher.initTestBgraphLarge(bgraphContext, 5000, 10000);
+    bgrapher.initBgraph(bgraphContext, event.target.elements.bgraphJSON.value);
 
-    bgraph.draw(bgraphContext);    
+    bgrapher.draw(bgraphContext);    
 }
 
 function main() {
