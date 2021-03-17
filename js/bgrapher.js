@@ -22,11 +22,11 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
     this.GrapherImpl = GrapherImpl;
 
     this.width = function() {
-        return this.bgraph.width;
+        return this.GrapherImpl.getWidth(this.bgraph);
     }
 
     this.height = function() {
-        return this.bgraph.height;
+        return this.GrapherImpl.getHeight(this.bgraph);
     }
 
     this.initBgraph = function(bgraphContext, bgraphStr) {

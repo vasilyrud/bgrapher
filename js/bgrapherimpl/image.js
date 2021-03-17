@@ -463,6 +463,14 @@ let ImageImpl = (function () {
                 10, 20
             );
         },
+
+        getWidth: function(imgBgraph) {
+            return imgBgraph.width;
+        },
+
+        getHeight: function(imgBgraph) {
+            return imgBgraph.height;
+        },
     };
 })();
 
