@@ -14,8 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-function BgraphContext(canvas) {
-    this.canvas = canvas;
+function BgraphContext() {
     this.didFirstDraw = false;
     this.zoom = 1.0;
     this.offset = {

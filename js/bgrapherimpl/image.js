@@ -17,6 +17,21 @@ limitations under the License.
 const CANVAS_TYPE = '2d';
 const DEFAULT_BG = '#ffffff';
 
+function ImageBgraph(
+    imageWidth, imageHeight, 
+    buffer,     blocksLookup, 
+) {
+    this.canvas = document.createElement('canvas');
+
+    this.imageWidth  = imageWidth;
+    this.imageHeight = imageHeight;
+    this.buffer = buffer;
+    this.blocksLookup = blocksLookup;
+    
+    this.blocksData   = null;
+    this.edgeEndsData = null;
+}
+
 function pixelateImage(context) {
     context.mozImageSmoothingEnabled = false;
     context.webkitImageSmoothingEnabled = false;
@@ -148,39 +163,25 @@ function generateTestPixels(numBlocks) {
     }
 }
 
-function ImageBgraph(
-    width,  height, 
-    buffer, blocksLookup, 
-) {
-    this.width  = width;
-    this.height = height;
-    this.buffer = buffer;
-    this.blocksLookup = blocksLookup;
-
-    this.blocksData   = null;
-    this.edgeEndsData = null;
-}
-
-function generateImage(width, height, cbPixels) {
+function generateImage(imageWidth, imageHeight, cbPixels) {
     let buffer = document.createElement('canvas');
     let bufferContext = buffer.getContext(CANVAS_TYPE);
 
-    buffer.width  = width;
-    buffer.height = height;
-    let imagedata = bufferContext.createImageData(width, height);
-    let lookup = new xyArray(width, height);
+    buffer.width  = imageWidth;
+    buffer.height = imageHeight;
+    let imagedata = bufferContext.createImageData(imageWidth, imageHeight);
+    let lookup = new xyArray(imageWidth, imageHeight);
 
     cbPixels(imagedata, lookup);
     bufferContext.putImageData(imagedata, 0, 0);
 
     return new ImageBgraph(
-        width,  height,
-        buffer, lookup, 
+        imageWidth, imageHeight,
+        buffer,     lookup, 
     );
 }
 
-function drawLine(bgraphContext, points) {
-    let context = bgraphContext.canvas.getContext(CANVAS_TYPE);
+function drawLine(bgraphContext, context, points) {
     let lineWidth = (bgraphContext.zoom / 50) + 0.5;
 
     for (let i = 0; i < points.length-1; i+=6) {
@@ -285,7 +286,7 @@ function makeCurve(startX, startY, endX, endY) {
     return pointsMove(points, startX, startY);
 }
 
-function drawEdge(bgraphContext, startEdgeEndIn, endEdgeEndIn) {
+function drawEdge(bgraphContext, context, startEdgeEndIn, endEdgeEndIn) {
     let points;
 
     let [startEdgeEnd  , endEdgeEnd] = ((startEdgeEndIn.isSource) ? 
@@ -320,7 +321,7 @@ function drawEdge(bgraphContext, startEdgeEndIn, endEdgeEndIn) {
         points = pointsFlipYAxis(pointsRotateCW(points));
     }
 
-    drawLine(bgraphContext, points);
+    drawLine(bgraphContext, context, points);
 }
 
 let ImageImpl = (function () {
@@ -403,11 +404,15 @@ let ImageImpl = (function () {
             return ImageImpl.initBgraph(testInput);
         },
 
+        populateDiv: function(imgBgraph, bgraphDiv) {
+            bgraphDiv.appendChild(imgBgraph.canvas);
+        },
+
         drawBgraph: function(bgraphContext, imgBgraph) {
-            let canvas = bgraphContext.canvas;            
+            let canvas = imgBgraph.canvas;            
             let context = canvas.getContext(CANVAS_TYPE);
             resetBG(context, canvas.width, canvas.height);
-
+            
             if (bgraphContext.zoom > 2.5) {
                 pixelateImage(context);
             }
@@ -415,19 +420,21 @@ let ImageImpl = (function () {
             context.drawImage(imgBgraph.buffer,
                 bgraphContext.zoom * bgraphContext.offset.x,
                 bgraphContext.zoom * bgraphContext.offset.y,
-                bgraphContext.zoom * imgBgraph.width ,
-                bgraphContext.zoom * imgBgraph.height,
+                bgraphContext.zoom * imgBgraph.imageWidth ,
+                bgraphContext.zoom * imgBgraph.imageHeight,
             );
         },
 
         drawEdges: function(bgraphContext, imgBgraph, blockID) {
+            let context = imgBgraph.canvas.getContext(CANVAS_TYPE);
+
             for (const startEdgeEndID of imgBgraph.blocksData[blockID].edgeEnds) {
                 let startEdgeEnd = imgBgraph.edgeEndsData[startEdgeEndID];
 
                 for (const endEdgeEndID of startEdgeEnd.edgeEnds) {
                     let endEdgeEnd = imgBgraph.edgeEndsData[endEdgeEndID];
 
-                    drawEdge(bgraphContext, startEdgeEnd, endEdgeEnd);
+                    drawEdge(bgraphContext, context, startEdgeEnd, endEdgeEnd);
                 }
             }
         },
@@ -436,8 +443,8 @@ let ImageImpl = (function () {
             let x = curBgraphPixel(bgraphContext, 'x');
             let y = curBgraphPixel(bgraphContext, 'y');
 
-            if (y < 0 || y >= imgBgraph.height) { return [null, null]; }
-            if (x < 0 || x >= imgBgraph.width)  { return [null, null]; }
+            if (y < 0 || y >= imgBgraph.imageHeight) { return [null, null]; }
+            if (x < 0 || x >= imgBgraph.imageWidth)  { return [null, null]; }
 
             let blockID = imgBgraph.blocksLookup.get(x,y);
             if (blockID === -1) { return [null, null]; }
@@ -450,8 +457,8 @@ let ImageImpl = (function () {
             return [blockID, blockData];
         },
 
-        printCoords: function(bgraphContext) {
-            let context = bgraphContext.canvas.getContext(CANVAS_TYPE);
+        printCoords: function(bgraphContext, imgBgraph) {
+            let context = imgBgraph.canvas.getContext(CANVAS_TYPE);
 
             context.fillStyle = '#ffffff';
             context.fillRect(5, 5, 50, 20);
@@ -464,12 +471,25 @@ let ImageImpl = (function () {
             );
         },
 
-        getWidth: function(imgBgraph) {
-            return imgBgraph.width;
+        getBgraphWidth: function(imgBgraph) {
+            return imgBgraph.imageWidth;
         },
 
-        getHeight: function(imgBgraph) {
-            return imgBgraph.height;
+        getBgraphHeight: function(imgBgraph) {
+            return imgBgraph.imageHeight;
+        },
+
+        getClientWidth: function(imgBgraph) {
+            return imgBgraph.canvas.width;
+        },
+
+        getClientHeight: function(imgBgraph) {
+            return imgBgraph.canvas.height;
+        },
+
+        setClientSize: function(imgBgraph, newWidth, newHeight) {
+            imgBgraph.canvas.width  = newWidth;
+            imgBgraph.canvas.height = newHeight;
         },
     };
 })();

@@ -21,12 +21,20 @@ const firstDrawEvent = new CustomEvent('bgraphFirstDraw');
 var BGrapher = function(GrapherImpl = ImageImpl) {
     this.GrapherImpl = GrapherImpl;
 
-    this.width = function() {
-        return this.GrapherImpl.getWidth(this.bgraph);
+    this.bgraphWidth = function() {
+        return this.GrapherImpl.getBgraphWidth(this.bgraph);
     }
 
-    this.height = function() {
-        return this.GrapherImpl.getHeight(this.bgraph);
+    this.bgraphHeight = function() {
+        return this.GrapherImpl.getBgraphHeight(this.bgraph);
+    }
+
+    this.clientWidth = function() {
+        return this.GrapherImpl.getClientWidth(this.bgraph);
+    }
+
+    this.clientHeight = function() {
+        return this.GrapherImpl.getClientHeight(this.bgraph);
     }
 
     this.initBgraph = function(bgraphContext, bgraphStr) {
@@ -44,13 +52,20 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
         bgraphContext.didFirstDraw = false;
     }
 
-    this.draw = function(bgraphContext) {
-        bgraphContext.canvas.width  = document.body.clientWidth;
-        bgraphContext.canvas.height = document.body.clientHeight;
+    this.populateDiv = function(bgraphDiv) {
+        this.GrapherImpl.populateDiv(this.bgraph, bgraphDiv);
+    }
+
+    this.draw = function(bgraphContext, bgraphDiv) {
+        console.log(bgraphDiv);
+        this.GrapherImpl.setClientSize(this.bgraph, 
+            bgraphDiv.clientWidth, 
+            bgraphDiv.clientHeight
+        );
 
         if (!bgraphContext.didFirstDraw) {
             bgraphContext.didFirstDraw = true;
-            bgraphContext.canvas.dispatchEvent(firstDrawEvent);
+            bgraphDiv.dispatchEvent(firstDrawEvent);
         }
         this.GrapherImpl.drawBgraph(bgraphContext, this.bgraph);
     }
@@ -64,7 +79,7 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
     }
 
     this.printCoords = function(bgraphContext) {
-        return this.GrapherImpl.printCoords(bgraphContext);
+        return this.GrapherImpl.printCoords(bgraphContext, this.bgraph);
     }
 };
 

@@ -22,19 +22,21 @@ function setupBgraph(bgraphForm, event) {
     event.preventDefault();
     bgraphForm.remove();
 
-    let mainCanvas = document.createElement('canvas', {id: 'mainCanvas'});
-    document.body.appendChild(mainCanvas);
-
-    let bgraphContext = new BgraphContext(mainCanvas);
+    let bgraphContext = new BgraphContext();
     let bgrapher = new BGrapher();
+    let bgraphDiv = document.createElement('div');
+    bgraphDiv.setAttribute('id', 'bgraphDiv');
+    document.body.appendChild(bgraphDiv);
 
-    initBgraphEvents(bgraphContext, bgrapher);
+    initBgraphEvents(bgraphContext, bgrapher, bgraphDiv);
 
     // bgrapher.initTestBgraph(bgraphContext, 1000, 10000);
     // bgrapher.initTestBgraphLarge(bgraphContext, 5000, 10000);
     bgrapher.initBgraph(bgraphContext, event.target.elements.bgraphJSON.value);
 
-    bgrapher.draw(bgraphContext);    
+    bgrapher.populateDiv(bgraphDiv);
+
+    bgrapher.draw(bgraphContext, bgraphDiv);
 }
 
 function main() {
