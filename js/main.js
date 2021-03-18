@@ -14,9 +14,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { BgraphState } from './bgraphcontext.js'
-import { BGrapher } from './bgrapher.js'
-import { initBgraphEvents } from './events.js'
+import { BgraphState } from './js/bgraphstate.js'
+import { BGrapher } from './js/bgrapher.js'
+import { initBgraphEvents } from './js/events.js'
+
+function BGraph(props) {
+    const [bgrapher, setBGrapher] = React.useState(props.bgrapher);
+    
+    return (
+        <div id={props.id}>
+            Test
+        </div>
+    );
+}
+
+function BGraphGroup(props) {
+    const [bgraphState, setBGraphState] = React.useState(new BgraphState());
+
+    const bgraphs = Object
+        .entries(props.bgraphers)
+        .map((key, bgrapher) => 
+            <BGraph id="bgraphDiv" key={key} bgrapher={bgrapher} />
+        );
+
+    return (
+        <div id={props.id}>
+            {bgraphs}
+        </div>
+    );
+}
 
 function setupBgraph(bgraphForm, event) {
     event.preventDefault();
@@ -41,8 +67,17 @@ function setupBgraph(bgraphForm, event) {
 
 function main() {
 
-    let bgraphForm = document.getElementById('bgraphJSONForm');
-    bgraphForm.addEventListener('submit', setupBgraph.bind(null, bgraphForm));
+    // let bgraphForm = document.getElementById('bgraphJSONForm');
+    // bgraphForm.addEventListener('submit', setupBgraph.bind(null, bgraphForm));
+
+    let bgraphers = {
+        '1': new BGrapher(),
+    };
+
+    ReactDOM.render(
+        <BGraphGroup id="bgraphGroupDiv" bgraphers={bgraphers} />,
+        document.getElementById('root')
+    )
 
 }
 

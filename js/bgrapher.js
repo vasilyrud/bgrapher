@@ -22,42 +22,42 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
     this.GrapherImpl = GrapherImpl;
 
     this.bgraphWidth = function() {
-        return this.GrapherImpl.getBgraphWidth(this.bgraph);
+        return this.GrapherImpl.getBgraphWidth(this.bgraphImpl);
     }
 
     this.bgraphHeight = function() {
-        return this.GrapherImpl.getBgraphHeight(this.bgraph);
+        return this.GrapherImpl.getBgraphHeight(this.bgraphImpl);
     }
 
     this.clientWidth = function() {
-        return this.GrapherImpl.getClientWidth(this.bgraph);
+        return this.GrapherImpl.getClientWidth(this.bgraphImpl);
     }
 
     this.clientHeight = function() {
-        return this.GrapherImpl.getClientHeight(this.bgraph);
+        return this.GrapherImpl.getClientHeight(this.bgraphImpl);
     }
 
     this.initBgraph = function(bgraphState, bgraphStr) {
-        this.bgraph = this.GrapherImpl.initBgraph(JSON.parse(bgraphStr));
+        this.bgraphImpl = this.GrapherImpl.initBgraph(JSON.parse(bgraphStr));
         bgraphState.didFirstDraw = false;
     }
 
     this.initTestBgraph = function(bgraphState, numCols, numRows) {
-        this.bgraph = this.GrapherImpl.initTestBgraph(numCols, numRows);
+        this.bgraphImpl = this.GrapherImpl.initTestBgraph(numCols, numRows);
         bgraphState.didFirstDraw = false;
     }
 
     this.initTestBgraphLarge = function(bgraphState, numCols, numRows) {
-        this.bgraph = this.GrapherImpl.initTestBgraphLarge(numCols, numRows);
+        this.bgraphImpl = this.GrapherImpl.initTestBgraphLarge(numCols, numRows);
         bgraphState.didFirstDraw = false;
     }
 
     this.populateDiv = function(bgraphDiv) {
-        this.GrapherImpl.populateDiv(this.bgraph, bgraphDiv);
+        this.GrapherImpl.populateDiv(this.bgraphImpl, bgraphDiv);
     }
 
     this.draw = function(bgraphState, bgraphDiv) {
-        this.GrapherImpl.setClientSize(this.bgraph, 
+        this.GrapherImpl.setClientSize(this.bgraphImpl, 
             bgraphDiv.clientWidth, 
             bgraphDiv.clientHeight
         );
@@ -66,19 +66,19 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
             bgraphState.didFirstDraw = true;
             bgraphDiv.dispatchEvent(firstDrawEvent);
         }
-        this.GrapherImpl.drawBgraph(bgraphState, this.bgraph);
+        this.GrapherImpl.drawBgraph(bgraphState, this.bgraphImpl);
     }
 
     this.drawEdges = function(bgraphState, blockID) {
-        this.GrapherImpl.drawEdges(bgraphState, this.bgraph, blockID);
+        this.GrapherImpl.drawEdges(bgraphState, this.bgraphImpl, blockID);
     }
 
     this.curBlock = function(bgraphState) {
-        return this.GrapherImpl.getCurBlock(bgraphState, this.bgraph);
+        return this.GrapherImpl.getCurBlock(bgraphState, this.bgraphImpl);
     }
 
     this.printCoords = function(bgraphState) {
-        return this.GrapherImpl.printCoords(bgraphState, this.bgraph);
+        return this.GrapherImpl.printCoords(bgraphState, this.bgraphImpl);
     }
 };
 

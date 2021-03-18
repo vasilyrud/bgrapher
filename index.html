@@ -10,6 +10,8 @@
 </head>
 
 <body>
+    <div id="root">
+    </div>
     <form id="bgraphJSONForm" method="post" class="content">
 <textarea name="bgraphJSON" form="bgraphJSONForm">{
     "width": 29,
@@ -382,7 +384,11 @@
     <input type="submit">
     </form>
 
-    <script type="module" src="js/main.js"></script>
+    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
+
+    <script type="text/babel" src="js/main.js" data-type="module"></script>
 </body>
 
 </html>
