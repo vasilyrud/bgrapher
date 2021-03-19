@@ -1,0 +1,21 @@
+{
+  "name": "bgrapher",
+  "version": "0.1.0",
+  "description": "Bgraph visualizer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:dev": "rollup -c rollup.config.dev.js -w"
+  },
+  "author": "Vasily Rudchenko",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "rollup": "^2.42.0",
+    "rollup-plugin-livereload": "^2.0.0",
+    "rollup-plugin-serve": "^1.1.0"
+  },
+  "dependencies": {
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1"
+  }
+}
