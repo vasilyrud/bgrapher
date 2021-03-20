@@ -10,8 +10,15 @@
   "author": "Vasily Rudchenko",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@babel/preset-react": "^7.12.13",
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-commonjs": "^17.1.0",
+    "@rollup/plugin-node-resolve": "^11.2.0",
+    "@rollup/plugin-replace": "^2.4.1",
+    "babel": "^6.23.0",
     "rollup": "^2.42.0",
     "rollup-plugin-livereload": "^2.0.0",
+    "rollup-plugin-postcss": "^4.0.0",
     "rollup-plugin-serve": "^1.1.0"
   },
   "dependencies": {

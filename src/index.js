@@ -14,9 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { BgraphState } from './js/bgraphstate.js'
-import { BGrapher } from './js/bgrapher.js'
-import { initBgraphEvents } from './js/events.js'
+import '../styles/main.css';
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+import { BgraphState } from './bgraphstate.js'
+import { BGrapher } from './bgrapher.js'
+import { initBgraphEvents } from './events.js'
 
 function BGraph(props) {
     const [bgrapher, setBGrapher] = React.useState(props.bgrapher);
