@@ -19,14 +19,14 @@ export default {
         nodeResolve({
             extensions: ['.js', '.jsx']
         }),
-        babel({
-            presets: ['@babel/preset-react']
-        }),
         commonjs({
             include: ['node_modules/**']
         }),
+        babel({
+            presets: ['@babel/preset-react']
+        }),
         serve({
-            open: true,
+            open: false,
             verbose: true,
             contentBase: ['', 'dist'],
             historyApiFallback: true,

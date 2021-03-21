@@ -1,0 +1,22 @@
+{
+    "presets": [
+        [
+            "@babel/preset-env", {
+                "modules": "auto",
+                "targets": {
+                    "esmodules": true
+                 }
+            }
+        ]
+    ],
+    "plugins": [
+        [
+            "module-resolver", {
+                "root": ["./src"]
+            }
+        ],
+        [
+            "babel-plugin-rewire"
+        ]
+    ]
+}
