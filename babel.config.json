@@ -1,22 +1,21 @@
 {
     "presets": [
-        [
-            "@babel/preset-env", {
-                "modules": "auto",
-                "targets": {
-                    "esmodules": true
-                 }
+        ["@babel/preset-react"],
+        ["@babel/preset-env", {
+            "modules": "auto",
+            "targets": {
+                "esmodules": true
             }
-        ]
+        }]
     ],
-    "plugins": [
-        [
-            "module-resolver", {
-                "root": ["./src"]
-            }
-        ],
-        [
-            "babel-plugin-rewire"
-        ]
-    ]
+    "env": {
+        "test": {
+            "plugins": [
+                ["module-resolver", {
+                    "root": ["./src"]
+                }],
+                ["babel-plugin-rewire"]
+            ]
+        }
+    }
 }

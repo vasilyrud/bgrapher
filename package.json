@@ -4,7 +4,7 @@
   "description": "Bgraph visualizer",
   "main": "index.js",
   "scripts": {
-    "test": "mocha 'test/**/*.js' --require @babel/register",
+    "test": "BABEL_ENV=test mocha 'test/**/*.js' --require @babel/register",
     "build:dev": "rollup -c rollup.config.dev.js -w"
   },
   "author": "Vasily Rudchenko",

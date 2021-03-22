@@ -22,9 +22,7 @@ export default {
         commonjs({
             include: ['node_modules/**']
         }),
-        babel({
-            presets: ['@babel/preset-react']
-        }),
+        babel({}),
         serve({
             open: false,
             verbose: true,
