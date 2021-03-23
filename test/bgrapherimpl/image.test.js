@@ -6,6 +6,7 @@ const pointsMove = imageRewire.__get__('pointsMove');
 const pointsRotateCounterCW = imageRewire.__get__('pointsRotateCounterCW');
 const pointsRotateCW = imageRewire.__get__('pointsRotateCW');
 const makeCurve = imageRewire.__get__('makeCurve');
+const makeEdge = imageRewire.__get__('makeEdge');
 
 describe('Points transformation', () => {
     const input = [
@@ -120,5 +121,110 @@ describe('makeCurve', () => {
             -1, 3, -1, 1, 1, 1, 
             1, 3
         ]);
+    });
+});
+
+describe('makeEdge', () => {
+    describe('vertical', () => {
+        const expectedDirectPoints = [
+            1.5, 3, 1.5, 4, 3.5, 3, 
+            3.5, 4
+        ];
+
+        it ('returns direct from source', () => {
+            expect(makeEdge({
+                isSource: true,
+                direction: "down",
+                x: 1,
+                y: 2,
+            },{
+                isSource: false,
+                direction: "down",
+                x: 3,
+                y: 4,
+            })).to.eql(expectedDirectPoints);
+        });
+
+        it ('returns direct from dest', () => {
+            expect(makeEdge({
+                isSource: false,
+                direction: "down",
+                x: 3,
+                y: 4,
+            },{
+                isSource: true,
+                direction: "down",
+                x: 1,
+                y: 2,
+            })).to.eql(expectedDirectPoints);
+        });
+    });
+
+    describe('horizontal', () => {
+        const expectedDirectPoints = [
+            2, 2.5, 3, 2.5, 2, 4.5, 
+            3, 4.5
+        ];
+
+        it ('returns direct from source', () => {
+            expect(makeEdge({
+                isSource: true,
+                direction: 'right',
+                x: 1,
+                y: 2,
+            },{
+                isSource: false,
+                direction: 'right',
+                x: 3,
+                y: 4,
+            })).to.eql(expectedDirectPoints);
+        });
+
+        it ('returns direct from dest', () => {
+            expect(makeEdge({
+                isSource: false,
+                direction: 'right',
+                x: 3,
+                y: 4,
+            },{
+                isSource: true,
+                direction: 'right',
+                x: 1,
+                y: 2,
+            })).to.eql(expectedDirectPoints);
+        });
+    });
+
+    describe('unsupported', () => {
+        const invalidDirections = [
+            ['left' , 'left' ],
+            ['left' , 'right'],
+            ['left' , 'up'   ],
+            ['left' , 'down' ],
+            ['up'   , 'left' ],
+            ['up'   , 'right'],
+            ['up'   , 'up'   ],
+            ['up'   , 'down' ],
+            ['right', 'left' ],
+            ['right', 'up'   ],
+            ['right', 'down' ],
+            ['down' , 'left' ],
+            ['down' , 'right'],
+            ['down' , 'up'   ],
+        ];
+
+        invalidDirections.forEach(([from, to]) => {
+            it (`disallows invalid directions ${from} ${to}`, () => {
+                expect(() => makeEdge({
+                    isSource: true,
+                    direction: from,
+                    x: 1, y: 2,
+                },{
+                    isSource: false,
+                    direction: to,
+                    x: 3, y: 4,
+                })).to.throw(`Unsupported edge directions: from ${from} to ${to}.`);
+            });
+        });
     });
 });

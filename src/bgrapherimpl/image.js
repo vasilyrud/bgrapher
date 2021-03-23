@@ -319,6 +319,8 @@ function makeEdge(startEdgeEndIn, endEdgeEndIn) {
 
         points = makeCurve(startX, startY, endX, endY);
         points = pointsFlipYAxis(pointsRotateCW(points));
+    } else {
+        throw new Error(`Unsupported edge directions: from ${startEdgeEnd.direction} to ${endEdgeEnd.direction}.`);
     }
 
     return points;
