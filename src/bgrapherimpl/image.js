@@ -286,7 +286,7 @@ function makeCurve(startX, startY, endX, endY) {
     return pointsMove(points, startX, startY);
 }
 
-function drawEdge(bgraphState, context, startEdgeEndIn, endEdgeEndIn) {
+function makeEdge(startEdgeEndIn, endEdgeEndIn) {
     let points;
 
     let [startEdgeEnd  , endEdgeEnd] = ((startEdgeEndIn.isSource) ? 
@@ -321,6 +321,12 @@ function drawEdge(bgraphState, context, startEdgeEndIn, endEdgeEndIn) {
         points = pointsFlipYAxis(pointsRotateCW(points));
     }
 
+    return points;
+}
+
+function drawEdge(bgraphState, context, startEdgeEndIn, endEdgeEndIn) {
+
+    let points = makeEdge(startEdgeEndIn, endEdgeEndIn);
     drawLine(bgraphState, context, points);
 }
 
