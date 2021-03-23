@@ -234,35 +234,19 @@ function makeBackCurveAround(x, y) {
     ]
 }
 
-function isX(i) {
-    return (i % 2 == 0);
-}
-
-function pointsFlipYAxis(points) {
-    return points.map((val, i) => {
-        return (isX(i) ? -val : val);
-    });
-}
-
 function pointsMove(points, x, y) {
-    return points.map((val, i) => {
-        return (isX(i) ? val+x : val+y);
-    });
-}
-
-function pointsRotateCounterCW(points) {
     let newPoints = [];
     for (let i = 0; i < points.length; i+=2) {
-        newPoints.push(points[i+1]);
-        newPoints.push(-points[i]);
+        newPoints.push(points[i]   + x);
+        newPoints.push(points[i+1] + y);
     }
     return newPoints;
 }
 
-function pointsRotateCW(points) {
+function pointsFlipXY(points) {
     let newPoints = [];
     for (let i = 0; i < points.length; i+=2) {
-        newPoints.push(-points[i+1]);
+        newPoints.push(points[i+1]);
         newPoints.push(points[i]);
     }
     return newPoints;
@@ -310,15 +294,15 @@ function makeEdge(startEdgeEndIn, endEdgeEndIn) {
         startEdgeEnd.direction == 'right' && 
         endEdgeEnd.direction   == 'right'
     ) {
-        let [startX, startY, endX, endY] = pointsRotateCounterCW(pointsFlipYAxis([
+        let [startX, startY, endX, endY] = pointsFlipXY([
             startEdgeEnd.x + 1,
             startEdgeEnd.y + 0.5,
             endEdgeEnd.x   + 0,
             endEdgeEnd.y   + 0.5,
-        ]));
+        ]);
 
         points = makeCurve(startX, startY, endX, endY);
-        points = pointsFlipYAxis(pointsRotateCW(points));
+        points = pointsFlipXY(points);
     } else {
         throw new Error(`Unsupported edge directions: from ${startEdgeEnd.direction} to ${endEdgeEnd.direction}.`);
     }

@@ -1,10 +1,8 @@
 import { expect } from 'chai';
 
 import imageRewire from 'bgrapherimpl/image.js';
-const pointsFlipYAxis = imageRewire.__get__('pointsFlipYAxis');
+const pointsFlipXY = imageRewire.__get__('pointsFlipXY');
 const pointsMove = imageRewire.__get__('pointsMove');
-const pointsRotateCounterCW = imageRewire.__get__('pointsRotateCounterCW');
-const pointsRotateCW = imageRewire.__get__('pointsRotateCW');
 const makeCurve = imageRewire.__get__('makeCurve');
 const makeEdge = imageRewire.__get__('makeEdge');
 
@@ -19,16 +17,16 @@ describe('Points transformation', () => {
          9, 10,
     ];
 
-    describe('pointsFlipYAxis', () => {
-        it('flips points along Y axis', () => {
-            expect (pointsFlipYAxis(input)).to.eql([
-                -0,  0,
-                -1,  0,
-                -0,  2,
-                 3, -4,
-                -5, -6,
-                 7,  8,
-                -9, 10,
+    describe('pointsFlipXY', () => {
+        it('changes x and y around', () => {
+            expect (pointsFlipXY(input)).to.eql([
+                 0,  0,
+                 0,  1,
+                 2,  0,
+                -4, -3,
+                -6,  5,
+                 8, -7,
+                10,  9,
             ]);
         });
     })
@@ -55,34 +53,6 @@ describe('Points transformation', () => {
                  0, -8,
                 -12, 6,
                  4,  8,
-            ]);
-        });
-    })
-
-    describe('pointsRotateCounterCW', () => {
-        it('Rotates counter-clockwise around origin', () => {
-            expect (pointsRotateCounterCW(input)).to.eql([
-                 0, -0,
-                 0, -1,
-                 2, -0,
-                -4,  3,
-                -6, -5,
-                 8,  7,
-                10, -9,
-            ]);
-        });
-    })
-
-    describe('pointsRotateCW', () => {
-        it('Rotates clockwise around origin', () => {
-            expect (pointsRotateCW(input)).to.eql([
-                -0,  0,
-                -0,  1,
-                -2,  0,
-                 4, -3,
-                 6,  5,
-                -8, -7,
-                -10, 9,
             ]);
         });
     })
