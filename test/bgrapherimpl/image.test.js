@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 
 import imageRewire from 'bgrapherimpl/image.js';
-const makeForwardCurve = imageRewire.__get__('makeForwardCurve');
 const pointsFlipYAxis = imageRewire.__get__('pointsFlipYAxis');
 const pointsMove = imageRewire.__get__('pointsMove');
 const pointsRotateCounterCW = imageRewire.__get__('pointsRotateCounterCW');
 const pointsRotateCW = imageRewire.__get__('pointsRotateCW');
+const makeCurve = imageRewire.__get__('makeCurve');
 
 describe('Points transformation', () => {
     const input = [
@@ -88,10 +88,37 @@ describe('Points transformation', () => {
 });
 
 describe('makeCurve', () => {
-    it('returns correct forward curve', () => {
-        expect(makeForwardCurve(5,8)).to.eql([
-            0, 0, 0, 8, 5, 0, 
-            5, 8
+    it('returns forward curve', () => {
+        expect(makeCurve(1,2,3,4)).to.eql([
+            1, 2, 1, 4, 3, 2, 
+            3, 4
+        ]);
+    });
+
+    it('returns direct back curve', () => {
+        expect(makeCurve(10,20,1,2)).to.eql([
+            10, 20, 10, 24.25, 5.5, 24.25, 
+            5.5, 20, 5.5, 2, 5.5, 20, 
+            5.5, 2, 5.5, -2.25, 1, -2.25, 
+            1, 2
+        ]);
+    });
+
+    it('returns around back curve short bottom', () => {
+        expect(makeCurve(1,20,2,3)).to.eql([
+            1, 20, 1, 22, -1, 22, 
+            -1, 20, -1, 3, -1, 20, 
+            -1, 3, -1, 0, 2, 0, 
+            2, 3
+        ]);
+    });
+
+    it('returns around back curve short top', () => {
+        expect(makeCurve(2,20,1,3)).to.eql([
+            2, 20, 2, 23, -1, 23, 
+            -1, 20, -1, 3, -1, 20, 
+            -1, 3, -1, 1, 1, 1, 
+            1, 3
         ]);
     });
 });
