@@ -1,10 +1,69 @@
 import { expect } from 'chai';
 
 import imageRewire from 'bgrapherimpl/image.js';
+const xyArray = imageRewire.__get__('xyArray');
 const pointsFlipXY = imageRewire.__get__('pointsFlipXY');
 const pointsMove = imageRewire.__get__('pointsMove');
 const makeCurve = imageRewire.__get__('makeCurve');
 const makeEdge = imageRewire.__get__('makeEdge');
+
+describe('Data structure', () => {
+    describe('xyArray', () => {
+        function countDefaults(arr) {
+            return arr.data.filter(e => e == -1).length;
+        }
+
+        it('has the right length', () => {
+            const arr = new xyArray(10, 20);
+            expect(arr.data.length).to.equal(200);
+        });
+
+        it('initialized to -1', () => {
+            const arr = new xyArray(10, 20);
+            expect(countDefaults(arr)).to.equal(200);
+        });
+
+        it('can set first', () => {
+            let arr = new xyArray(10, 20);
+            arr.set(0, 0, 5);
+            expect(arr.data[0]).to.equal(5);
+            expect(countDefaults(arr)).to.equal(199);
+        });
+
+        it('can set', () => {
+            const arr = new xyArray(10, 20);
+            arr.set(1, 2, 5);
+            expect(arr.data[21]).to.equal(5);
+            expect(countDefaults(arr)).to.equal(199);
+        });
+
+        it('can set last', () => {
+            const arr = new xyArray(10, 20);
+            arr.set(9, 19, 5);
+            expect(arr.data[199]).to.equal(5);
+            expect(countDefaults(arr)).to.equal(199);
+        });
+
+        it('can get', () => {
+            const arr = new xyArray(10, 20);
+            arr.set(4, 2, 5);
+            expect(arr.get(4, 2)).to.equal(5);
+        });
+
+        const emptyDimensions = [
+            [0,0],
+            [10,0],
+            [0,10],
+        ];
+
+        emptyDimensions.forEach(([w, h]) => {
+            it('has the right empty length', () => {
+                const arr = new xyArray(w, h);
+                expect(arr.data.length).to.equal(0);
+            });
+        });
+    });
+});
 
 describe('Points transformation', () => {
     const input = [
@@ -19,7 +78,7 @@ describe('Points transformation', () => {
 
     describe('pointsFlipXY', () => {
         it('changes x and y around', () => {
-            expect (pointsFlipXY(input)).to.eql([
+            expect(pointsFlipXY(input)).to.eql([
                  0,  0,
                  0,  1,
                  2,  0,
@@ -33,7 +92,7 @@ describe('Points transformation', () => {
 
     describe('pointsMove', () => {
         it('translates points forward', () => {
-            expect (pointsMove(input, 5, 2)).to.eql([
+            expect(pointsMove(input, 5, 2)).to.eql([
                  5,  2,
                  6,  2,
                  5,  4,
@@ -45,7 +104,7 @@ describe('Points transformation', () => {
         });
 
         it('translates points backward', () => {
-            expect (pointsMove(input, -5, -2)).to.eql([
+            expect(pointsMove(input, -5, -2)).to.eql([
                 -5, -2,
                 -4, -2,
                 -5,  0,
