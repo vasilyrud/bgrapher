@@ -1,11 +1,16 @@
 import { expect } from 'chai';
 
-import imageRewire from 'bgrapherimpl/image.js';
+import imageRewire, { ImageImpl } from 'bgrapherimpl/image.js';
 const xyArray = imageRewire.__get__('xyArray');
 const pointsFlipXY = imageRewire.__get__('pointsFlipXY');
 const pointsMove = imageRewire.__get__('pointsMove');
 const makeCurve = imageRewire.__get__('makeCurve');
 const makeEdge = imageRewire.__get__('makeEdge');
+
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+var document = (new JSDOM(`...`)).window.document;
+global.document = document;
 
 describe('Data structure', () => {
     describe('xyArray', () => {
@@ -61,6 +66,39 @@ describe('Data structure', () => {
                 const arr = new xyArray(w, h);
                 expect(arr.data.length).to.equal(0);
             });
+        });
+    });
+});
+
+describe('Generate image', () => {
+    function testColor(bgraph, i, color) {
+        let img = bgraph
+            .buffer
+            .getContext('2d')
+            .getImageData(0,0,bgraph.imageWidth,bgraph.imageHeight)
+            .data;
+        let p = i * 4;
+
+        expect(img[p+0]).to.equal(color[0]);
+        expect(img[p+1]).to.equal(color[1]);
+        expect(img[p+2]).to.equal(color[2]);
+        expect(img[p+3]).to.equal(color[3]);
+    }
+
+    let black = [0,0,0,255];
+    let white = [0,0,0,0]; // white because of opacity
+
+    describe('initTestBgraphLarge', () => {
+        it('Generates the right image size', () => {
+            const bgraph = ImageImpl.initTestBgraphLarge(2,2);
+            expect(bgraph.imageWidth).to.equal(4);
+            expect(bgraph.imageHeight).to.equal(4);
+        });
+
+        it('Generates the right image', () => {
+            const bgraph = ImageImpl.initTestBgraphLarge(2,2);
+            [0,2,8,10].forEach(i => testColor(bgraph, i, black));
+            [1,3,4,5,6,7,9,11].forEach(i => testColor(bgraph, i, white));
         });
     });
 });

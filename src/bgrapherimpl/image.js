@@ -357,7 +357,9 @@ let ImageImpl = (function () {
             let width  = numCols * 2;
             let height = numRows * 2;
             let numBlocks = numCols * numRows;
-            console.log('Making ' + numBlocks + ' test blocks.');
+            if (process.env.NODE_ENV !== 'test') {
+                console.log('Making ' + numBlocks + ' test blocks.');
+            }
 
             return generateImage(width, height, generateTestPixels(numBlocks));
         },
@@ -366,7 +368,9 @@ let ImageImpl = (function () {
             let width  = numCols * 2;
             let height = numRows * 2;
             let numBlocks = numCols * numRows;
-            console.log('Making ' + numBlocks + ' test blocks.');
+            if (process.env.NODE_ENV !== 'test') {
+                console.log('Making ' + numBlocks + ' test blocks.');
+            }
 
             let testInput = {
                 width : width, height  : height,
