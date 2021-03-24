@@ -385,7 +385,7 @@ let ImageImpl = (function () {
                     x    : x, y     : y,
                     width: 1, height: 1,
                     depth: 1, color : 0,
-                    text: 'This is block ' + x.toString() + ' ' + y.toString(),
+                    text: `This is block ${x} ${y}`,
                     edgeEnds: [],
                 };
 

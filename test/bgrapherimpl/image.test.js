@@ -88,17 +88,51 @@ describe('Generate image', () => {
     let black = [0,0,0,255];
     let white = [0,0,0,0]; // white because of opacity
 
+    let testBlackDotLocations = [0,2,8,10];
+    let testWhiteDotLocations = [1,3,4,5,6,7,9,11];
+
     describe('initTestBgraphLarge', () => {
+        const bgraph = ImageImpl.initTestBgraphLarge(2,2);
+
         it('Generates the right image size', () => {
-            const bgraph = ImageImpl.initTestBgraphLarge(2,2);
             expect(bgraph.imageWidth).to.equal(4);
             expect(bgraph.imageHeight).to.equal(4);
         });
 
         it('Generates the right image', () => {
-            const bgraph = ImageImpl.initTestBgraphLarge(2,2);
-            [0,2,8,10].forEach(i => testColor(bgraph, i, black));
-            [1,3,4,5,6,7,9,11].forEach(i => testColor(bgraph, i, white));
+            testBlackDotLocations.forEach(i => testColor(bgraph, i, black));
+            testWhiteDotLocations.forEach(i => testColor(bgraph, i, white));
+        });
+    });
+
+    describe('initTestBgraph', () => {
+        const bgraph = ImageImpl.initTestBgraph(2,2);
+
+        it('Generates the right image size', () => {
+            expect(bgraph.imageWidth).to.equal(4);
+            expect(bgraph.imageHeight).to.equal(4);
+        });
+
+        it('Generates the right image', () => {
+            testBlackDotLocations.forEach(i => testColor(bgraph, i, black));
+            testWhiteDotLocations.forEach(i => testColor(bgraph, i, white));
+        });
+
+        it('Generates the right block data', () => {
+            const expectedIDs = [0,1,2,3];
+            const expectedXYs = [[0,0],[2,0],[0,2],[2,2]];
+
+            expect(bgraph.blocksData).to.have.all.keys(expectedIDs);
+            expectedIDs.forEach((id, i) => {
+                expect(bgraph.blocksData[id]['text']).to.have.string('This is block');
+                expect(bgraph.blocksData[id]['text']).to.have.string(expectedXYs[i][0]);
+                expect(bgraph.blocksData[id]['text']).to.have.string(expectedXYs[i][1]);
+                expect(bgraph.blocksData[id]['edgeEnds']).to.eql([]);
+            });
+        });
+
+        it('Generates the right edgeEnd data', () => {
+            expect(bgraph.edgeEndsData).to.eql({});
         });
     });
 });
