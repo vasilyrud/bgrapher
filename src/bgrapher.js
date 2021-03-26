@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import { ImageImpl } from './bgrapherimpl/image.js'
+import { initBgraphEvents } from './events.js'
 
 const firstDrawEvent = new CustomEvent('bgraphFirstDraw');
 
@@ -52,8 +53,9 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
         bgraphState.didFirstDraw = false;
     }
 
-    this.populateElement = function(bgraphElement) {
+    this.populateElement = function(bgraphState, bgraphElement) {
         this.GrapherImpl.populateElement(this.bgraphImpl, bgraphElement);
+        initBgraphEvents(bgraphState, this, bgraphElement);
     }
 
     this.draw = function(bgraphState, bgraphDiv) {

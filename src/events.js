@@ -16,12 +16,12 @@ limitations under the License.
 
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 100;
-const ZOOM_SPEED = 550; // Higher number means lower speed
+const ZOOM_FRICTION = 550; // Higher number means lower speed
 const MARGIN_PIXELS = 100;
 const BGRAPH_DEBUG = true;
 
 function getZoom(bgraphState, event) {
-    let newZoom = bgraphState.zoom * (1 - event.deltaY / ZOOM_SPEED);
+    let newZoom = bgraphState.zoom * (1 - event.deltaY / ZOOM_FRICTION);
 
     // 1 pixel blocks no longer possible to tell apart 
     // when zoomed out.
@@ -32,7 +32,7 @@ function getZoom(bgraphState, event) {
         newZoom = ZOOM_MAX;
     }
 
-    let deltaUsed = ZOOM_SPEED * (1 - newZoom / bgraphState.zoom);
+    let deltaUsed = ZOOM_FRICTION * (1 - newZoom / bgraphState.zoom);
 
     return [newZoom, deltaUsed];
 }
@@ -100,16 +100,16 @@ function getZoomOffset(coord, bgraphState, bgrapher, deltaUsed) {
         coordValues(coord, bgraphState, bgrapher);
 
     let newOffset = bgraphState.offset[coord] + 
-        ((bgraphState.cur[coord] * deltaUsed) / (bgraphState.zoom * ZOOM_SPEED));
+        ((bgraphState.cur[coord] * deltaUsed) / (bgraphState.zoom * ZOOM_FRICTION));
 
     return constrainOffset(newOffset, bgraphState, bgraphSize, clientSize);
 }
 
-function mousemovePan(bgraphState, bgrapher, bgraphDiv, event) {
+function mousemovePan(bgraphState, bgrapher, bgraphElement, event) {
     bgraphState.offset.x = getPanOffset('x', bgraphState, bgrapher);
     bgraphState.offset.y = getPanOffset('y', bgraphState, bgrapher);
     
-    bgrapher.draw(bgraphState, bgraphDiv);
+    bgrapher.draw(bgraphState, bgraphElement);
 
     bgraphState.panningPrev.x = event.clientX;
     bgraphState.panningPrev.y = event.clientY;
@@ -135,11 +135,11 @@ function mousemoveHover(bgraphState, bgrapher, event) {
 
 let BgraphEvents = (function () {
     return {
-        bgraphFirstDraw: function(bgraphState, bgrapher, bgraphDiv, event) {
+        bgraphFirstDraw: function(bgraphState, bgrapher, bgraphElement, event) {
             bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);
             bgraphState.offset.y = getInitOffset('y', bgraphState, bgrapher);
         },
-        wheel: function(bgraphState, bgrapher, bgraphDiv, event) {
+        wheel: function(bgraphState, bgrapher, bgraphElement, event) {
             bgraphState.cur.x = event.clientX;
             bgraphState.cur.y = event.clientY;
 
@@ -151,11 +151,11 @@ let BgraphEvents = (function () {
             bgraphState.offset.x = getZoomOffset('x', bgraphState, bgrapher, deltaUsed);
             bgraphState.offset.y = getZoomOffset('y', bgraphState, bgrapher, deltaUsed);
 
-            bgrapher.draw(bgraphState, bgraphDiv);
+            bgrapher.draw(bgraphState, bgraphElement);
             
             if (BGRAPH_DEBUG) { bgrapher.printCoords(bgraphState); }
         },
-        mousedown: function(bgraphState, bgrapher, bgraphDiv, event) {
+        mousedown: function(bgraphState, bgrapher, bgraphElement, event) {
             // Ignore non-left clicks
             if (event.button !== 0) return;
 
@@ -163,41 +163,41 @@ let BgraphEvents = (function () {
             bgraphState.panningPrev.x = event.clientX;
             bgraphState.panningPrev.y = event.clientY;
         },
-        mouseup: function(bgraphState, bgrapher, bgraphDiv, event) {
+        mouseup: function(bgraphState, bgrapher, bgraphElement, event) {
             bgraphState.panning = false;
         },
-        mouseout: function(bgraphState, bgrapher, bgraphDiv, event) {
+        mouseout: function(bgraphState, bgrapher, bgraphElement, event) {
             bgraphState.panning = false;
         },
-        mousemove: function(bgraphState, bgrapher, bgraphDiv, event) {
+        mousemove: function(bgraphState, bgrapher, bgraphElement, event) {
             bgraphState.cur.x = event.clientX;
             bgraphState.cur.y = event.clientY;
 
             if (bgraphState.panning) {
-                mousemovePan(bgraphState, bgrapher, bgraphDiv, event);
+                mousemovePan(bgraphState, bgrapher, bgraphElement, event);
             } else {
                 mousemoveHover(bgraphState, bgrapher, event);
             }
 
             if (BGRAPH_DEBUG) { bgrapher.printCoords(bgraphState); }
         },
-        resize: function(bgraphState, bgrapher, bgraphDiv, event) {
+        resize: function(bgraphState, bgrapher, bgraphElement, event) {
             bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);
             bgraphState.offset.y = getInitOffset('y', bgraphState, bgrapher);
 
-            bgrapher.draw(bgraphState, bgraphDiv);
+            bgrapher.draw(bgraphState, bgraphElement);
         },
     };
 })();
 
-function initBgraphEvents(bgraphState, bgrapher, bgraphDiv) {
+function initBgraphEvents(bgraphState, bgrapher, bgraphElement) {
 
     for (let eventType in BgraphEvents) {
-        let target = bgraphDiv;
+        let target = bgraphElement;
         if (eventType === 'resize') { target = window; }
 
         target.addEventListener(eventType, 
-            BgraphEvents[eventType].bind(null, bgraphState, bgrapher, bgraphDiv)
+            BgraphEvents[eventType].bind(null, bgraphState, bgrapher, bgraphElement)
         );
     }
 }

@@ -21,7 +21,6 @@ import ReactDOM from 'react-dom';
 
 import { BgraphState } from './bgraphstate.js'
 import { BGrapher } from './bgrapher.js'
-import { initBgraphEvents } from './events.js'
 
 function BGraph(props) {
     const [bgrapher, setBGrapher] = React.useState(props.bgrapher);
@@ -59,14 +58,11 @@ function setupBgraph(bgraphForm, event) {
     bgraphDiv.setAttribute('id', 'bgraphDiv');
     document.body.appendChild(bgraphDiv);
 
-    initBgraphEvents(bgraphState, bgrapher, bgraphDiv);
-
     // bgrapher.initTestBgraph(bgraphState, 1000, 10000);
     // bgrapher.initTestBgraphLarge(bgraphState, 5000, 10000);
     bgrapher.initBgraph(bgraphState, event.target.elements.bgraphJSON.value);
 
-    bgrapher.populateElement(bgraphDiv);
-
+    bgrapher.populateElement(bgraphState, bgraphDiv);
     bgrapher.draw(bgraphState, bgraphDiv);
 }
 
