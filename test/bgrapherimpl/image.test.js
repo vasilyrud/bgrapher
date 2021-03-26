@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 
+import { BgraphState } from 'bgraphstate.js'
 import imageRewire, { ImageImpl } from 'bgrapherimpl/image.js';
 const xyArray = imageRewire.__get__('xyArray');
 const colorToRGB = imageRewire.__get__('colorToRGB');
@@ -616,6 +617,110 @@ describe('makeEdge', () => {
                     direction: to,
                     x: 3, y: 4,
                 })).to.throw(`Unsupported edge directions: from ${from} to ${to}.`);
+            });
+        });
+    });
+});
+
+describe('getCurBlock', () => {
+    function checkFoundData(foundData, expectedID, expectedData) {
+        if (expectedID === null) {
+            expect(foundData[0]).to.be.null;
+        } else {
+            expect(foundData[0]).to.equal(expectedID);
+        }
+
+        if (expectedData === null) {
+            expect(foundData[1]).to.be.null;
+        } else {
+            expect(foundData[1].text).to.be.a('string');
+        }
+    }
+
+    function testGetCurBlock(bgraph, x, y, 
+        expectedID=null, expectedData=null, 
+        z=null, ox=null, oy=null
+    ) {
+        const bgraphState = new BgraphState();
+        bgraphState.cur = {x: x, y: y};
+
+        if (z !== null) {
+            bgraphState.zoom = z;
+        }
+
+        if (ox !== null && oy !== null) {
+            bgraphState.offset = {x: ox, y: oy};
+        }
+
+        const foundData = ImageImpl.getCurBlock(bgraphState, bgraph);
+        checkFoundData(foundData, expectedID, expectedData);
+    }
+
+    const bgraphWithoutData = ImageImpl.initTestBgraphLarge(2,2);
+    const bgraphWithData    = ImageImpl.initTestBgraph(2,2);
+
+    const validCoords = [
+        [0,0,0],
+        [0.5,0.5,0],
+        [2.5,2.5,3],
+    ];
+
+    const invalidCoords = [
+        [-0.1, -0.1, null],
+        [-100, 100, null],
+        [100, -100, null],
+        [1, 1, null],
+        [1.5, 1.5, null],
+        [100, 100, null],
+        [-100, -100, null],
+        [100, 100, null],
+    ];
+
+    describe('without zoom and offset', () => {
+        it ('returns the right block', () => {
+            validCoords.forEach(([x,y,id]) => {
+                testGetCurBlock(bgraphWithoutData, x, y, id, null);
+                testGetCurBlock(bgraphWithData,    x, y, id, true);
+            });
+        });
+
+        it ('doesn\'t return any block', () => {
+            invalidCoords.forEach(([x,y,id]) => {
+                testGetCurBlock(bgraphWithoutData, x, y, id, null);
+                testGetCurBlock(bgraphWithData,    x, y, id, null);
+            });
+        });
+    });
+
+    describe('with zoom and offset', () => {
+        function changeCoords(coords, z, ox, oy) {
+            return coords.map(([x,y,id]) => {
+                return [(x+ox)*z, (y+oy)*z, id];
+            });
+        }
+
+        [
+            [1,50,100],
+            [10,0,0],
+            [10,50,100],
+            [1,-50,-100],
+            [10,-50,-100],
+        ].forEach(([z,ox,oy]) => {
+            const changedValidCoords   = changeCoords(validCoords,   z, ox, oy);
+            const changedInvalidCoords = changeCoords(invalidCoords, z, ox, oy);
+
+            it (`returns the right  block with z=${z},ox=${ox},oy=${oy}`, () => {
+                changedValidCoords.forEach(([x,y,id]) => {
+                    testGetCurBlock(bgraphWithoutData, x, y, id, null, z, ox, oy);
+                    testGetCurBlock(bgraphWithData,    x, y, id, true, z, ox, oy);
+                });
+            });
+
+            it (`doesn't return any block with z=${z},ox=${ox},oy=${oy}`, () => {
+                changedInvalidCoords.forEach(([x,y,id]) => {
+                    testGetCurBlock(bgraphWithoutData, x, y, id, null, z, ox, oy);
+                    testGetCurBlock(bgraphWithData,    x, y, id, null, z, ox, oy);
+                });
             });
         });
     });
