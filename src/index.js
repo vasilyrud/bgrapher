@@ -65,7 +65,7 @@ function setupBgraph(bgraphForm, event) {
     // bgrapher.initTestBgraphLarge(bgraphState, 5000, 10000);
     bgrapher.initBgraph(bgraphState, event.target.elements.bgraphJSON.value);
 
-    bgrapher.populateDiv(bgraphDiv);
+    bgrapher.populateElement(bgraphDiv);
 
     bgrapher.draw(bgraphState, bgraphDiv);
 }

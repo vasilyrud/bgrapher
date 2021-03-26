@@ -52,8 +52,8 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
         bgraphState.didFirstDraw = false;
     }
 
-    this.populateDiv = function(bgraphDiv) {
-        this.GrapherImpl.populateDiv(this.bgraphImpl, bgraphDiv);
+    this.populateElement = function(bgraphElement) {
+        this.GrapherImpl.populateElement(this.bgraphImpl, bgraphElement);
     }
 
     this.draw = function(bgraphState, bgraphDiv) {

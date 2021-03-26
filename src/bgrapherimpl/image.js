@@ -417,8 +417,8 @@ let ImageImpl = (function () {
             return ImageImpl.initBgraph(testInput);
         },
 
-        populateDiv: function(imgBgraph, bgraphDiv) {
-            bgraphDiv.appendChild(imgBgraph.canvas);
+        populateElement: function(imgBgraph, bgraphElement) {
+            bgraphElement.appendChild(imgBgraph.canvas);
         },
 
         drawBgraph: function(bgraphState, imgBgraph) {
