@@ -101,6 +101,15 @@ describe('Generate image', () => {
         expect(img[p+3]).to.equal(color[3]);
     }
 
+    function testLookup(bgraph, i, expectedID) {
+        const foundID = bgraph.blocksLookup.get(
+            i%bgraph.imageWidth, 
+            Math.floor(i/bgraph.imageWidth)
+        );
+
+        expect(foundID).to.equal(expectedID);
+    }
+
     let black = [0,0,0,255];
     let white = [0,0,0,0]; // white because of opacity
     let test1 = [0,0,1,255];
@@ -121,6 +130,11 @@ describe('Generate image', () => {
         it('Generates the right image', () => {
             testBlackDotLocations.forEach(i => testColor(bgraph, i, black));
             testWhiteDotLocations.forEach(i => testColor(bgraph, i, white));
+        });
+
+        it('Generates the right lookup', () => {
+            testBlackDotLocations.forEach((i, index) => testLookup(bgraph, i, index));
+            testWhiteDotLocations.forEach((i)        => testLookup(bgraph, i, -1));
         });
     });
 
@@ -152,6 +166,11 @@ describe('Generate image', () => {
 
         it('Generates the right edgeEnd data', () => {
             expect(bgraph.edgeEndsData).to.eql({});
+        });
+
+        it('Generates the right lookup', () => {
+            testBlackDotLocations.forEach((i, index) => testLookup(bgraph, i, index));
+            testWhiteDotLocations.forEach((i)        => testLookup(bgraph, i, -1));
         });
     });
 
@@ -194,76 +213,88 @@ describe('Generate image', () => {
             expect(bgraph.blocksLookup.height).to.equal(4);
         });
 
+        const testBGraphBasic = {
+            width:  4,
+            height: 4,
+            blocks: [
+                {
+                    id: 0,
+                    x: 0, y: 0,
+                    width: 1, height: 1,
+                    depth: 0, color: 0,
+                    edgeEnds: [],
+                },
+                {
+                    id: 100,
+                    x: 2, y: 0,
+                    width: 1, height: 1,
+                    depth: 0, color: 0,
+                    edgeEnds: [],
+                },
+                {
+                    id: 2,
+                    x: 0, y: 2,
+                    width: 1, height: 1,
+                    depth: 0, color: 0,
+                    edgeEnds: [],
+                },
+                {
+                    id: 123,
+                    x: 2, y: 2,
+                    width: 1, height: 1,
+                    depth: 0, color: 0,
+                    edgeEnds: [],
+                },
+            ],
+            edgeEnds: [],
+        };
+
         it('Generates the right image', () => {
-            const bgraph = ImageImpl.initBgraph({
-                width:  4,
-                height: 4,
-                blocks: [
-                    {
-                        id: 0,
-                        x: 0, y: 0,
-                        width: 1, height: 1,
-                        depth: 0, color: 0,
-                        edgeEnds: [],
-                    },
-                    {
-                        id: 100,
-                        x: 0, y: 2,
-                        width: 1, height: 1,
-                        depth: 0, color: 0,
-                        edgeEnds: [],
-                    },
-                    {
-                        id: 2,
-                        x: 2, y: 0,
-                        width: 1, height: 1,
-                        depth: 0, color: 0,
-                        edgeEnds: [],
-                    },
-                    {
-                        id: 123,
-                        x: 2, y: 2,
-                        width: 1, height: 1,
-                        depth: 0, color: 0,
-                        edgeEnds: [],
-                    },
-                ],
-                edgeEnds: [],
-            });
+            const bgraph = ImageImpl.initBgraph(testBGraphBasic);
 
             testBlackDotLocations.forEach(i => testColor(bgraph, i, black));
             testWhiteDotLocations.forEach(i => testColor(bgraph, i, white));
         });
 
+        it('Generates the right lookup', () => {
+            const bgraph = ImageImpl.initBgraph(testBGraphBasic);
+            const basicExpectedIDs = testBGraphBasic.blocks.map(e => e.id);
+
+            testBlackDotLocations.forEach((i, index) => testLookup(bgraph, i, basicExpectedIDs[index]));
+            testWhiteDotLocations.forEach((i)        => testLookup(bgraph, i, -1));
+        });
+
+        const testBGraphOverlapping = {
+            width:  4,
+            height: 4,
+            blocks: [
+                {
+                    id: 0,
+                    x: 0, y: 0,
+                    width: 2, height: 2,
+                    depth: 0, color: 1,
+                    edgeEnds: [],
+                },
+                {
+                    id: 100,
+                    x: 1, y: 1,
+                    width: 2, height: 2,
+                    depth: 1, color: 2,
+                    edgeEnds: [],
+                },
+                {
+                    id: 2,
+                    x: 2, y: 2,
+                    width: 2, height: 2,
+                    depth: 0, color: 3,
+                    edgeEnds: [],
+                },
+            ],
+            edgeEnds: [],
+        };
+
         it('Generates the right overlapping image', () => {
-            const bgraph = ImageImpl.initBgraph({
-                width:  4,
-                height: 4,
-                blocks: [
-                    {
-                        id: 0,
-                        x: 0, y: 0,
-                        width: 2, height: 2,
-                        depth: 0, color: 1,
-                        edgeEnds: [],
-                    },
-                    {
-                        id: 100,
-                        x: 1, y: 1,
-                        width: 2, height: 2,
-                        depth: 1, color: 2,
-                        edgeEnds: [],
-                    },
-                    {
-                        id: 2,
-                        x: 2, y: 2,
-                        width: 2, height: 2,
-                        depth: 0, color: 3,
-                        edgeEnds: [],
-                    },
-                ],
-                edgeEnds: [],
-            });
+            const bgraph = ImageImpl.initBgraph(testBGraphOverlapping);
 
             [0,1,4].forEach(i => testColor(bgraph, i, test1));
             [5,6,9,10].forEach(i => testColor(bgraph, i, test2));
@@ -271,31 +302,49 @@ describe('Generate image', () => {
             [2,3,7,8,12,13].forEach(i => testColor(bgraph, i, white));
         });
 
+        it('Generates the right overlapping lookup', () => {
+            const bgraph = ImageImpl.initBgraph(testBGraphOverlapping);
+
+            [0,1,4].forEach(i => testLookup(bgraph, i, 0));
+            [5,6,9,10].forEach(i => testLookup(bgraph, i, 100));
+            [11,14,15].forEach(i => testLookup(bgraph, i, 2));
+            [2,3,7,8,12,13].forEach(i => testLookup(bgraph, i, -1));
+        });
+
+        const testBGraphOverlappingSameDepth = {
+            width:  4,
+            height: 4,
+            blocks: [
+                {
+                    id: 0,
+                    x: 0, y: 0,
+                    width: 2, height: 2,
+                    depth: 0, color: 1,
+                    edgeEnds: [],
+                },
+                {
+                    id: 100,
+                    x: 1, y: 1,
+                    width: 2, height: 2,
+                    depth: 0, color: 2,
+                    edgeEnds: [],
+                },
+            ],
+            edgeEnds: [],
+        };
+
         it('Generates the right overlapping same depth image', () => {
-            const bgraph = ImageImpl.initBgraph({
-                width:  4,
-                height: 4,
-                blocks: [
-                    {
-                        id: 0,
-                        x: 0, y: 0,
-                        width: 2, height: 2,
-                        depth: 0, color: 1,
-                        edgeEnds: [],
-                    },
-                    {
-                        id: 100,
-                        x: 1, y: 1,
-                        width: 2, height: 2,
-                        depth: 0, color: 2,
-                        edgeEnds: [],
-                    },
-                ],
-                edgeEnds: [],
-            });
+            const bgraph = ImageImpl.initBgraph(testBGraphOverlappingSameDepth);
 
             [0,1,4].forEach(i => testColor(bgraph, i, test1));
             [5,6,9,10].forEach(i => testColor(bgraph, i, test2));
+        });
+
+        it('Generates the right overlapping same depth lookup', () => {
+            const bgraph = ImageImpl.initBgraph(testBGraphOverlappingSameDepth);
+
+            [0,1,4].forEach(i => testLookup(bgraph, i, 0));
+            [5,6,9,10].forEach(i => testLookup(bgraph, i, 100));
         });
 
         it('Generates the right edgeEnd data', () => {
