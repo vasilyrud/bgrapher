@@ -2,6 +2,7 @@ import { expect } from 'chai';
 
 import imageRewire, { ImageImpl } from 'bgrapherimpl/image.js';
 const xyArray = imageRewire.__get__('xyArray');
+const colorToRGB = imageRewire.__get__('colorToRGB');
 const pointsFlipXY = imageRewire.__get__('pointsFlipXY');
 const pointsMove = imageRewire.__get__('pointsMove');
 const makeCurve = imageRewire.__get__('makeCurve');
@@ -70,6 +71,21 @@ describe('Data structure', () => {
     });
 });
 
+describe('Convert color', () => {
+    [
+        [0,[0,0,0]],
+        [1,[0,0,1]],
+        [256,[0,1,0]],
+        [65536,[1,0,0]],
+        [1193046,[18,52,86]],
+        [16777215,[255,255,255]],
+    ].forEach(([color, expectedRGB]) => {
+        it(`Correctly converts color ${color}`, () => {
+            expect(colorToRGB(color)).to.eql(expectedRGB);
+        });
+    });
+});
+
 describe('Generate image', () => {
     function testColor(bgraph, i, color) {
         let img = bgraph
@@ -87,6 +103,9 @@ describe('Generate image', () => {
 
     let black = [0,0,0,255];
     let white = [0,0,0,0]; // white because of opacity
+    let test1 = [0,0,1,255];
+    let test2 = [0,0,2,255];
+    let test3 = [0,0,3,255];
 
     let testBlackDotLocations = [0,2,8,10];
     let testWhiteDotLocations = [1,3,4,5,6,7,9,11];
@@ -133,6 +152,229 @@ describe('Generate image', () => {
 
         it('Generates the right edgeEnd data', () => {
             expect(bgraph.edgeEndsData).to.eql({});
+        });
+    });
+
+    describe('initBgraph', () => {
+        it('Generates empty bgraph', () => {
+            const bgraph = ImageImpl.initBgraph({
+                width:  0,
+                height: 0,
+                blocks: [],
+                edgeEnds: [],
+            });
+
+            expect(bgraph.imageWidth).to.equal(0);
+            expect(bgraph.imageHeight).to.equal(0);
+            expect(bgraph.blocksLookup).to.be.undefined;
+            expect(bgraph.buffer).to.be.undefined;
+            expect(bgraph.canvas).not.to.be.undefined;
+
+            expect(bgraph.blocksData).to.eql({});
+            expect(bgraph.edgeEndsData).to.eql({});
+        });
+
+        it('Generates the right non-zero size', () => {
+            const bgraph = ImageImpl.initBgraph({
+                width:  4,
+                height: 4,
+                blocks: [],
+                edgeEnds: [],
+            });
+
+            expect(bgraph.imageWidth).to.equal(4);
+            expect(bgraph.imageHeight).to.equal(4);
+            expect(bgraph.blocksLookup).not.to.be.undefined;
+            expect(bgraph.buffer).not.to.be.undefined;
+            expect(bgraph.canvas).not.to.be.undefined;
+
+            expect(bgraph.buffer.width).to.equal(4);
+            expect(bgraph.buffer.height).to.equal(4);
+            expect(bgraph.blocksLookup.width).to.equal(4);
+            expect(bgraph.blocksLookup.height).to.equal(4);
+        });
+
+        it('Generates the right image', () => {
+            const bgraph = ImageImpl.initBgraph({
+                width:  4,
+                height: 4,
+                blocks: [
+                    {
+                        id: 0,
+                        x: 0, y: 0,
+                        width: 1, height: 1,
+                        depth: 0, color: 0,
+                        edgeEnds: [],
+                    },
+                    {
+                        id: 100,
+                        x: 0, y: 2,
+                        width: 1, height: 1,
+                        depth: 0, color: 0,
+                        edgeEnds: [],
+                    },
+                    {
+                        id: 2,
+                        x: 2, y: 0,
+                        width: 1, height: 1,
+                        depth: 0, color: 0,
+                        edgeEnds: [],
+                    },
+                    {
+                        id: 123,
+                        x: 2, y: 2,
+                        width: 1, height: 1,
+                        depth: 0, color: 0,
+                        edgeEnds: [],
+                    },
+                ],
+                edgeEnds: [],
+            });
+
+            testBlackDotLocations.forEach(i => testColor(bgraph, i, black));
+            testWhiteDotLocations.forEach(i => testColor(bgraph, i, white));
+        });
+
+        it('Generates the right overlapping image', () => {
+            const bgraph = ImageImpl.initBgraph({
+                width:  4,
+                height: 4,
+                blocks: [
+                    {
+                        id: 0,
+                        x: 0, y: 0,
+                        width: 2, height: 2,
+                        depth: 0, color: 1,
+                        edgeEnds: [],
+                    },
+                    {
+                        id: 100,
+                        x: 1, y: 1,
+                        width: 2, height: 2,
+                        depth: 1, color: 2,
+                        edgeEnds: [],
+                    },
+                    {
+                        id: 2,
+                        x: 2, y: 2,
+                        width: 2, height: 2,
+                        depth: 0, color: 3,
+                        edgeEnds: [],
+                    },
+                ],
+                edgeEnds: [],
+            });
+
+            [0,1,4].forEach(i => testColor(bgraph, i, test1));
+            [5,6,9,10].forEach(i => testColor(bgraph, i, test2));
+            [11,14,15].forEach(i => testColor(bgraph, i, test3));
+            [2,3,7,8,12,13].forEach(i => testColor(bgraph, i, white));
+        });
+
+        it('Generates the right overlapping same depth image', () => {
+            const bgraph = ImageImpl.initBgraph({
+                width:  4,
+                height: 4,
+                blocks: [
+                    {
+                        id: 0,
+                        x: 0, y: 0,
+                        width: 2, height: 2,
+                        depth: 0, color: 1,
+                        edgeEnds: [],
+                    },
+                    {
+                        id: 100,
+                        x: 1, y: 1,
+                        width: 2, height: 2,
+                        depth: 0, color: 2,
+                        edgeEnds: [],
+                    },
+                ],
+                edgeEnds: [],
+            });
+
+            [0,1,4].forEach(i => testColor(bgraph, i, test1));
+            [5,6,9,10].forEach(i => testColor(bgraph, i, test2));
+        });
+
+        it('Generates the right edgeEnd data', () => {
+            const bgraph = ImageImpl.initBgraph({
+                width:  4,
+                height: 4,
+                blocks: [],
+                edgeEnds: [
+                    {
+                        id: 0,
+                        x: 0, y: 0,
+                        direction: 'down',
+                        isSource: true,
+                        edgeEnds: [
+                            1
+                        ],
+                    },
+                    {
+                        id: 100,
+                        x: 1, y: 1,
+                        direction: 'up',
+                        isSource: false,
+                        edgeEnds: [
+                            0
+                        ],
+                    },
+                ],
+            });
+
+            expect(bgraph.edgeEndsData).to.have.all.keys(0,100);
+            expect(bgraph.edgeEndsData[100]).to.eql({
+                x: 1, y: 1,
+                direction: 'up',
+                isSource: false,
+                edgeEnds: [
+                    0
+                ],
+            });
+        });
+
+        it('Generates the right block edgeEnd data', () => {
+            const bgraph = ImageImpl.initBgraph({
+                width:  4,
+                height: 4,
+                blocks: [
+                    {
+                        id: 0,
+                        x: 0, y: 0,
+                        width: 2, height: 1,
+                        depth: 0, color: 1,
+                        edgeEnds: [
+                            0,
+                            100,
+                        ],
+                    }
+                ],
+                edgeEnds: [
+                    {
+                        id: 0,
+                        x: 0, y: 1,
+                        direction: 'down',
+                        isSource: true,
+                        edgeEnds: [
+                            1
+                        ],
+                    },
+                    {
+                        id: 100,
+                        x: 1, y: 1,
+                        direction: 'up',
+                        isSource: false,
+                        edgeEnds: [
+                            0
+                        ],
+                    },
+                ],
+            });
+
+            expect(bgraph.blocksData[0].edgeEnds).to.eql([0,100]);
         });
     });
 });

@@ -71,6 +71,14 @@ function curBgraphPixel(bgraphState, coord) {
     );
 }
 
+function colorToRGB(c) {
+    return [
+        c >> 16 & 255,
+        c >>  8 & 255,
+        c >>  0 & 255,
+    ];
+}
+
 function generateBlockPixels(img, imgWidth, blockData, lookup, depths) {
     let id = blockData.id;
     let width  = blockData.width;
@@ -90,9 +98,11 @@ function generateBlockPixels(img, imgWidth, blockData, lookup, depths) {
             }
 
             let p = (y * imgWidth + x) * 4;
-            img.data[p+0] = color >> 16 & 255;
-            img.data[p+1] = color >>  8 & 255;
-            img.data[p+2] = color >>  0 & 255;
+            [
+                img.data[p+0], 
+                img.data[p+1], 
+                img.data[p+2]
+            ] = colorToRGB(color);
             img.data[p+3] = 255;
 
             depths.set(x,y,depth);
@@ -169,6 +179,13 @@ function generateImage(imageWidth, imageHeight, cbPixels) {
 
     buffer.width  = imageWidth;
     buffer.height = imageHeight;
+
+    if (imageWidth * imageHeight == 0) {
+        return new ImageBgraph(
+            imageWidth, imageHeight,
+        );
+    }
+
     let imagedata = bufferContext.createImageData(imageWidth, imageHeight);
     let lookup = new xyArray(imageWidth, imageHeight);
 
@@ -411,6 +428,10 @@ let ImageImpl = (function () {
             
             if (bgraphState.zoom > 2.5) {
                 pixelateImage(context);
+            }
+
+            if (imgBgraph.imageWidth * imgBgraph.imageHeight == 0) {
+                return;
             }
 
             context.drawImage(imgBgraph.buffer,
