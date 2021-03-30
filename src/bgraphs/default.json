@@ -1,17 +1,4 @@
-<!doctype html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <title>bgrapher</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-
-<body>
-    <div id="root">
-    </div>
-    <!-- <form id="bgraphJSONForm" method="post" class="content">
-<textarea name="bgraphJSON" form="bgraphJSONForm">{
+{
     "width": 29,
     "height": 33,
     "blocks": [
@@ -378,11 +365,4 @@
             ]
         }
     ]
-}</textarea>
-    <input type="submit">
-    </form> -->
-
-    <script src="dist/app.js" type="module"></script>
-</body>
-
-</html>
+}

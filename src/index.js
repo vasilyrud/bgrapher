@@ -22,12 +22,22 @@ import ReactDOM from 'react-dom';
 import { BgraphState } from './bgraphstate.js'
 import { BGrapher } from './bgrapher.js'
 
+import defaultBgraph from './bgraphs/default.json';
+
 function BGraph(props) {
-    const [bgrapher, setBGrapher] = React.useState(props.bgrapher);
-    
+    const bgrapher = new BGrapher();
+    const bgraphElement = React.createRef();
+
+    // bgrapher.initTestBgraph(props.bgraphState, 1000, 10000);
+    // bgrapher.initTestBgraphLarge(props.bgraphState, 5000, 10000);
+    bgrapher.initBgraph(props.bgraphState, props.bgraph);
+
+    React.useEffect(() => {
+        bgrapher.populateElement(props.bgraphState, bgraphElement.current);
+    }, []); // Only run on mount
+
     return (
-        <div id={props.id}>
-            Test
+        <div id={props.id} ref={bgraphElement}>
         </div>
     );
 }
@@ -37,8 +47,8 @@ function BGraphGroup(props) {
 
     const bgraphs = Object
         .entries(props.bgraphers)
-        .map((key, bgrapher) => 
-            <BGraph id="bgraphDiv" key={key} bgrapher={bgrapher} />
+        .map(([key, bgraph]) => 
+            <BGraph id="bgraphDiv" key={key} bgraph={bgraph} bgraphState={bgraphState} />
         );
 
     return (
@@ -63,7 +73,6 @@ function setupBgraph(bgraphForm, event) {
     bgrapher.initBgraph(bgraphState, event.target.elements.bgraphJSON.value);
 
     bgrapher.populateElement(bgraphState, bgraphDiv);
-    bgrapher.draw(bgraphState, bgraphDiv);
 }
 
 function main() {
@@ -72,14 +81,13 @@ function main() {
     // bgraphForm.addEventListener('submit', setupBgraph.bind(null, bgraphForm));
 
     let bgraphers = {
-        '1': new BGrapher(),
+        'main': JSON.stringify(defaultBgraph)
     };
 
     ReactDOM.render(
         <BGraphGroup id="bgraphGroupDiv" bgraphers={bgraphers} />,
         document.getElementById('root')
     )
-
 }
 
 main();

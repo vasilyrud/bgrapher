@@ -4,6 +4,7 @@ import babel from '@rollup/plugin-babel';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
+import json from '@rollup/plugin-json';
 import postcss from 'rollup-plugin-postcss';
 
 export default {
@@ -33,7 +34,8 @@ export default {
         }),
         livereload({
             watch: 'dist'
-        })
+        }),
+        json({}),
     ],
     output: {
         file: 'dist/app.js',
