@@ -28,9 +28,13 @@ function BGraph(props) {
     const bgrapher = new BGrapher();
     const bgraphElement = React.createRef();
 
-    // bgrapher.initTestBgraph(props.bgraphState, 1000, 10000);
-    // bgrapher.initTestBgraphLarge(props.bgraphState, 5000, 10000);
-    bgrapher.initBgraph(props.bgraphState, props.bgraph);
+    if (props.bgraphType == 'graph') {
+        bgrapher.initBgraph(props.bgraphState, props.bgraphStr);
+    } else if (props.bgraphType == 'test') {
+        bgrapher.initTestBgraph(props.bgraphState, 1000, 10000);
+    } else if (props.bgraphType == 'testLarge') {
+        bgrapher.initTestBgraphLarge(props.bgraphState, 5000, 10000);
+    }
 
     React.useEffect(() => {
         bgrapher.populateElement(props.bgraphState, bgraphElement.current);
@@ -48,7 +52,13 @@ function BGraphGroup(props) {
     const bgraphs = Object
         .entries(props.bgraphers)
         .map(([key, bgraph]) => 
-            <BGraph id="bgraphDiv" key={key} bgraph={bgraph} bgraphState={bgraphState} />
+            <BGraph 
+                id="bgraphDiv" 
+                key={key} 
+                bgraphStr={bgraph.bgraphStr} 
+                bgraphType={bgraph.bgraphType}
+                bgraphState={bgraphState}
+            />
         );
 
     return (
@@ -61,19 +71,32 @@ function BGraphGroup(props) {
 function BGraphForm(props) {
     const [formValue, setFormValue] = React.useState(JSON.stringify(defaultBgraph, null, 2));
 
-    function handleSubmit(event) {
-        event.preventDefault();
-        props.onSubmit(event);
+    function handleSubmit(bgraphType) {
+        return (event) => {
+            event.preventDefault();
+            props.onSubmit(
+                event.target.form.elements.bgraphJSON.value, 
+                bgraphType
+            );
+        }
     }
 
     return (
-        <form id={props.id} onSubmit={handleSubmit}>
+        <form id={props.id}>
             <textarea 
                 name="bgraphJSON" 
                 value={formValue} 
                 onChange={e => setFormValue(e.target.value)}
             />
-            <input type="submit" value="Draw graph" />
+            <button className="bgraphFormSubmit" onClick={handleSubmit("graph")}>
+                Draw graph
+            </button>
+            <button className="bgraphFormSubmit" onClick={handleSubmit("test")}>
+                Draw test graph
+            </button>
+            <button className="bgraphFormSubmit" onClick={handleSubmit("testLarge")}>
+                Draw large test graph
+            </button>
         </form>
     );
 }
@@ -82,9 +105,13 @@ function RootHolder(props) {
     const [atForm, setAtForm] = React.useState(true);
     const [bgraphers, setBgraphers] = React.useState({});
 
-    function onFormSubmit(event) {
-        let bgraphStr = event.target.elements.bgraphJSON.value;
-        setBgraphers(bgraphers => ({ ...bgraphers, main: bgraphStr }));
+    function onFormSubmit(bgraphStr, bgraphType) {
+        setBgraphers(bgraphers => ({ ...bgraphers, 
+            main: {
+                bgraphStr:  bgraphStr,
+                bgraphType: bgraphType,
+            }
+        }));
         setAtForm(false);
     }
 
