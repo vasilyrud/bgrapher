@@ -58,36 +58,44 @@ function BGraphGroup(props) {
     );
 }
 
-function setupBgraph(bgraphForm, event) {
-    event.preventDefault();
-    bgraphForm.remove();
+function BGraphForm(props) {
+    const [formValue, setFormValue] = React.useState(JSON.stringify(defaultBgraph, null, 2));
 
-    let bgraphState = new BgraphState();
-    let bgrapher = new BGrapher();
-    let bgraphDiv = document.createElement('div');
-    bgraphDiv.setAttribute('id', 'bgraphDiv');
-    document.body.appendChild(bgraphDiv);
+    function handleSubmit(event) {
+        event.preventDefault();
+        props.onSubmit(event);
+    }
 
-    // bgrapher.initTestBgraph(bgraphState, 1000, 10000);
-    // bgrapher.initTestBgraphLarge(bgraphState, 5000, 10000);
-    bgrapher.initBgraph(bgraphState, event.target.elements.bgraphJSON.value);
+    return (
+        <form id={props.id} onSubmit={handleSubmit}>
+            <textarea 
+                name="bgraphJSON" 
+                value={formValue} 
+                onChange={e => setFormValue(e.target.value)}
+            />
+            <input type="submit" value="Draw graph" />
+        </form>
+    );
+}
 
-    bgrapher.populateElement(bgraphState, bgraphDiv);
+function RootHolder(props) {
+    const [atForm, setAtForm] = React.useState(true);
+    const [bgraphers, setBgraphers] = React.useState({});
+
+    function onFormSubmit(event) {
+        let bgraphStr = event.target.elements.bgraphJSON.value;
+        setBgraphers(bgraphers => ({ ...bgraphers, main: bgraphStr }));
+        setAtForm(false);
+    }
+
+    return (atForm 
+        ? <BGraphForm  id="bgraphJSONForm" onSubmit={onFormSubmit} /> 
+        : <BGraphGroup id="bgraphGroupDiv" bgraphers={bgraphers} />
+    );
 }
 
 function main() {
-
-    // let bgraphForm = document.getElementById('bgraphJSONForm');
-    // bgraphForm.addEventListener('submit', setupBgraph.bind(null, bgraphForm));
-
-    let bgraphers = {
-        'main': JSON.stringify(defaultBgraph)
-    };
-
-    ReactDOM.render(
-        <BGraphGroup id="bgraphGroupDiv" bgraphers={bgraphers} />,
-        document.getElementById('root')
-    )
+    ReactDOM.render(<RootHolder />, document.getElementById('root'));
 }
 
 main();
