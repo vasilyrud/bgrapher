@@ -20,6 +20,13 @@ const ZOOM_FRICTION = 550; // Higher number means lower speed
 const MARGIN_PIXELS = 100;
 const BGRAPH_DEBUG = true;
 
+function getLocal(coord, event) {
+    return ((coord === 'x')
+        ? event.clientX - event.target.getBoundingClientRect().left
+        : event.clientY - event.target.getBoundingClientRect().top
+    );
+}
+
 function getZoom(bgraphState, event) {
     let newZoom = bgraphState.zoom * (1 - event.deltaY / ZOOM_FRICTION);
 
@@ -37,18 +44,11 @@ function getZoom(bgraphState, event) {
     return [newZoom, deltaUsed];
 }
 
-function coordValues(coord, bgraphState, bgrapher) {
-    if (coord === 'x') {
-        return [
-            bgrapher.bgraphWidth(),
-            bgrapher.clientWidth(),
-        ]
-    } else if (coord === 'y') {
-        return [
-            bgrapher.bgraphHeight(),
-            bgrapher.clientHeight(),
-        ]
-    }
+function coordValues(coord, bgrapher) {
+    return ((coord === 'x')
+        ? [bgrapher.bgraphWidth() , bgrapher.clientWidth() ]
+        : [bgrapher.bgraphHeight(), bgrapher.clientHeight()]
+    );
 }
 
 function getMargin(bgraphState, bgraphSize, clientSize) {
@@ -77,8 +77,7 @@ function constrainOffset(offset, bgraphState, bgraphSize, clientSize) {
 }
 
 function getInitOffset(coord, bgraphState, bgrapher) {
-    const [bgraphSize, clientSize] = 
-        coordValues(coord, bgraphState, bgrapher);
+    const [bgraphSize, clientSize] = coordValues(coord, bgrapher);
 
     let newOffset = bgraphState.offset[coord];
 
@@ -86,8 +85,7 @@ function getInitOffset(coord, bgraphState, bgrapher) {
 }
 
 function getPanOffset(coord, bgraphState, bgrapher) {
-    const [bgraphSize, clientSize] = 
-        coordValues(coord, bgraphState, bgrapher);
+    const [bgraphSize, clientSize] = coordValues(coord, bgrapher);
 
     let newOffset = bgraphState.offset[coord] + 
         (bgraphState.cur[coord] - bgraphState.panningPrev[coord]) / bgraphState.zoom;
@@ -96,8 +94,7 @@ function getPanOffset(coord, bgraphState, bgrapher) {
 }
 
 function getZoomOffset(coord, bgraphState, bgrapher, deltaUsed) {
-    const [bgraphSize, clientSize] = 
-        coordValues(coord, bgraphState, bgrapher);
+    const [bgraphSize, clientSize] = coordValues(coord, bgrapher);
 
     let newOffset = bgraphState.offset[coord] + 
         ((bgraphState.cur[coord] * deltaUsed) / (bgraphState.zoom * ZOOM_FRICTION));
@@ -111,8 +108,8 @@ function mousemovePan(bgraphState, bgrapher, bgraphElement, event) {
 
     bgraphState.update();
 
-    bgraphState.panningPrev.x = event.clientX;
-    bgraphState.panningPrev.y = event.clientY;
+    bgraphState.panningPrev.x = getLocal('x', event);
+    bgraphState.panningPrev.y = getLocal('y', event);
 }
 
 function mousemoveHover(bgraphState, bgrapher, event) {
@@ -140,8 +137,8 @@ let BgraphEvents = (function () {
             bgraphState.offset.y = getInitOffset('y', bgraphState, bgrapher);
         },
         wheel: function(bgraphState, bgrapher, bgraphElement, event) {
-            bgraphState.cur.x = event.clientX;
-            bgraphState.cur.y = event.clientY;
+            bgraphState.cur.x = getLocal('x', event);
+            bgraphState.cur.y = getLocal('y', event);
 
             // Offset depends on new zoom value 
             // and on how much of the "scroll" was used for zoom.
@@ -160,8 +157,8 @@ let BgraphEvents = (function () {
             if (event.button !== 0) return;
 
             bgraphState.panning = true;
-            bgraphState.panningPrev.x = event.clientX;
-            bgraphState.panningPrev.y = event.clientY;
+            bgraphState.panningPrev.x = getLocal('x', event);
+            bgraphState.panningPrev.y = getLocal('y', event);
         },
         mouseup: function(bgraphState, bgrapher, bgraphElement, event) {
             bgraphState.panning = false;
@@ -170,8 +167,8 @@ let BgraphEvents = (function () {
             bgraphState.panning = false;
         },
         mousemove: function(bgraphState, bgrapher, bgraphElement, event) {
-            bgraphState.cur.x = event.clientX;
-            bgraphState.cur.y = event.clientY;
+            bgraphState.cur.x = getLocal('x', event);
+            bgraphState.cur.y = getLocal('y', event);
 
             if (bgraphState.panning) {
                 mousemovePan(bgraphState, bgrapher, bgraphElement, event);
