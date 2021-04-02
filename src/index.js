@@ -41,19 +41,19 @@ function BGraph(props) {
     }, []); // Only run on mount
 
     return (
-        <div id={props.id} ref={bgraphElement}>
+        <div className="bgraphColumn" ref={bgraphElement}>
         </div>
     );
 }
 
 function BGraphGroup(props) {
-    const [bgraphState, setBGraphState] = React.useState(new BgraphState());
+    // Don't use React state since this state is managed by BGrapher
+    let bgraphState = new BgraphState();
 
     const bgraphs = Object
         .entries(props.bgraphers)
         .map(([key, bgraph]) => 
-            <BGraph 
-                id="bgraphDiv" 
+            <BGraph
                 key={key} 
                 bgraphStr={bgraph.bgraphStr} 
                 bgraphType={bgraph.bgraphType}
@@ -62,7 +62,7 @@ function BGraphGroup(props) {
         );
 
     return (
-        <div id={props.id}>
+        <div className="bgraphGroup">
             {bgraphs}
         </div>
     );
@@ -82,7 +82,7 @@ function BGraphForm(props) {
     }
 
     return (
-        <form id={props.id}>
+        <form className="bgraphJSONForm">
             <textarea 
                 name="bgraphJSON" 
                 value={formValue} 
@@ -110,14 +110,18 @@ function RootHolder(props) {
             main: {
                 bgraphStr:  bgraphStr,
                 bgraphType: bgraphType,
+            },
+            comparedTo: {
+                bgraphStr:  bgraphStr,
+                bgraphType: 'graph',
             }
         }));
         setAtForm(false);
     }
 
     return (atForm 
-        ? <BGraphForm  id="bgraphJSONForm" onSubmit={onFormSubmit} /> 
-        : <BGraphGroup id="bgraphGroupDiv" bgraphers={bgraphers} />
+        ? <BGraphForm  onSubmit={onFormSubmit} /> 
+        : <BGraphGroup bgraphers={bgraphers} />
     );
 }
 

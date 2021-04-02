@@ -30,6 +30,18 @@ function BgraphState() {
         x: 0,
         y: 0,
     };
+
+    this.bgraphers = [];
+
+    this.attach = function(bgrapher) {
+        this.bgraphers.push(bgrapher);
+    };
+
+    this.update = function() {
+        for (const bgrapher of this.bgraphers) {
+            bgrapher.draw(this);
+        }
+    };
 }
 
 export { BgraphState }

@@ -108,8 +108,8 @@ function getZoomOffset(coord, bgraphState, bgrapher, deltaUsed) {
 function mousemovePan(bgraphState, bgrapher, bgraphElement, event) {
     bgraphState.offset.x = getPanOffset('x', bgraphState, bgrapher);
     bgraphState.offset.y = getPanOffset('y', bgraphState, bgrapher);
-    
-    bgrapher.draw(bgraphState, bgraphElement);
+
+    bgraphState.update();
 
     bgraphState.panningPrev.x = event.clientX;
     bgraphState.panningPrev.y = event.clientY;
@@ -151,8 +151,8 @@ let BgraphEvents = (function () {
             bgraphState.offset.x = getZoomOffset('x', bgraphState, bgrapher, deltaUsed);
             bgraphState.offset.y = getZoomOffset('y', bgraphState, bgrapher, deltaUsed);
 
-            bgrapher.draw(bgraphState, bgraphElement);
-            
+            bgraphState.update();
+
             if (BGRAPH_DEBUG) { bgrapher.printCoords(bgraphState); }
         },
         mousedown: function(bgraphState, bgrapher, bgraphElement, event) {
@@ -185,7 +185,7 @@ let BgraphEvents = (function () {
             bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);
             bgraphState.offset.y = getInitOffset('y', bgraphState, bgrapher);
 
-            bgrapher.draw(bgraphState, bgraphElement);
+            bgraphState.update();
         },
     };
 })();

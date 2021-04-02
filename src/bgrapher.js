@@ -54,20 +54,24 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
     }
 
     this.populateElement = function(bgraphState, bgraphElement) {
-        this.GrapherImpl.populateElement(this.bgraphImpl, bgraphElement);
-        initBgraphEvents(bgraphState, this, bgraphElement);
-        this.draw(bgraphState, bgraphElement);
+        this.bgraphElement = bgraphElement;
+
+        this.GrapherImpl.populateElement(this.bgraphImpl, this.bgraphElement);
+        initBgraphEvents(bgraphState, this, this.bgraphElement);
+
+        bgraphState.attach(this);
+        this.draw(bgraphState);
     }
 
-    this.draw = function(bgraphState, bgraphDiv) {
+    this.draw = function(bgraphState) {
         this.GrapherImpl.setClientSize(this.bgraphImpl, 
-            bgraphDiv.clientWidth, 
-            bgraphDiv.clientHeight
+            this.bgraphElement.clientWidth, 
+            this.bgraphElement.clientHeight
         );
 
         if (!bgraphState.didFirstDraw) {
             bgraphState.didFirstDraw = true;
-            bgraphDiv.dispatchEvent(firstDrawEvent);
+            this.bgraphElement.dispatchEvent(firstDrawEvent);
         }
         this.GrapherImpl.drawBgraph(bgraphState, this.bgraphImpl);
     }
