@@ -113,21 +113,23 @@ function mousemovePan(bgraphState, bgrapher, bgraphElement, event) {
 }
 
 function mousemoveHover(bgraphState, bgrapher, event) {
-    let [hoveredBlockID, hoveredBlockData] = bgrapher.curBlock(bgraphState);
-    if (hoveredBlockID === null) {
-        return;
-    }
+    let hoveredBlockID = bgrapher.curBlock(bgraphState);
+    if (hoveredBlockID === null) return;
 
-    if (hoveredBlockData) {
-        bgrapher.drawEdges(bgraphState, hoveredBlockID);
-    }
+    bgrapher.drawEdges(bgraphState, hoveredBlockID);
+
+    if (BGRAPH_DEBUG) showBlockInfo(bgrapher, hoveredBlockID);
+}
+
+function showBlockInfo(bgrapher, hoveredBlockID) {
+    const hoveredBlockData = bgrapher.getBlockData(hoveredBlockID);
 
     if (hoveredBlockData && hoveredBlockData.text) {
-        // console.log('ID: ' + hoveredBlockID + ', text: ' + hoveredBlockData.text);
+        console.log('ID: ' + hoveredBlockID + ', text: ' + hoveredBlockData.text);
         return;
     }
     
-    // console.log(hoveredBlockID);
+    console.log(hoveredBlockID);
 }
 
 let BgraphEvents = (function () {
@@ -150,7 +152,7 @@ let BgraphEvents = (function () {
 
             bgraphState.update();
 
-            if (BGRAPH_DEBUG) { bgrapher.printCoords(bgraphState); }
+            if (BGRAPH_DEBUG) bgrapher.printCoords(bgraphState);
         },
         mousedown: function(bgraphState, bgrapher, bgraphElement, event) {
             // Ignore non-left clicks
@@ -176,7 +178,7 @@ let BgraphEvents = (function () {
                 mousemoveHover(bgraphState, bgrapher, event);
             }
 
-            if (BGRAPH_DEBUG) { bgrapher.printCoords(bgraphState); }
+            if (BGRAPH_DEBUG) bgrapher.printCoords(bgraphState);
         },
         resize: function(bgraphState, bgrapher, bgraphElement, event) {
             bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);
@@ -190,8 +192,7 @@ let BgraphEvents = (function () {
 function initBgraphEvents(bgraphState, bgrapher, bgraphElement) {
 
     for (let eventType in BgraphEvents) {
-        let target = bgraphElement;
-        if (eventType === 'resize') { target = window; }
+        let target = (eventType === 'resize') ? window : bgraphElement;
 
         target.addEventListener(eventType, 
             BgraphEvents[eventType].bind(null, bgraphState, bgrapher, bgraphElement)

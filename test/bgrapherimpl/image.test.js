@@ -623,17 +623,19 @@ describe('makeEdge', () => {
 });
 
 describe('getCurBlock', () => {
-    function checkFoundData(foundData, expectedID, expectedData) {
+    function checkFoundID(foundID, expectedID) {
         if (expectedID === null) {
-            expect(foundData[0]).to.be.null;
+            expect(foundID).to.be.null;
         } else {
-            expect(foundData[0]).to.equal(expectedID);
+            expect(foundID).to.equal(expectedID);
         }
+    }
 
+    function checkFoundData(foundData, expectedData) {
         if (expectedData === null) {
-            expect(foundData[1]).to.be.null;
+            expect(foundData).to.be.null;
         } else {
-            expect(foundData[1].text).to.be.a('string');
+            expect(foundData.text).to.be.a('string');
         }
     }
 
@@ -652,8 +654,11 @@ describe('getCurBlock', () => {
             bgraphState.offset = {x: ox, y: oy};
         }
 
-        const foundData = ImageImpl.getCurBlock(bgraphState, bgraph);
-        checkFoundData(foundData, expectedID, expectedData);
+        const foundID = ImageImpl.getCurBlock(bgraphState, bgraph);
+        checkFoundID(foundID, expectedID);
+
+        const foundData = ImageImpl.getBlockData(bgraph, foundID);
+        checkFoundData(foundData, expectedData);
     }
 
     const bgraphWithoutData = ImageImpl.initTestBgraphLarge(2,2);

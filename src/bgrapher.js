@@ -38,19 +38,19 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
         return this.GrapherImpl.getClientHeight(this.bgraphImpl);
     }
 
-    this.initBgraph = function(bgraphState, bgraphStr) {
+    this.initBgraph = function(bgraphStr) {
         this.bgraphImpl = this.GrapherImpl.initBgraph(JSON.parse(bgraphStr));
-        bgraphState.didFirstDraw = false;
+        this.didFirstDraw = false;
     }
 
-    this.initTestBgraph = function(bgraphState, numCols, numRows) {
+    this.initTestBgraph = function(numCols, numRows) {
         this.bgraphImpl = this.GrapherImpl.initTestBgraph(numCols, numRows);
-        bgraphState.didFirstDraw = false;
+        this.didFirstDraw = false;
     }
 
-    this.initTestBgraphLarge = function(bgraphState, numCols, numRows) {
+    this.initTestBgraphLarge = function(numCols, numRows) {
         this.bgraphImpl = this.GrapherImpl.initTestBgraphLarge(numCols, numRows);
-        bgraphState.didFirstDraw = false;
+        this.didFirstDraw = false;
     }
 
     this.populateElement = function(bgraphState, bgraphElement) {
@@ -69,11 +69,15 @@ var BGrapher = function(GrapherImpl = ImageImpl) {
             this.bgraphElement.clientHeight
         );
 
-        if (!bgraphState.didFirstDraw) {
-            bgraphState.didFirstDraw = true;
+        if (!this.didFirstDraw) {
+            this.didFirstDraw = true;
             this.bgraphElement.dispatchEvent(firstDrawEvent);
         }
         this.GrapherImpl.drawBgraph(bgraphState, this.bgraphImpl);
+    }
+
+    this.getBlockData = function(blockID) {
+        return this.GrapherImpl.getBlockData(this.bgraphImpl, blockID);
     }
 
     this.drawEdges = function(bgraphState, blockID) {

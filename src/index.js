@@ -29,11 +29,11 @@ function BGraph(props) {
     const bgraphElement = React.createRef();
 
     if (props.bgraphType == 'graph') {
-        bgrapher.initBgraph(props.bgraphState, props.bgraphStr);
+        bgrapher.initBgraph(props.bgraphStr);
     } else if (props.bgraphType == 'test') {
-        bgrapher.initTestBgraph(props.bgraphState, 1000, 10000);
+        bgrapher.initTestBgraph(1000, 10000);
     } else if (props.bgraphType == 'testLarge') {
-        bgrapher.initTestBgraphLarge(props.bgraphState, 5000, 10000);
+        bgrapher.initTestBgraphLarge(5000, 10000);
     }
 
     React.useEffect(() => {
@@ -89,13 +89,16 @@ function BGraphForm(props) {
                 onChange={e => setFormValue(e.target.value)}
             />
             <button className="bgraphFormSubmit" onClick={handleSubmit("graph")}>
-                Draw graph
+                Standalone
+            </button>
+            <button className="bgraphFormSubmit" onClick={handleSubmit("compare")}>
+                Compare
             </button>
             <button className="bgraphFormSubmit" onClick={handleSubmit("test")}>
-                Draw test graph
+                Test graph
             </button>
             <button className="bgraphFormSubmit" onClick={handleSubmit("testLarge")}>
-                Draw large test graph
+                Large test graph
             </button>
         </form>
     );
@@ -106,16 +109,25 @@ function RootHolder(props) {
     const [bgraphers, setBgraphers] = React.useState({});
 
     function onFormSubmit(bgraphStr, bgraphType) {
-        setBgraphers(bgraphers => ({ ...bgraphers, 
-            main: {
-                bgraphStr:  bgraphStr,
-                bgraphType: bgraphType,
-            },
-            comparedTo: {
-                bgraphStr:  bgraphStr,
-                bgraphType: 'graph',
-            }
-        }));
+        if (bgraphType === 'compare') {
+            setBgraphers(bgraphers => ({ ...bgraphers, 
+                main: {
+                    bgraphStr:  bgraphStr,
+                    bgraphType: 'graph',
+                },
+                comparedTo: {
+                    bgraphStr:  bgraphStr,
+                    bgraphType: 'graph',
+                }
+            }));
+        } else {
+            setBgraphers(bgraphers => ({ ...bgraphers, 
+                main: {
+                    bgraphStr:  bgraphStr,
+                    bgraphType: bgraphType,
+                }
+            }));
+        }
         setAtForm(false);
     }
 

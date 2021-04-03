@@ -442,7 +442,17 @@ let ImageImpl = (function () {
             );
         },
 
+        getBlockData: function(imgBgraph, blockID) {
+            return ((imgBgraph.blocksData && (blockID in imgBgraph.blocksData)) 
+                ? imgBgraph.blocksData[blockID] 
+                : null
+            );
+        },
+
         drawEdges: function(bgraphState, imgBgraph, blockID) {
+            const blockData = ImageImpl.getBlockData(imgBgraph, blockID);
+            if (blockData === null) return;
+
             let context = imgBgraph.canvas.getContext(CANVAS_TYPE);
 
             for (const startEdgeEndID of imgBgraph.blocksData[blockID].edgeEnds) {
@@ -460,18 +470,13 @@ let ImageImpl = (function () {
             let x = curBgraphPixel(bgraphState, 'x');
             let y = curBgraphPixel(bgraphState, 'y');
 
-            if (y < 0 || y >= imgBgraph.imageHeight) { return [null, null]; }
-            if (x < 0 || x >= imgBgraph.imageWidth)  { return [null, null]; }
+            if (y < 0 || y >= imgBgraph.imageHeight) return null;
+            if (x < 0 || x >= imgBgraph.imageWidth)  return null;
 
             let blockID = imgBgraph.blocksLookup.get(x,y);
-            if (blockID === -1) { return [null, null]; }
+            if (blockID === -1) return null;
 
-            let blockData = null;
-            if (imgBgraph.blocksData && imgBgraph.blocksData.hasOwnProperty(blockID)) {
-                blockData = imgBgraph.blocksData[blockID];
-            }
-
-            return [blockID, blockData];
+            return blockID;
         },
 
         printCoords: function(bgraphState, imgBgraph) {

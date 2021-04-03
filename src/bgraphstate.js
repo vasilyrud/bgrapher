@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 function BgraphState() {
-    this.didFirstDraw = false;
     this.zoom = 1.0;
     this.offset = {
         x: 0,
