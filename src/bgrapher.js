@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { ImageImpl } from './bgrapherimpl/image.js'
-import { BgraphEventsImpl } from './events.js'
+import { ImageImpl } from './grapherimpl/image.js'
+import { BgraphEventsImpl } from './eventsimpl/bgraphevents.js'
 
 function curBgraphPixel(coord, bgraphState, cur) {
     return Math.floor(

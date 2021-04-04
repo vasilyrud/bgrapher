@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import imageRewire, { ImageImpl } from 'bgrapherimpl/image.js';
+import imageRewire, { ImageImpl } from 'grapherimpl/image.js';
 const xyArray = imageRewire.__get__('xyArray');
 const colorToRGB = imageRewire.__get__('colorToRGB');
 const pointsFlipXY = imageRewire.__get__('pointsFlipXY');
