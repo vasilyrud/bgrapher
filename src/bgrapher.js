@@ -15,81 +15,97 @@ limitations under the License.
 */
 
 import { ImageImpl } from './bgrapherimpl/image.js'
-import { initBgraphEvents } from './events.js'
+import { BgraphEventsImpl } from './events.js'
 
-const firstDrawEvent = new CustomEvent('bgraphFirstDraw');
+function curBgraphPixel(coord, bgraphState, cur) {
+    return Math.floor(
+        (cur[coord] / bgraphState.zoom) - bgraphState.offset[coord]
+    );
+}
 
-var BGrapher = function(GrapherImpl = ImageImpl) {
+var BGrapher = function(
+    GrapherImpl = ImageImpl,
+    EventsImpl  = BgraphEventsImpl,
+) {
     this.GrapherImpl = GrapherImpl;
+    this.EventsImpl  = EventsImpl;
 
     this.bgraphWidth = function() {
-        return this.GrapherImpl.getBgraphWidth(this.bgraphImpl);
+        return this.GrapherImpl.getBgraphWidth(this.grapherState);
     }
 
     this.bgraphHeight = function() {
-        return this.GrapherImpl.getBgraphHeight(this.bgraphImpl);
+        return this.GrapherImpl.getBgraphHeight(this.grapherState);
     }
 
     this.clientWidth = function() {
-        return this.GrapherImpl.getClientWidth(this.bgraphImpl);
+        return this.GrapherImpl.getClientWidth(this.grapherState);
     }
 
     this.clientHeight = function() {
-        return this.GrapherImpl.getClientHeight(this.bgraphImpl);
+        return this.GrapherImpl.getClientHeight(this.grapherState);
     }
 
     this.initBgraph = function(bgraphStr) {
-        this.bgraphImpl = this.GrapherImpl.initBgraph(JSON.parse(bgraphStr));
+        this.grapherState = this.GrapherImpl.initBgraph(JSON.parse(bgraphStr));
         this.didFirstDraw = false;
     }
 
     this.initTestBgraph = function(numCols, numRows) {
-        this.bgraphImpl = this.GrapherImpl.initTestBgraph(numCols, numRows);
+        this.grapherState = this.GrapherImpl.initTestBgraph(numCols, numRows);
         this.didFirstDraw = false;
     }
 
     this.initTestBgraphLarge = function(numCols, numRows) {
-        this.bgraphImpl = this.GrapherImpl.initTestBgraphLarge(numCols, numRows);
+        this.grapherState = this.GrapherImpl.initTestBgraphLarge(numCols, numRows);
         this.didFirstDraw = false;
     }
 
     this.populateElement = function(bgraphState, bgraphElement) {
         this.bgraphElement = bgraphElement;
 
-        this.GrapherImpl.populateElement(this.bgraphImpl, this.bgraphElement);
-        initBgraphEvents(bgraphState, this, this.bgraphElement);
+        this.GrapherImpl.populateElement(this.grapherState, this.bgraphElement);
+        this.eventState = this.EventsImpl.initEvents(bgraphState, this, this.bgraphElement);
 
         bgraphState.attach(this);
         this.draw(bgraphState);
     }
 
     this.draw = function(bgraphState) {
-        this.GrapherImpl.setClientSize(this.bgraphImpl, 
+        this.GrapherImpl.setClientSize(this.grapherState, 
             this.bgraphElement.clientWidth, 
             this.bgraphElement.clientHeight
         );
 
         if (!this.didFirstDraw) {
             this.didFirstDraw = true;
-            this.bgraphElement.dispatchEvent(firstDrawEvent);
+            this.bgraphElement.dispatchEvent(this.EventsImpl.firstDrawEvent);
         }
-        this.GrapherImpl.drawBgraph(bgraphState, this.bgraphImpl);
+        this.GrapherImpl.drawBgraph(bgraphState, this.grapherState);
     }
 
     this.getBlockData = function(blockID) {
-        return this.GrapherImpl.getBlockData(this.bgraphImpl, blockID);
+        return this.GrapherImpl.getBlockData(this.grapherState, blockID);
     }
 
     this.drawEdges = function(bgraphState, blockID) {
-        this.GrapherImpl.drawEdges(bgraphState, this.bgraphImpl, blockID);
+        this.GrapherImpl.drawEdges(bgraphState, this.grapherState, blockID);
     }
 
     this.curBlock = function(bgraphState) {
-        return this.GrapherImpl.getCurBlock(bgraphState, this.bgraphImpl);
+        const cur = EventsImpl.getCur(this.eventState);
+        return this.GrapherImpl.getCurBlock(this.grapherState,
+            curBgraphPixel('x', bgraphState, cur),
+            curBgraphPixel('y', bgraphState, cur),
+        );
     }
 
     this.printCoords = function(bgraphState) {
-        return this.GrapherImpl.printCoords(bgraphState, this.bgraphImpl);
+        const cur = EventsImpl.getCur(this.eventState);
+        return this.GrapherImpl.printCoords(this.grapherState,
+            curBgraphPixel('x', bgraphState, cur),
+            curBgraphPixel('y', bgraphState, cur),
+        );
     }
 };
 

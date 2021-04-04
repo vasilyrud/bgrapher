@@ -20,6 +20,18 @@ const ZOOM_FRICTION = 550; // Higher number means lower speed
 const MARGIN_PIXELS = 100;
 const BGRAPH_DEBUG = true;
 
+function BgraphEventState() {
+    this.panning = false;
+    this.panningPrev = {
+        x: 0,
+        y: 0,
+    };
+    this.cur = {
+        x: 0,
+        y: 0,
+    };
+}
+
 function getLocal(coord, event) {
     return ((coord === 'x')
         ? event.clientX - event.target.getBoundingClientRect().left
@@ -84,35 +96,35 @@ function getInitOffset(coord, bgraphState, bgrapher) {
     return constrainOffset(newOffset, bgraphState, bgraphSize, clientSize);
 }
 
-function getPanOffset(coord, bgraphState, bgrapher) {
+function getPanOffset(coord, bgraphState, eventState, bgrapher) {
     const [bgraphSize, clientSize] = coordValues(coord, bgrapher);
 
     let newOffset = bgraphState.offset[coord] + 
-        (bgraphState.cur[coord] - bgraphState.panningPrev[coord]) / bgraphState.zoom;
+        (eventState.cur[coord] - eventState.panningPrev[coord]) / bgraphState.zoom;
 
     return constrainOffset(newOffset, bgraphState, bgraphSize, clientSize);
 }
 
-function getZoomOffset(coord, bgraphState, bgrapher, deltaUsed) {
+function getZoomOffset(coord, bgraphState, eventState, bgrapher, deltaUsed) {
     const [bgraphSize, clientSize] = coordValues(coord, bgrapher);
 
     let newOffset = bgraphState.offset[coord] + 
-        ((bgraphState.cur[coord] * deltaUsed) / (bgraphState.zoom * ZOOM_FRICTION));
+        ((eventState.cur[coord] * deltaUsed) / (bgraphState.zoom * ZOOM_FRICTION));
 
     return constrainOffset(newOffset, bgraphState, bgraphSize, clientSize);
 }
 
-function mousemovePan(bgraphState, bgrapher, bgraphElement, event) {
-    bgraphState.offset.x = getPanOffset('x', bgraphState, bgrapher);
-    bgraphState.offset.y = getPanOffset('y', bgraphState, bgrapher);
+function mousemovePan(bgraphState, eventState, bgrapher, event) {
+    bgraphState.offset.x = getPanOffset('x', bgraphState, eventState, bgrapher);
+    bgraphState.offset.y = getPanOffset('y', bgraphState, eventState, bgrapher);
 
     bgraphState.update();
 
-    bgraphState.panningPrev.x = getLocal('x', event);
-    bgraphState.panningPrev.y = getLocal('y', event);
+    eventState.panningPrev.x = getLocal('x', event);
+    eventState.panningPrev.y = getLocal('y', event);
 }
 
-function mousemoveHover(bgraphState, bgrapher, event) {
+function mousemoveHover(bgraphState, bgrapher) {
     let hoveredBlockID = bgrapher.curBlock(bgraphState);
     if (hoveredBlockID === null) return;
 
@@ -132,72 +144,84 @@ function showBlockInfo(bgrapher, hoveredBlockID) {
     console.log(hoveredBlockID);
 }
 
-let BgraphEvents = (function () {
+let eventHandlers = {
+    bgraphFirstDraw: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+        bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);
+        bgraphState.offset.y = getInitOffset('y', bgraphState, bgrapher);
+    },
+    wheel: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+        eventState.cur.x = getLocal('x', event);
+        eventState.cur.y = getLocal('y', event);
+
+        // Offset depends on new zoom value 
+        // and on how much of the "scroll" was used for zoom.
+        const [newZoom, deltaUsed] = getZoom(bgraphState, event);
+        bgraphState.zoom = newZoom;
+
+        bgraphState.offset.x = getZoomOffset('x', bgraphState, eventState, bgrapher, deltaUsed);
+        bgraphState.offset.y = getZoomOffset('y', bgraphState, eventState, bgrapher, deltaUsed);
+
+        bgraphState.update();
+
+        if (BGRAPH_DEBUG) bgrapher.printCoords(bgraphState);
+    },
+    mousedown: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+        // Ignore non-left clicks
+        if (event.button !== 0) return;
+
+        eventState.panning = true;
+        eventState.panningPrev.x = getLocal('x', event);
+        eventState.panningPrev.y = getLocal('y', event);
+    },
+    mouseup: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+        eventState.panning = false;
+    },
+    mouseout: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+        eventState.panning = false;
+    },
+    mousemove: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+        eventState.cur.x = getLocal('x', event);
+        eventState.cur.y = getLocal('y', event);
+
+        if (eventState.panning) {
+            mousemovePan(bgraphState, eventState, bgrapher, event);
+        } else {
+            mousemoveHover(bgraphState, bgrapher);
+        }
+
+        if (BGRAPH_DEBUG) bgrapher.printCoords(bgraphState);
+    },
+    resize: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+        bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);
+        bgraphState.offset.y = getInitOffset('y', bgraphState, bgrapher);
+
+        bgraphState.update();
+    },
+};
+
+let BgraphEventsImpl = (function () {
     return {
-        bgraphFirstDraw: function(bgraphState, bgrapher, bgraphElement, event) {
-            bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);
-            bgraphState.offset.y = getInitOffset('y', bgraphState, bgrapher);
-        },
-        wheel: function(bgraphState, bgrapher, bgraphElement, event) {
-            bgraphState.cur.x = getLocal('x', event);
-            bgraphState.cur.y = getLocal('y', event);
+        firstDrawEvent: new Event('bgraphFirstDraw'),
 
-            // Offset depends on new zoom value 
-            // and on how much of the "scroll" was used for zoom.
-            const [newZoom, deltaUsed] = getZoom(bgraphState, event);
-            bgraphState.zoom = newZoom;
+        initEvents: function(bgraphState, bgrapher, bgraphElement) {
+            let eventState = new BgraphEventState();
 
-            bgraphState.offset.x = getZoomOffset('x', bgraphState, bgrapher, deltaUsed);
-            bgraphState.offset.y = getZoomOffset('y', bgraphState, bgrapher, deltaUsed);
+            for (const eventType in eventHandlers) {
+                let target = (eventType === 'resize') ? window : bgraphElement;
 
-            bgraphState.update();
-
-            if (BGRAPH_DEBUG) bgrapher.printCoords(bgraphState);
-        },
-        mousedown: function(bgraphState, bgrapher, bgraphElement, event) {
-            // Ignore non-left clicks
-            if (event.button !== 0) return;
-
-            bgraphState.panning = true;
-            bgraphState.panningPrev.x = getLocal('x', event);
-            bgraphState.panningPrev.y = getLocal('y', event);
-        },
-        mouseup: function(bgraphState, bgrapher, bgraphElement, event) {
-            bgraphState.panning = false;
-        },
-        mouseout: function(bgraphState, bgrapher, bgraphElement, event) {
-            bgraphState.panning = false;
-        },
-        mousemove: function(bgraphState, bgrapher, bgraphElement, event) {
-            bgraphState.cur.x = getLocal('x', event);
-            bgraphState.cur.y = getLocal('y', event);
-
-            if (bgraphState.panning) {
-                mousemovePan(bgraphState, bgrapher, bgraphElement, event);
-            } else {
-                mousemoveHover(bgraphState, bgrapher, event);
+                target.addEventListener(eventType, 
+                    eventHandlers[eventType]
+                        .bind(null, bgraphState, eventState, bgrapher, bgraphElement)
+                );
             }
 
-            if (BGRAPH_DEBUG) bgrapher.printCoords(bgraphState);
+            return eventState;
         },
-        resize: function(bgraphState, bgrapher, bgraphElement, event) {
-            bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);
-            bgraphState.offset.y = getInitOffset('y', bgraphState, bgrapher);
 
-            bgraphState.update();
+        getCur: function(eventState) {
+            return eventState.cur;
         },
-    };
+    }
 })();
 
-function initBgraphEvents(bgraphState, bgrapher, bgraphElement) {
-
-    for (let eventType in BgraphEvents) {
-        let target = (eventType === 'resize') ? window : bgraphElement;
-
-        target.addEventListener(eventType, 
-            BgraphEvents[eventType].bind(null, bgraphState, bgrapher, bgraphElement)
-        );
-    }
-}
-
-export { initBgraphEvents }
+export { BgraphEventsImpl }

@@ -20,15 +20,6 @@ function BgraphState() {
         x: 0,
         y: 0,
     };
-    this.panning = false;
-    this.panningPrev = {
-        x: 0,
-        y: 0,
-    };
-    this.cur = {
-        x: 0,
-        y: 0,
-    };
 
     this.bgraphers = [];
 

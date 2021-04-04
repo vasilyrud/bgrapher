@@ -17,7 +17,7 @@ limitations under the License.
 const CANVAS_TYPE = '2d';
 const DEFAULT_BG = '#ffffff';
 
-function ImageBgraph(
+function ImageState(
     imageWidth, imageHeight, 
     buffer,     blocksLookup, 
 ) {
@@ -63,12 +63,6 @@ function xyArray(width, height) {
 
 function toCanvas(bgraphState, coord, value) {
     return ((value + bgraphState.offset[coord]) * bgraphState.zoom);
-}
-
-function curBgraphPixel(bgraphState, coord) {
-    return Math.floor(
-        (bgraphState.cur[coord] / bgraphState.zoom) - bgraphState.offset[coord]
-    );
 }
 
 function colorToRGB(c) {
@@ -181,7 +175,7 @@ function generateImage(imageWidth, imageHeight, cbPixels) {
     buffer.height = imageHeight;
 
     if (imageWidth * imageHeight == 0) {
-        return new ImageBgraph(
+        return new ImageState(
             imageWidth, imageHeight,
         );
     }
@@ -192,7 +186,7 @@ function generateImage(imageWidth, imageHeight, cbPixels) {
     cbPixels(imagedata, lookup);
     bufferContext.putImageData(imagedata, 0, 0);
 
-    return new ImageBgraph(
+    return new ImageState(
         imageWidth, imageHeight,
         buffer,     lookup, 
     );
@@ -417,12 +411,12 @@ let ImageImpl = (function () {
             return ImageImpl.initBgraph(testInput);
         },
 
-        populateElement: function(imgBgraph, bgraphElement) {
-            bgraphElement.appendChild(imgBgraph.canvas);
+        populateElement: function(imageState, bgraphElement) {
+            bgraphElement.appendChild(imageState.canvas);
         },
 
-        drawBgraph: function(bgraphState, imgBgraph) {
-            let canvas = imgBgraph.canvas;            
+        drawBgraph: function(bgraphState, imageState) {
+            let canvas = imageState.canvas;            
             let context = canvas.getContext(CANVAS_TYPE);
             resetBG(context, canvas.width, canvas.height);
             
@@ -430,57 +424,54 @@ let ImageImpl = (function () {
                 pixelateImage(context);
             }
 
-            if (imgBgraph.imageWidth * imgBgraph.imageHeight == 0) {
+            if (imageState.imageWidth * imageState.imageHeight == 0) {
                 return;
             }
 
-            context.drawImage(imgBgraph.buffer,
+            context.drawImage(imageState.buffer,
                 bgraphState.zoom * bgraphState.offset.x,
                 bgraphState.zoom * bgraphState.offset.y,
-                bgraphState.zoom * imgBgraph.imageWidth ,
-                bgraphState.zoom * imgBgraph.imageHeight,
+                bgraphState.zoom * imageState.imageWidth ,
+                bgraphState.zoom * imageState.imageHeight,
             );
         },
 
-        getBlockData: function(imgBgraph, blockID) {
-            return ((imgBgraph.blocksData && (blockID in imgBgraph.blocksData)) 
-                ? imgBgraph.blocksData[blockID] 
+        getBlockData: function(imageState, blockID) {
+            return ((imageState.blocksData && (blockID in imageState.blocksData)) 
+                ? imageState.blocksData[blockID] 
                 : null
             );
         },
 
-        drawEdges: function(bgraphState, imgBgraph, blockID) {
-            const blockData = ImageImpl.getBlockData(imgBgraph, blockID);
+        drawEdges: function(bgraphState, imageState, blockID) {
+            const blockData = ImageImpl.getBlockData(imageState, blockID);
             if (blockData === null) return;
 
-            let context = imgBgraph.canvas.getContext(CANVAS_TYPE);
+            let context = imageState.canvas.getContext(CANVAS_TYPE);
 
-            for (const startEdgeEndID of imgBgraph.blocksData[blockID].edgeEnds) {
-                let startEdgeEnd = imgBgraph.edgeEndsData[startEdgeEndID];
+            for (const startEdgeEndID of imageState.blocksData[blockID].edgeEnds) {
+                let startEdgeEnd = imageState.edgeEndsData[startEdgeEndID];
 
                 for (const endEdgeEndID of startEdgeEnd.edgeEnds) {
-                    let endEdgeEnd = imgBgraph.edgeEndsData[endEdgeEndID];
+                    let endEdgeEnd = imageState.edgeEndsData[endEdgeEndID];
 
                     drawEdge(bgraphState, context, startEdgeEnd, endEdgeEnd);
                 }
             }
         },
 
-        getCurBlock: function(bgraphState, imgBgraph) {
-            let x = curBgraphPixel(bgraphState, 'x');
-            let y = curBgraphPixel(bgraphState, 'y');
+        getCurBlock: function(imageState, x, y) {
+            if (y < 0 || y >= imageState.imageHeight) return null;
+            if (x < 0 || x >= imageState.imageWidth ) return null;
 
-            if (y < 0 || y >= imgBgraph.imageHeight) return null;
-            if (x < 0 || x >= imgBgraph.imageWidth)  return null;
-
-            let blockID = imgBgraph.blocksLookup.get(x,y);
+            let blockID = imageState.blocksLookup.get(x,y);
             if (blockID === -1) return null;
 
             return blockID;
         },
 
-        printCoords: function(bgraphState, imgBgraph) {
-            let context = imgBgraph.canvas.getContext(CANVAS_TYPE);
+        printCoords: function(imageState, x, y) {
+            let context = imageState.canvas.getContext(CANVAS_TYPE);
 
             context.fillStyle = '#ffffff';
             context.fillRect(5, 5, 50, 20);
@@ -488,30 +479,30 @@ let ImageImpl = (function () {
             context.fillStyle = '#000000';
             context.font = '16px';
             context.fillText(
-                `${curBgraphPixel(bgraphState, 'x')} ${curBgraphPixel(bgraphState, 'y')}`, 
+                `${x} ${y}`, 
                 10, 20
             );
         },
 
-        getBgraphWidth: function(imgBgraph) {
-            return imgBgraph.imageWidth;
+        getBgraphWidth: function(imageState) {
+            return imageState.imageWidth;
         },
 
-        getBgraphHeight: function(imgBgraph) {
-            return imgBgraph.imageHeight;
+        getBgraphHeight: function(imageState) {
+            return imageState.imageHeight;
         },
 
-        getClientWidth: function(imgBgraph) {
-            return imgBgraph.canvas.width;
+        getClientWidth: function(imageState) {
+            return imageState.canvas.width;
         },
 
-        getClientHeight: function(imgBgraph) {
-            return imgBgraph.canvas.height;
+        getClientHeight: function(imageState) {
+            return imageState.canvas.height;
         },
 
-        setClientSize: function(imgBgraph, newWidth, newHeight) {
-            imgBgraph.canvas.width  = newWidth;
-            imgBgraph.canvas.height = newHeight;
+        setClientSize: function(imageState, newWidth, newHeight) {
+            imageState.canvas.width  = newWidth;
+            imageState.canvas.height = newHeight;
         },
     };
 })();
