@@ -23,6 +23,7 @@ import { BgraphState } from './bgraphstate.js'
 import { BGrapher } from './bgrapher.js'
 
 import defaultBgraph from './bgraphs/default.json';
+import testOnlyDots from './bgraphs/testonlydots.js';
 
 function BGraph(props) {
     const bgrapher = new BGrapher();
@@ -31,7 +32,7 @@ function BGraph(props) {
     if (props.bgraphType == 'graph') {
         bgrapher.initBgraph(props.bgraphStr);
     } else if (props.bgraphType == 'test') {
-        bgrapher.initTestBgraph(1000, 10000);
+        bgrapher.initBgraph(testOnlyDots(1000, 10000));
     } else if (props.bgraphType == 'testLarge') {
         bgrapher.initTestBgraphLarge(5000, 10000);
     }

@@ -1,8 +1,139 @@
 import { expect } from 'chai';
 
+import testOnlyDots from 'bgraphs/testonlydots.js';
 import { BgraphState } from 'bgraphstate.js'
-import bgrapherRewire from 'bgrapher.js'
+import bgrapherRewire, {BGrapher} from 'bgrapher.js'
 const curBgraphPixel = bgrapherRewire.__get__('curBgraphPixel');
+
+const FakeGrapher = {
+    initBgraph: () => {},
+};
+
+describe('initBgraph onlyDots', () => {
+    const inputData = testOnlyDots(2,2);
+    const expectedIDs = [0,1,2,3];
+    const expectedXYs = [[0,0],[2,0],[0,2],[2,2]];
+
+    let bgraphers = {
+        'from object': new BGrapher(FakeGrapher),
+        'from string': new BGrapher(FakeGrapher),
+    };
+    bgraphers['from object'].initBgraph(inputData);
+    bgraphers['from string'].initBgraph(JSON.stringify(inputData));
+
+    Object.entries(bgraphers).forEach(([description,bgrapher]) => {
+        it(`Generates the right block data ${description}`, () => {
+            expect(bgrapher.blocksData).to.have.all.keys(expectedIDs);
+            expectedIDs.forEach((id, i) => {
+                expect(bgrapher.blocksData[id]['text']).to.have.string('This is block');
+                expect(bgrapher.blocksData[id]['text']).to.have.string(expectedXYs[i][0]);
+                expect(bgrapher.blocksData[id]['text']).to.have.string(expectedXYs[i][1]);
+                expect(bgrapher.blocksData[id]['edgeEnds']).to.eql([]);
+            });
+        });
+
+        it(`Generates the right edgeEnd data ${description}`, () => {
+            expect(bgrapher.edgeEndsData).to.eql({});
+        });
+    });
+});
+
+describe('initBgraph', () => {
+    it('Generates empty bgraph', () => {
+        let bgrapher = new BGrapher(FakeGrapher);
+        bgrapher.initBgraph({
+            width:  0,
+            height: 0,
+            blocks: [],
+            edgeEnds: [],
+        });
+
+        expect(bgrapher.blocksData).to.eql({});
+        expect(bgrapher.edgeEndsData).to.eql({});
+        expect(bgrapher.getBlockData(0)).to.be.null;
+    });
+
+    it('Generates the right edgeEnd data', () => {
+        let bgrapher = new BGrapher(FakeGrapher);
+        bgrapher.initBgraph({
+            width:  4,
+            height: 4,
+            blocks: [],
+            edgeEnds: [
+                {
+                    id: 0,
+                    x: 0, y: 0,
+                    direction: 'down',
+                    isSource: true,
+                    edgeEnds: [
+                        1
+                    ],
+                },
+                {
+                    id: 100,
+                    x: 1, y: 1,
+                    direction: 'up',
+                    isSource: false,
+                    edgeEnds: [
+                        0
+                    ],
+                },
+            ],
+        });
+
+        expect(bgrapher.edgeEndsData).to.have.all.keys(0,100);
+        expect(bgrapher.edgeEndsData[100]).to.eql({
+            x: 1, y: 1,
+            direction: 'up',
+            isSource: false,
+            edgeEnds: [
+                0
+            ],
+        });
+    });
+
+    it('Generates the right block edgeEnd data', () => {
+        let bgrapher = new BGrapher(FakeGrapher);
+        bgrapher.initBgraph({
+            width:  4,
+            height: 4,
+            blocks: [
+                {
+                    id: 0,
+                    x: 0, y: 0,
+                    width: 2, height: 1,
+                    depth: 0, color: 1,
+                    edgeEnds: [
+                        0,
+                        100,
+                    ],
+                }
+            ],
+            edgeEnds: [
+                {
+                    id: 0,
+                    x: 0, y: 1,
+                    direction: 'down',
+                    isSource: true,
+                    edgeEnds: [
+                        1
+                    ],
+                },
+                {
+                    id: 100,
+                    x: 1, y: 1,
+                    direction: 'up',
+                    isSource: false,
+                    edgeEnds: [
+                        0
+                    ],
+                },
+            ],
+        });
+
+        expect(bgrapher.getBlockData(0).edgeEnds).to.eql([0,100]);
+    });
+});
 
 describe('curBgraphPixel', () => {
     function testCurBgraphPixel(

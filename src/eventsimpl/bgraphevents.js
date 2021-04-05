@@ -18,7 +18,6 @@ const ZOOM_MIN = 1;
 const ZOOM_MAX = 100;
 const ZOOM_FRICTION = 550; // Higher number means lower speed
 const MARGIN_PIXELS = 100;
-const BGRAPH_DEBUG = true;
 
 function BgraphEventState() {
     this.panning = false;
@@ -130,7 +129,9 @@ function mousemoveHover(bgraphState, bgrapher) {
 
     bgrapher.drawEdges(bgraphState, hoveredBlockID);
 
-    if (BGRAPH_DEBUG) showBlockInfo(bgrapher, hoveredBlockID);
+    if (process.env.NODE_ENV === 'development') {
+        showBlockInfo(bgrapher, hoveredBlockID);
+    }
 }
 
 function showBlockInfo(bgrapher, hoveredBlockID) {
@@ -163,7 +164,9 @@ let eventHandlers = {
 
         bgraphState.update();
 
-        if (BGRAPH_DEBUG) bgrapher.printCoords(bgraphState);
+        if (process.env.NODE_ENV === 'development') {
+            bgrapher.printCoords(bgraphState);
+        }
     },
     mousedown: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
         // Ignore non-left clicks
@@ -189,7 +192,9 @@ let eventHandlers = {
             mousemoveHover(bgraphState, bgrapher);
         }
 
-        if (BGRAPH_DEBUG) bgrapher.printCoords(bgraphState);
+        if (process.env.NODE_ENV === 'development') {
+            bgrapher.printCoords(bgraphState);
+        }
     },
     resize: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
         bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);

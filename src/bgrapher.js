@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import { ImageImpl } from './grapherimpl/image.js'
+import { BezierImpl } from './edgesimpl/bezier.js'
 import { BgraphEventsImpl } from './eventsimpl/bgraphevents.js'
 
 function curBgraphPixel(coord, bgraphState, cur) {
@@ -23,11 +24,48 @@ function curBgraphPixel(coord, bgraphState, cur) {
     );
 }
 
+function getBlocksData(inputData) {
+    const numBlocks = inputData.blocks.length;
+    let blocksData  = {};
+
+    for (let i = 0; i < numBlocks; i++) {
+        const block = inputData.blocks[i];
+
+        blocksData[block.id] = {
+            text:     block.text,
+            edgeEnds: block.edgeEnds,
+        };
+    }
+
+    return blocksData;
+}
+
+function getEdgeEndsData(inputData) {
+    const numEdgeEnds = inputData.edgeEnds.length;
+    let edgeEndsData  = {};
+
+    for (let i = 0; i < numEdgeEnds; i++) {
+        const edgeEnd = inputData.edgeEnds[i];
+
+        edgeEndsData[edgeEnd.id] = {
+            x: edgeEnd.x,
+            y: edgeEnd.y,
+            direction: edgeEnd.direction,
+            isSource:  edgeEnd.isSource,
+            edgeEnds:  edgeEnd.edgeEnds,
+        };
+    }
+
+    return edgeEndsData;
+}
+
 var BGrapher = function(
     GrapherImpl = ImageImpl,
+    EdgesImpl   = BezierImpl,
     EventsImpl  = BgraphEventsImpl,
 ) {
     this.GrapherImpl = GrapherImpl;
+    this.EdgesImpl   = EdgesImpl;
     this.EventsImpl  = EventsImpl;
 
     this.bgraphWidth = function() {
@@ -46,13 +84,15 @@ var BGrapher = function(
         return this.GrapherImpl.getClientHeight(this.grapherState);
     }
 
-    this.initBgraph = function(bgraphStr) {
-        this.grapherState = this.GrapherImpl.initBgraph(JSON.parse(bgraphStr));
-        this.didFirstDraw = false;
-    }
+    this.initBgraph = function(bgraph) {
+        const inputData = ((typeof bgraph === 'string' || bgraph instanceof String)
+            ? JSON.parse(bgraph)
+            : bgraph
+        );
 
-    this.initTestBgraph = function(numCols, numRows) {
-        this.grapherState = this.GrapherImpl.initTestBgraph(numCols, numRows);
+        this.grapherState = this.GrapherImpl.initBgraph(inputData);
+        this.blocksData   = getBlocksData(inputData);
+        this.edgeEndsData = getEdgeEndsData(inputData);
         this.didFirstDraw = false;
     }
 
@@ -85,11 +125,25 @@ var BGrapher = function(
     }
 
     this.getBlockData = function(blockID) {
-        return this.GrapherImpl.getBlockData(this.grapherState, blockID);
+        if (!this.blocksData) return null;
+        if (!(blockID in this.blocksData)) return null;
+        return this.blocksData[blockID];
     }
 
     this.drawEdges = function(bgraphState, blockID) {
-        this.GrapherImpl.drawEdges(bgraphState, this.grapherState, blockID);
+        const blockData = this.getBlockData(blockID);
+        if (blockData === null) return;
+
+        for (const startEdgeEndID of this.blocksData[blockID].edgeEnds) {
+            let startEdgeEnd = this.edgeEndsData[startEdgeEndID];
+
+            for (const endEdgeEndID of startEdgeEnd.edgeEnds) {
+                let endEdgeEnd = this.edgeEndsData[endEdgeEndID];
+
+                let points = this.EdgesImpl.generatePoints(startEdgeEnd, endEdgeEnd);
+                this.GrapherImpl.drawBezierEdge(bgraphState, this.grapherState, points);
+            }
+        }
     }
 
     this.curBlock = function(bgraphState) {

@@ -1,12 +1,9 @@
 import { expect } from 'chai';
 
+import testOnlyDots from 'bgraphs/testonlydots.js';
 import imageRewire, { ImageImpl } from 'grapherimpl/image.js';
 const xyArray = imageRewire.__get__('xyArray');
 const colorToRGB = imageRewire.__get__('colorToRGB');
-const pointsFlipXY = imageRewire.__get__('pointsFlipXY');
-const pointsMove = imageRewire.__get__('pointsMove');
-const makeCurve = imageRewire.__get__('makeCurve');
-const makeEdge = imageRewire.__get__('makeEdge');
 
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
@@ -138,8 +135,8 @@ describe('Generate image', () => {
         });
     });
 
-    describe('initTestBgraph', () => {
-        const bgraph = ImageImpl.initTestBgraph(2,2);
+    describe('initBgraph only dots', () => {
+        const bgraph = ImageImpl.initBgraph(testOnlyDots(2,2));
 
         it('Generates the right image size', () => {
             expect(bgraph.imageWidth).to.equal(4);
@@ -149,23 +146,6 @@ describe('Generate image', () => {
         it('Generates the right image', () => {
             testBlackDotLocations.forEach(i => testColor(bgraph, i, black));
             testWhiteDotLocations.forEach(i => testColor(bgraph, i, white));
-        });
-
-        it('Generates the right block data', () => {
-            const expectedIDs = [0,1,2,3];
-            const expectedXYs = [[0,0],[2,0],[0,2],[2,2]];
-
-            expect(bgraph.blocksData).to.have.all.keys(expectedIDs);
-            expectedIDs.forEach((id, i) => {
-                expect(bgraph.blocksData[id]['text']).to.have.string('This is block');
-                expect(bgraph.blocksData[id]['text']).to.have.string(expectedXYs[i][0]);
-                expect(bgraph.blocksData[id]['text']).to.have.string(expectedXYs[i][1]);
-                expect(bgraph.blocksData[id]['edgeEnds']).to.eql([]);
-            });
-        });
-
-        it('Generates the right edgeEnd data', () => {
-            expect(bgraph.edgeEndsData).to.eql({});
         });
 
         it('Generates the right lookup', () => {
@@ -188,9 +168,6 @@ describe('Generate image', () => {
             expect(bgraph.blocksLookup).to.be.undefined;
             expect(bgraph.buffer).to.be.undefined;
             expect(bgraph.canvas).not.to.be.undefined;
-
-            expect(bgraph.blocksData).to.eql({});
-            expect(bgraph.edgeEndsData).to.eql({});
         });
 
         it('Generates the right non-zero size', () => {
@@ -346,283 +323,13 @@ describe('Generate image', () => {
             [0,1,4].forEach(i => testLookup(bgraph, i, 0));
             [5,6,9,10].forEach(i => testLookup(bgraph, i, 100));
         });
-
-        it('Generates the right edgeEnd data', () => {
-            const bgraph = ImageImpl.initBgraph({
-                width:  4,
-                height: 4,
-                blocks: [],
-                edgeEnds: [
-                    {
-                        id: 0,
-                        x: 0, y: 0,
-                        direction: 'down',
-                        isSource: true,
-                        edgeEnds: [
-                            1
-                        ],
-                    },
-                    {
-                        id: 100,
-                        x: 1, y: 1,
-                        direction: 'up',
-                        isSource: false,
-                        edgeEnds: [
-                            0
-                        ],
-                    },
-                ],
-            });
-
-            expect(bgraph.edgeEndsData).to.have.all.keys(0,100);
-            expect(bgraph.edgeEndsData[100]).to.eql({
-                x: 1, y: 1,
-                direction: 'up',
-                isSource: false,
-                edgeEnds: [
-                    0
-                ],
-            });
-        });
-
-        it('Generates the right block edgeEnd data', () => {
-            const bgraph = ImageImpl.initBgraph({
-                width:  4,
-                height: 4,
-                blocks: [
-                    {
-                        id: 0,
-                        x: 0, y: 0,
-                        width: 2, height: 1,
-                        depth: 0, color: 1,
-                        edgeEnds: [
-                            0,
-                            100,
-                        ],
-                    }
-                ],
-                edgeEnds: [
-                    {
-                        id: 0,
-                        x: 0, y: 1,
-                        direction: 'down',
-                        isSource: true,
-                        edgeEnds: [
-                            1
-                        ],
-                    },
-                    {
-                        id: 100,
-                        x: 1, y: 1,
-                        direction: 'up',
-                        isSource: false,
-                        edgeEnds: [
-                            0
-                        ],
-                    },
-                ],
-            });
-
-            expect(bgraph.blocksData[0].edgeEnds).to.eql([0,100]);
-        });
-    });
-});
-
-describe('Points transformation', () => {
-    const input = [
-         0,  0,
-         1,  0,
-         0,  2,
-        -3, -4,
-         5, -6,
-        -7,  8,
-         9, 10,
-    ];
-
-    describe('pointsFlipXY', () => {
-        it('changes x and y around', () => {
-            expect(pointsFlipXY(input)).to.eql([
-                 0,  0,
-                 0,  1,
-                 2,  0,
-                -4, -3,
-                -6,  5,
-                 8, -7,
-                10,  9,
-            ]);
-        });
-    })
-
-    describe('pointsMove', () => {
-        it('translates points forward', () => {
-            expect(pointsMove(input, 5, 2)).to.eql([
-                 5,  2,
-                 6,  2,
-                 5,  4,
-                 2, -2,
-                10, -4,
-                -2, 10,
-                14, 12,
-            ]);
-        });
-
-        it('translates points backward', () => {
-            expect(pointsMove(input, -5, -2)).to.eql([
-                -5, -2,
-                -4, -2,
-                -5,  0,
-                -8, -6,
-                 0, -8,
-                -12, 6,
-                 4,  8,
-            ]);
-        });
-    })
-});
-
-describe('makeCurve', () => {
-    it('returns forward curve', () => {
-        expect(makeCurve(1,2,3,4)).to.eql([
-            1, 2, 1, 4, 3, 2, 
-            3, 4
-        ]);
-    });
-
-    it('returns direct back curve', () => {
-        expect(makeCurve(10,20,1,2)).to.eql([
-            10, 20, 10, 24.25, 5.5, 24.25, 
-            5.5, 20, 5.5, 2, 5.5, 20, 
-            5.5, 2, 5.5, -2.25, 1, -2.25, 
-            1, 2
-        ]);
-    });
-
-    it('returns around back curve short bottom', () => {
-        expect(makeCurve(1,20,2,3)).to.eql([
-            1, 20, 1, 22, -1, 22, 
-            -1, 20, -1, 3, -1, 20, 
-            -1, 3, -1, 0, 2, 0, 
-            2, 3
-        ]);
-    });
-
-    it('returns around back curve short top', () => {
-        expect(makeCurve(2,20,1,3)).to.eql([
-            2, 20, 2, 23, -1, 23, 
-            -1, 20, -1, 3, -1, 20, 
-            -1, 3, -1, 1, 1, 1, 
-            1, 3
-        ]);
-    });
-});
-
-describe('makeEdge', () => {
-    describe('vertical', () => {
-        const expectedDirectPoints = [
-            1.5, 3, 1.5, 4, 3.5, 3, 
-            3.5, 4
-        ];
-
-        it ('returns direct from source', () => {
-            expect(makeEdge({
-                isSource: true,
-                direction: "down",
-                x: 1,
-                y: 2,
-            },{
-                isSource: false,
-                direction: "down",
-                x: 3,
-                y: 4,
-            })).to.eql(expectedDirectPoints);
-        });
-
-        it ('returns direct from dest', () => {
-            expect(makeEdge({
-                isSource: false,
-                direction: "down",
-                x: 3,
-                y: 4,
-            },{
-                isSource: true,
-                direction: "down",
-                x: 1,
-                y: 2,
-            })).to.eql(expectedDirectPoints);
-        });
-    });
-
-    describe('horizontal', () => {
-        const expectedDirectPoints = [
-            2, 2.5, 3, 2.5, 2, 4.5, 
-            3, 4.5
-        ];
-
-        it ('returns direct from source', () => {
-            expect(makeEdge({
-                isSource: true,
-                direction: 'right',
-                x: 1,
-                y: 2,
-            },{
-                isSource: false,
-                direction: 'right',
-                x: 3,
-                y: 4,
-            })).to.eql(expectedDirectPoints);
-        });
-
-        it ('returns direct from dest', () => {
-            expect(makeEdge({
-                isSource: false,
-                direction: 'right',
-                x: 3,
-                y: 4,
-            },{
-                isSource: true,
-                direction: 'right',
-                x: 1,
-                y: 2,
-            })).to.eql(expectedDirectPoints);
-        });
-    });
-
-    describe('unsupported', () => {
-        const invalidDirections = [
-            ['left' , 'left' ],
-            ['left' , 'right'],
-            ['left' , 'up'   ],
-            ['left' , 'down' ],
-            ['up'   , 'left' ],
-            ['up'   , 'right'],
-            ['up'   , 'up'   ],
-            ['up'   , 'down' ],
-            ['right', 'left' ],
-            ['right', 'up'   ],
-            ['right', 'down' ],
-            ['down' , 'left' ],
-            ['down' , 'right'],
-            ['down' , 'up'   ],
-        ];
-
-        invalidDirections.forEach(([from, to]) => {
-            it (`disallows invalid directions ${from} ${to}`, () => {
-                expect(() => makeEdge({
-                    isSource: true,
-                    direction: from,
-                    x: 1, y: 2,
-                },{
-                    isSource: false,
-                    direction: to,
-                    x: 3, y: 4,
-                })).to.throw(`Unsupported edge directions: from ${from} to ${to}.`);
-            });
-        });
     });
 });
 
 describe('getCurBlock', () => {
-    function checkFoundID(foundID, expectedID) {
+    function testGetCurBlock(bgraph, x, y, expectedID) {
+        const foundID = ImageImpl.getCurBlock(bgraph, x, y);
+
         if (expectedID === null) {
             expect(foundID).to.be.null;
         } else {
@@ -630,26 +337,8 @@ describe('getCurBlock', () => {
         }
     }
 
-    function checkFoundData(foundData, expectedData) {
-        if (expectedData === null) {
-            expect(foundData).to.be.null;
-        } else {
-            expect(foundData.text).to.be.a('string');
-        }
-    }
-
-    function testGetCurBlock(bgraph, x, y, 
-        expectedID=null, expectedData=null, 
-    ) {
-        const foundID = ImageImpl.getCurBlock(bgraph, x, y);
-        checkFoundID(foundID, expectedID);
-
-        const foundData = ImageImpl.getBlockData(bgraph, foundID);
-        checkFoundData(foundData, expectedData);
-    }
-
     const bgraphWithoutData = ImageImpl.initTestBgraphLarge(2,2);
-    const bgraphWithData    = ImageImpl.initTestBgraph(2,2);
+    const bgraphWithData    = ImageImpl.initBgraph(testOnlyDots(2,2));
 
     const validCoords = [
         [0,0,0],
@@ -667,15 +356,15 @@ describe('getCurBlock', () => {
 
     it ('returns the right block', () => {
         validCoords.forEach(([x,y,id]) => {
-            testGetCurBlock(bgraphWithoutData, x, y, id, null);
-            testGetCurBlock(bgraphWithData,    x, y, id, true);
+            testGetCurBlock(bgraphWithoutData, x, y, id);
+            testGetCurBlock(bgraphWithData,    x, y, id);
         });
     });
 
     it ('doesn\'t return any block', () => {
         invalidCoords.forEach(([x,y,id]) => {
-            testGetCurBlock(bgraphWithoutData, x, y, id, null);
-            testGetCurBlock(bgraphWithData,    x, y, id, null);
+            testGetCurBlock(bgraphWithoutData, x, y, id);
+            testGetCurBlock(bgraphWithData,    x, y, id);
         });
     });
 });

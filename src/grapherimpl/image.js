@@ -27,9 +27,6 @@ function ImageState(
     this.imageHeight = imageHeight;
     this.buffer = buffer;
     this.blocksLookup = blocksLookup;
-    
-    this.blocksData   = null;
-    this.edgeEndsData = null;
 }
 
 function pixelateImage(context) {
@@ -192,7 +189,7 @@ function generateImage(imageWidth, imageHeight, cbPixels) {
     );
 }
 
-function drawLine(bgraphState, context, points) {
+function drawBezierLine(bgraphState, context, points) {
     let lineWidth = (bgraphState.zoom / 50) + 0.5;
 
     for (let i = 0; i < points.length-1; i+=6) {
@@ -211,157 +208,13 @@ function drawLine(bgraphState, context, points) {
     }
 }
 
-function makeForwardCurve(x, y) {
-    return [
-        0, 0, 0, y, x, 0, 
-        x, y
-    ];
-}
-
-function makeBackCurveDirect(x, y) {
-    let diff = x/2;
-    let curveIntensity = 2 + Math.abs(diff)/2;
-
-    return [
-        0, 0, 0, curveIntensity, diff, curveIntensity, 
-        diff, 0, x-diff, y, diff, 0, 
-        x-diff, y, x-diff, y-curveIntensity, x, y-curveIntensity, 
-        x, y
-    ];
-}
-
-function makeBackCurveAround(x, y) {
-    let curveDistance = 2;
-    let small = 2;
-    let big   = 2 + Math.abs(x);
-    let [startCurveIntensity, endCurveIntensity] = (x < 0) ? [big, small] : [small, big]
-    let c = (x < 0) ? x : 0;
-
-    return [
-        0, 0, 0, startCurveIntensity, c-curveDistance, startCurveIntensity, 
-        c-curveDistance, 0, c-curveDistance, y, c-curveDistance, 0, 
-        c-curveDistance, y, c-curveDistance, y-endCurveIntensity, x, y-endCurveIntensity, 
-        x, y
-    ]
-}
-
-function pointsMove(points, x, y) {
-    let newPoints = [];
-    for (let i = 0; i < points.length; i+=2) {
-        newPoints.push(points[i]   + x);
-        newPoints.push(points[i+1] + y);
-    }
-    return newPoints;
-}
-
-function pointsFlipXY(points) {
-    let newPoints = [];
-    for (let i = 0; i < points.length; i+=2) {
-        newPoints.push(points[i+1]);
-        newPoints.push(points[i]);
-    }
-    return newPoints;
-}
-
-function makeCurve(startX, startY, endX, endY) {
-    let points;
-    let x = endX - startX;
-    let y = endY - startY;
-
-    if (startY < endY) {
-        points = makeForwardCurve(x, y);
-    } else {
-        if (Math.abs(endX - startX) < 5) {
-            points = makeBackCurveAround(x, y);
-        } else {
-            points = makeBackCurveDirect(x, y);
-        }
-    }
-
-    return pointsMove(points, startX, startY);
-}
-
-function makeEdge(startEdgeEndIn, endEdgeEndIn) {
-    let points;
-
-    let [startEdgeEnd  , endEdgeEnd] = ((startEdgeEndIn.isSource) ? 
-        [startEdgeEndIn, endEdgeEndIn] : 
-        [endEdgeEndIn  , startEdgeEndIn]);
-
-    if (
-        startEdgeEnd.direction == 'down' && 
-        endEdgeEnd.direction   == 'down'
-    ) {
-        let [startX, startY, endX, endY] = [
-            startEdgeEnd.x + 0.5, 
-            startEdgeEnd.y + 1, 
-            endEdgeEnd.x   + 0.5, 
-            endEdgeEnd.y   + 0,
-        ];
-
-        points = makeCurve(startX, startY, endX, endY);
-
-    } else if (
-        startEdgeEnd.direction == 'right' && 
-        endEdgeEnd.direction   == 'right'
-    ) {
-        let [startX, startY, endX, endY] = pointsFlipXY([
-            startEdgeEnd.x + 1,
-            startEdgeEnd.y + 0.5,
-            endEdgeEnd.x   + 0,
-            endEdgeEnd.y   + 0.5,
-        ]);
-
-        points = makeCurve(startX, startY, endX, endY);
-        points = pointsFlipXY(points);
-    } else {
-        throw new Error(`Unsupported edge directions: from ${startEdgeEnd.direction} to ${endEdgeEnd.direction}.`);
-    }
-
-    return points;
-}
-
-function drawEdge(bgraphState, context, startEdgeEndIn, endEdgeEndIn) {
-
-    let points = makeEdge(startEdgeEndIn, endEdgeEndIn);
-    drawLine(bgraphState, context, points);
-}
-
 let ImageImpl = (function () {
     return {
-
         initBgraph: function(inputData) {
-            let width  = inputData.width;
-            let height = inputData.height;
-            let numBlocks = inputData.blocks.length;
-            let maxEdgeEndID = inputData.edgeEnds.length;
-
-            let bgraph = generateImage(width, height, generatePixels(inputData));
-            bgraph.blocksData = {};
-            bgraph.edgeEndsData = {};
-
-            for (let i = 0; i < numBlocks; i++) {
-                let block = inputData.blocks[i];
-
-                bgraph.blocksData[block.id] = {
-                    text:     block.text,
-                    edgeEnds: block.edgeEnds,
-                };
-            }
-
-            for (let i = 0; i < maxEdgeEndID; i++) {
-                let edgeEnd = inputData.edgeEnds[i];
-
-                bgraph.edgeEndsData[edgeEnd.id] = {
-                    x: edgeEnd.x,
-                    y: edgeEnd.y,
-                    direction: edgeEnd.direction,
-                    isSource:  edgeEnd.isSource,
-                    edgeEnds:  edgeEnd.edgeEnds,
-                };
-            }
-
-            return bgraph;
+            return generateImage(
+                inputData.width, inputData.height, 
+                generatePixels(inputData)
+            );
         },
 
         initTestBgraphLarge: function(numCols, numRows) {
@@ -372,43 +225,10 @@ let ImageImpl = (function () {
                 console.log('Making ' + numBlocks + ' test blocks.');
             }
 
-            return generateImage(width, height, generateTestPixels(numBlocks));
-        },
-
-        initTestBgraph: function(numCols, numRows) {
-            let width  = numCols * 2;
-            let height = numRows * 2;
-            let numBlocks = numCols * numRows;
-            if (process.env.NODE_ENV !== 'test') {
-                console.log('Making ' + numBlocks + ' test blocks.');
-            }
-
-            let testInput = {
-                width : width, height  : height,
-                blocks:    [], edgeEnds:     [],
-            }
-
-            let i = 0, x = 0, y = 0;
-            while (i < numBlocks) {
-
-                testInput.blocks[i] = {
-                    id   : i,
-                    x    : x, y     : y,
-                    width: 1, height: 1,
-                    depth: 1, color : 0,
-                    text: `This is block ${x} ${y}`,
-                    edgeEnds: [],
-                };
-
-                i += 1;
-                x += 2;
-                if (x >= width) {
-                    x = 0;
-                    y += 2;
-                }
-            }
-
-            return ImageImpl.initBgraph(testInput);
+            return generateImage(
+                width, height, 
+                generateTestPixels(numBlocks)
+            );
         },
 
         populateElement: function(imageState, bgraphElement) {
@@ -436,28 +256,9 @@ let ImageImpl = (function () {
             );
         },
 
-        getBlockData: function(imageState, blockID) {
-            return ((imageState.blocksData && (blockID in imageState.blocksData)) 
-                ? imageState.blocksData[blockID] 
-                : null
-            );
-        },
-
-        drawEdges: function(bgraphState, imageState, blockID) {
-            const blockData = ImageImpl.getBlockData(imageState, blockID);
-            if (blockData === null) return;
-
+        drawBezierEdge: function(bgraphState, imageState, points) {
             let context = imageState.canvas.getContext(CANVAS_TYPE);
-
-            for (const startEdgeEndID of imageState.blocksData[blockID].edgeEnds) {
-                let startEdgeEnd = imageState.edgeEndsData[startEdgeEndID];
-
-                for (const endEdgeEndID of startEdgeEnd.edgeEnds) {
-                    let endEdgeEnd = imageState.edgeEndsData[endEdgeEndID];
-
-                    drawEdge(bgraphState, context, startEdgeEnd, endEdgeEnd);
-                }
-            }
+            drawBezierLine(bgraphState, context, points);
         },
 
         getCurBlock: function(imageState, x, y) {

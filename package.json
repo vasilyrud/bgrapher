@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test mocha 'test/**/*.js' --require @babel/register",
-    "build:dev": "rollup -c rollup.config.dev.js -w"
+    "build:dev": "NODE_ENV=development rollup -c rollup.config.dev.js -w"
   },
   "author": "Vasily Rudchenko",
   "license": "Apache-2.0",
