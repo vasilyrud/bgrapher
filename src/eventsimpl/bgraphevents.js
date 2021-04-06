@@ -18,8 +18,14 @@ const ZOOM_MIN = 1;
 const ZOOM_MAX = 100;
 const ZOOM_FRICTION = 550; // Higher number means lower speed
 const MARGIN_PIXELS = 100;
+const CLICK_DELTA = 1;
 
 function BgraphEventState() {
+    this.isClick = false;
+    this.clickStart = {
+        x: 0,
+        y: 0,
+    };
     this.panning = false;
     this.panningPrev = {
         x: 0,
@@ -172,12 +178,19 @@ let eventHandlers = {
         // Ignore non-left clicks
         if (event.button !== 0) return;
 
+        eventState.isClick = true;
+        eventState.clickStart.x = getLocal('x', event);
+        eventState.clickStart.y = getLocal('y', event);
+
         eventState.panning = true;
         eventState.panningPrev.x = getLocal('x', event);
         eventState.panningPrev.y = getLocal('y', event);
     },
     mouseup: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
         eventState.panning = false;
+        if (!eventState.isClick) return;
+
+        console.log('click');
     },
     mouseout: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
         eventState.panning = false;
@@ -191,6 +204,10 @@ let eventHandlers = {
         } else {
             mousemoveHover(bgraphState, bgrapher);
         }
+
+        if (Math.abs(eventState.cur.x - eventState.clickStart.x) > CLICK_DELTA ||
+            Math.abs(eventState.cur.y - eventState.clickStart.y) > CLICK_DELTA
+        ) eventState.isClick = false;
 
         if (process.env.NODE_ENV === 'development') {
             bgrapher.printCoords(bgraphState);
