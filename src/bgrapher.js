@@ -123,13 +123,13 @@ var BGrapher = function(
 
     this.draw = function(bgraphState) {
         this.GrapherImpl.drawBgraph(bgraphState, this.grapherState);
-        this.EventsImpl.drawEdges(bgraphState, this.eventState, this);
-    }
+        for (const blockID of this.EventsImpl.edgesToDraw(this.eventState)) {
+            this.drawEdges(bgraphState, blockID);
+        }
 
-    this.getBlockData = function(blockID) {
-        if (!this.blocksData) return null;
-        if (!(blockID in this.blocksData)) return null;
-        return this.blocksData[blockID];
+        if (process.env.NODE_ENV === 'development') {
+            this.printCoords(bgraphState, this.EventsImpl.getCur(this.eventState));
+        }
     }
 
     this.drawEdges = function(bgraphState, blockID) {
@@ -148,16 +148,20 @@ var BGrapher = function(
         }
     }
 
-    this.curBlock = function(bgraphState) {
-        const cur = EventsImpl.getCur(this.eventState);
+    this.getBlockData = function(blockID) {
+        if (!this.blocksData) return null;
+        if (!(blockID in this.blocksData)) return null;
+        return this.blocksData[blockID];
+    }
+
+    this.curBlock = function(bgraphState, cur) {
         return this.GrapherImpl.getCurBlock(this.grapherState,
             curBgraphPixel('x', bgraphState, cur),
             curBgraphPixel('y', bgraphState, cur),
         );
     }
 
-    this.printCoords = function(bgraphState) {
-        const cur = EventsImpl.getCur(this.eventState);
+    this.printCoords = function(bgraphState, cur) {
         return this.GrapherImpl.printCoords(this.grapherState,
             curBgraphPixel('x', bgraphState, cur),
             curBgraphPixel('y', bgraphState, cur),

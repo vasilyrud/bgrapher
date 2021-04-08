@@ -140,7 +140,7 @@ function mousemovePan(bgraphState, eventState, bgrapher, event) {
 
 function mousemoveHover(bgraphState, eventState, bgrapher) {
     const prevHoveredBlockID = eventState.hoveredBlockID;
-    eventState.hoveredBlockID = bgrapher.curBlock(bgraphState);
+    eventState.hoveredBlockID = bgrapher.curBlock(bgraphState, eventState.cur);
 
     if (eventState.hoveredBlockID === null) return;
     if (prevHoveredBlockID === eventState.hoveredBlockID) return;
@@ -190,10 +190,6 @@ let eventHandlers = {
         bgraphState.offset.y = getZoomOffset('y', bgraphState, eventState, bgrapher, deltaUsed);
 
         bgrapher.update(bgraphState);
-
-        if (process.env.NODE_ENV === 'development') {
-            bgrapher.printCoords(bgraphState);
-        }
     },
     mousedown: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
         // Ignore non-left clicks
@@ -234,7 +230,7 @@ let eventHandlers = {
         ) eventState.isClick = false;
 
         if (process.env.NODE_ENV === 'development') {
-            bgrapher.printCoords(bgraphState);
+            bgrapher.printCoords(bgraphState, eventState.cur);
         }
     },
     resize: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
@@ -268,13 +264,13 @@ let BgraphEventsImpl = (function () {
             return eventState.cur;
         },
 
-        drawEdges: function(bgraphState, eventState, bgrapher) {
+        *edgesToDraw(eventState) {
             if (!eventState.clickedBlockIDs.has(eventState.hoveredBlockID)) {
-                bgrapher.drawEdges(bgraphState, eventState.hoveredBlockID);
+                yield eventState.hoveredBlockID;
             }
 
             for (const clickedBlockID of eventState.clickedBlockIDs) {
-                bgrapher.drawEdges(bgraphState, clickedBlockID);
+                yield clickedBlockID;
             }
         },
     }
