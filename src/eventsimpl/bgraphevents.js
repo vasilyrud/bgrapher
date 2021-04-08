@@ -132,7 +132,7 @@ function mousemovePan(bgraphState, eventState, bgrapher, event) {
     bgraphState.offset.x = getPanOffset('x', bgraphState, eventState, bgrapher);
     bgraphState.offset.y = getPanOffset('y', bgraphState, eventState, bgrapher);
 
-    redrawBgraph(bgraphState, eventState, bgrapher);
+    bgrapher.update(bgraphState);
 
     eventState.panningPrev.x = getLocal('x', event);
     eventState.panningPrev.y = getLocal('y', event);
@@ -145,7 +145,7 @@ function mousemoveHover(bgraphState, eventState, bgrapher) {
     if (eventState.hoveredBlockID === null) return;
     if (prevHoveredBlockID === eventState.hoveredBlockID) return;
 
-    redrawBgraph(bgraphState, eventState, bgrapher);
+    bgrapher.update(bgraphState);
 
     if (process.env.NODE_ENV === 'development') {
         showBlockInfo(bgrapher, eventState.hoveredBlockID);
@@ -171,23 +171,12 @@ function showBlockInfo(bgrapher, hoveredBlockID) {
     console.log(hoveredBlockID);
 }
 
-function redrawBgraph(bgraphState, eventState, bgrapher) {
-    bgraphState.update();
-
-    if (!eventState.clickedBlockIDs.has(eventState.hoveredBlockID)) {
-        bgrapher.drawEdges(bgraphState, eventState.hoveredBlockID);
-    }
-
-    for (const clickedBlockID of eventState.clickedBlockIDs) {
-        bgrapher.drawEdges(bgraphState, clickedBlockID);
-    }
+function initView(bgraphState, bgrapher) {
+    bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);
+    bgraphState.offset.y = getInitOffset('y', bgraphState, bgrapher);
 }
 
 let eventHandlers = {
-    bgraphFirstDraw: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
-        bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);
-        bgraphState.offset.y = getInitOffset('y', bgraphState, bgrapher);
-    },
     wheel: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
         eventState.cur.x = getLocal('x', event);
         eventState.cur.y = getLocal('y', event);
@@ -200,7 +189,7 @@ let eventHandlers = {
         bgraphState.offset.x = getZoomOffset('x', bgraphState, eventState, bgrapher, deltaUsed);
         bgraphState.offset.y = getZoomOffset('y', bgraphState, eventState, bgrapher, deltaUsed);
 
-        redrawBgraph(bgraphState, eventState, bgrapher);
+        bgrapher.update(bgraphState);
 
         if (process.env.NODE_ENV === 'development') {
             bgrapher.printCoords(bgraphState);
@@ -249,16 +238,15 @@ let eventHandlers = {
         }
     },
     resize: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
-        bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);
-        bgraphState.offset.y = getInitOffset('y', bgraphState, bgrapher);
+        initView(bgraphState, bgrapher);
 
-        redrawBgraph(bgraphState, eventState, bgrapher);
+        bgrapher.updateBgraphSize();
+        bgrapher.update(bgraphState);
     },
 };
 
 let BgraphEventsImpl = (function () {
     return {
-        firstDrawEvent: new Event('bgraphFirstDraw'),
 
         initEvents: function(bgraphState, bgrapher, bgraphElement) {
             let eventState = new BgraphEventState();
@@ -272,11 +260,22 @@ let BgraphEventsImpl = (function () {
                 );
             }
 
+            initView(bgraphState, bgrapher);
             return eventState;
         },
 
         getCur: function(eventState) {
             return eventState.cur;
+        },
+
+        drawEdges: function(bgraphState, eventState, bgrapher) {
+            if (!eventState.clickedBlockIDs.has(eventState.hoveredBlockID)) {
+                bgrapher.drawEdges(bgraphState, eventState.hoveredBlockID);
+            }
+
+            for (const clickedBlockID of eventState.clickedBlockIDs) {
+                bgrapher.drawEdges(bgraphState, clickedBlockID);
+            }
         },
     }
 })();

@@ -93,35 +93,37 @@ var BGrapher = function(
         this.grapherState = this.GrapherImpl.initBgraph(inputData);
         this.blocksData   = getBlocksData(inputData);
         this.edgeEndsData = getEdgeEndsData(inputData);
-        this.didFirstDraw = false;
     }
 
     this.initTestBgraphLarge = function(numCols, numRows) {
         this.grapherState = this.GrapherImpl.initTestBgraphLarge(numCols, numRows);
-        this.didFirstDraw = false;
     }
 
     this.populateElement = function(bgraphState, bgraphElement) {
         this.bgraphElement = bgraphElement;
 
         this.GrapherImpl.populateElement(this.grapherState, this.bgraphElement);
+        this.updateBgraphSize();
         this.eventState = this.EventsImpl.initEvents(bgraphState, this, this.bgraphElement);
 
         bgraphState.attach(this);
         this.draw(bgraphState);
     }
 
-    this.draw = function(bgraphState) {
+    this.updateBgraphSize = function() {
         this.GrapherImpl.setClientSize(this.grapherState, 
             this.bgraphElement.clientWidth, 
             this.bgraphElement.clientHeight
         );
+    }
 
-        if (!this.didFirstDraw) {
-            this.didFirstDraw = true;
-            this.bgraphElement.dispatchEvent(this.EventsImpl.firstDrawEvent);
-        }
+    this.update = function(bgraphState) {
+        bgraphState.update();
+    }
+
+    this.draw = function(bgraphState) {
         this.GrapherImpl.drawBgraph(bgraphState, this.grapherState);
+        this.EventsImpl.drawEdges(bgraphState, this.eventState, this);
     }
 
     this.getBlockData = function(blockID) {
