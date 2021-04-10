@@ -58,10 +58,6 @@ function xyArray(width, height) {
     };
 }
 
-function toCanvas(bgraphState, coord, value) {
-    return ((value + bgraphState.offset[coord]) * bgraphState.zoom);
-}
-
 function colorToRGB(c) {
     return [
         c >> 16 & 255,
@@ -189,23 +185,48 @@ function generateImage(imageWidth, imageHeight, cbPixels) {
     );
 }
 
-function drawBezierLine(bgraphState, context, points) {
-    let lineWidth = (bgraphState.zoom / 50) + 0.5;
+function toCanvas(coord, bgraphState, value) {
+    return ((value + bgraphState.offset[coord]) * bgraphState.zoom);
+}
 
+function drawBezierSingleCurve(bgraphState, context, points, lineWidth, lineColor) {
     for (let i = 0; i < points.length-1; i+=6) {
         context.beginPath();
         context.moveTo(
-            toCanvas(bgraphState, 'x', points[i+0]), toCanvas(bgraphState, 'y', points[i+1])
+            toCanvas('x', bgraphState, points[i+0]), toCanvas('y', bgraphState, points[i+1])
         );
         context.bezierCurveTo(
-            toCanvas(bgraphState, 'x', points[i+2]), toCanvas(bgraphState, 'y', points[i+3]), 
-            toCanvas(bgraphState, 'x', points[i+4]), toCanvas(bgraphState, 'y', points[i+5]), 
-            toCanvas(bgraphState, 'x', points[i+6]), toCanvas(bgraphState, 'y', points[i+7])
+            toCanvas('x', bgraphState, points[i+2]), toCanvas('y', bgraphState, points[i+3]), 
+            toCanvas('x', bgraphState, points[i+4]), toCanvas('y', bgraphState, points[i+5]), 
+            toCanvas('x', bgraphState, points[i+6]), toCanvas('y', bgraphState, points[i+7])
         );
-        context.strokeStyle = '#ff0000';
         context.lineWidth = lineWidth;
+        context.strokeStyle = lineColor;
         context.stroke();
     }
+}
+
+function drawBezierLine(bgraphState, context, points) {
+    const zoom = bgraphState.zoom;
+    let fgWidth;
+    let bgWidth;
+
+    if (zoom <= 1) {
+        fgWidth = 1;
+    } else {
+        fgWidth = ((zoom - 1) / 5) + 1;
+    }
+
+    if (zoom <= 1) {
+        bgWidth = 0;
+    } else if (zoom <= 7.667) {
+        bgWidth = ((zoom - 1) / 1) + 1;
+    } else {
+        bgWidth = ((zoom - 1) / 2.5) + 5;
+    }
+
+    drawBezierSingleCurve(bgraphState, context, points, bgWidth, '#ffffff');
+    drawBezierSingleCurve(bgraphState, context, points, fgWidth, '#000000');
 }
 
 let ImageImpl = (function () {

@@ -265,12 +265,12 @@ let BgraphEventsImpl = (function () {
         },
 
         *edgesToDraw(eventState) {
-            if (!eventState.clickedBlockIDs.has(eventState.hoveredBlockID)) {
-                yield eventState.hoveredBlockID;
-            }
-
             for (const clickedBlockID of eventState.clickedBlockIDs) {
                 yield clickedBlockID;
+            }
+
+            if (!eventState.clickedBlockIDs.has(eventState.hoveredBlockID)) {
+                yield eventState.hoveredBlockID;
             }
         },
     }
