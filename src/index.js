@@ -23,6 +23,7 @@ import { BgraphState } from './bgraphstate.js'
 import { BGrapher } from './bgrapher.js'
 
 import defaultBgraph from './bgraphs/default.json';
+import outedgesBgraph from './bgraphs/outedges.json';
 import testOnlyDots from './bgraphs/testonlydots.js';
 
 function BGraph(props) {
@@ -51,8 +52,7 @@ function BGraphGroup(props) {
     // Don't use React state since this state is managed by BGrapher
     let bgraphState = new BgraphState();
 
-    const bgraphs = Object
-        .entries(props.bgraphers)
+    const bgraphs = Object.entries(props.bgraphers)
         .map(([key, bgraph]) => 
             <BGraph
                 key={key} 
@@ -70,7 +70,25 @@ function BGraphGroup(props) {
 }
 
 function BGraphForm(props) {
-    const [formValue, setFormValue] = React.useState(JSON.stringify(defaultBgraph, null, 2));
+    const bgraphChoices = {
+        default: defaultBgraph,
+        outedges: outedgesBgraph,
+    };
+
+    const [formValue, setFormValue] = React.useState(toJSON(bgraphChoices.default));
+    const [selectValue, setSelectValue] = React.useState('default');
+
+    function toJSON(bgraphObj) {
+        return JSON.stringify(bgraphObj, null, 2);
+    }
+
+    function handleSelect(event) {
+        event.preventDefault();
+        const newSelectValue = event.target.value;
+
+        setSelectValue(newSelectValue);
+        setFormValue(toJSON(bgraphChoices[newSelectValue]));
+    }
 
     function handleSubmit(bgraphType) {
         return (event) => {
@@ -84,11 +102,22 @@ function BGraphForm(props) {
 
     return (
         <form className="bgraphJSONForm">
+            <select 
+                name="bgraphOptions"
+                value={selectValue} 
+                onChange={handleSelect}
+            >
+                {Object.keys(bgraphChoices).map((key) =>
+                    <option key={key} value={key}>{key}</option>
+                )}
+            </select>
+
             <textarea 
                 name="bgraphJSON" 
                 value={formValue} 
                 onChange={e => setFormValue(e.target.value)}
             />
+
             <button className="bgraphFormSubmit" onClick={handleSubmit("graph")}>
                 Standalone
             </button>

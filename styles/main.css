@@ -36,6 +36,11 @@ textarea[name=bgraphJSON] {
     height:100%;
 }
 
+select[name=bgraphOptions] {
+    width: 100%;
+    margin-bottom: 5px;
+}
+
 .bgraphFormSubmit {
     margin-right: 5px;
     margin-bottom: 5px;

@@ -142,7 +142,6 @@ function mousemoveHover(bgraphState, eventState, bgrapher) {
     const prevHoveredBlockID = eventState.hoveredBlockID;
     eventState.hoveredBlockID = bgrapher.curBlock(bgraphState, eventState.cur);
 
-    if (eventState.hoveredBlockID === null) return;
     if (prevHoveredBlockID === eventState.hoveredBlockID) return;
 
     bgrapher.update(bgraphState);
@@ -161,6 +160,7 @@ function mouseupClick(eventState) {
 }
 
 function showBlockInfo(bgrapher, hoveredBlockID) {
+    if (hoveredBlockID === null) return;
     const hoveredBlockData = bgrapher.getBlockData(hoveredBlockID);
 
     if (hoveredBlockData && hoveredBlockData.text) {
