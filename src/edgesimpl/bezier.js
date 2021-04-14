@@ -14,27 +14,62 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Whether to disable making small curve 
+// adjustments for visual appeal.
+// Particularly useful for testing.
+const RAW = false;
+
 function makeForwardCurve(x, y) {
+    /*
+        Assumes y is positive.
+        x can be both positive or negative.
+    */
+
+    // Decreases curve intensity:
+    // By   0 at small x
+    // By y/2 at large x
+    let diff = (Math.abs(x) * (y/2)) / (Math.abs(x) + 1);
+    if (RAW) diff = 0;
+
     return [
-        0, 0, 0, y, x, 0, 
+        0, 0, 0, y-diff, x, 0+diff, 
         x, y
     ];
 }
 
 function makeBackCurveDirect(x, y) {
-    let diff = x/2;
-    let curveIntensity = 2 + Math.abs(diff)/2;
+    /*
+        Assumes y is negative.
+        x can be both positive or negative.
+    */
+
+    // Shifts curve center slightly away from y-axis
+    let offset = x/11;
+    if (RAW) offset = 0;
+
+    let startDiff = x/2 + offset;
+    let endDiff   = x/2 - offset;
+    let startCurveIntensity = 2 + Math.abs(startDiff)/2;
+    let endCurveIntensity   = 2 + Math.abs(endDiff)  /2;
 
     return [
-        0, 0, 0, curveIntensity, diff, curveIntensity, 
-        diff, 0, x-diff, y, diff, 0, 
-        x-diff, y, x-diff, y-curveIntensity, x, y-curveIntensity, 
+        0, 0, 0, startCurveIntensity, startDiff, startCurveIntensity, 
+        startDiff, 0, x-endDiff, y, startDiff, 0, 
+        x-endDiff, y, x-endDiff, y-endCurveIntensity, x, y-endCurveIntensity, 
         x, y
     ];
 }
 
 function makeBackCurveAround(x, y) {
-    let curveDistance = 2;
+    /*
+        Assumes y is negative.
+        x can be both positive or negative.
+    */
+
+    // Tuned for visual effect
+    let curveDistance = 2.35;
+    if (RAW) curveDistance = 2;
+
     let small = 2;
     let big   = 2 + Math.abs(x);
     let [startCurveIntensity, endCurveIntensity] = (x < 0) ? [big, small] : [small, big]

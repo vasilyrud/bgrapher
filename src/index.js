@@ -74,9 +74,10 @@ function BGraphForm(props) {
         default: defaultBgraph,
         outedges: outedgesBgraph,
     };
+    const defaultChoice = 'default';
 
-    const [formValue, setFormValue] = React.useState(toJSON(bgraphChoices.default));
-    const [selectValue, setSelectValue] = React.useState('default');
+    const [formValue, setFormValue] = React.useState(toJSON(bgraphChoices[defaultChoice]));
+    const [selectValue, setSelectValue] = React.useState(defaultChoice);
 
     function toJSON(bgraphObj) {
         return JSON.stringify(bgraphObj, null, 2);

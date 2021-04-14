@@ -208,21 +208,24 @@ function drawBezierSingleCurve(bgraphState, context, points, lineWidth, lineColo
 
 function drawBezierLine(bgraphState, context, points) {
     const zoom = bgraphState.zoom;
+    const k = 1/46; // Line width
+    const p = 2.5; // BG multiplier
+    const threshold = 2.586;
     let fgWidth;
     let bgWidth;
 
     if (zoom <= 1) {
         fgWidth = 1;
     } else {
-        fgWidth = ((zoom - 1) / 5) + 1;
+        fgWidth = ((zoom - 1) * k) + 1;
     }
 
     if (zoom <= 1) {
         bgWidth = 0;
-    } else if (zoom <= 7.667) {
-        bgWidth = ((zoom - 1) / 1) + 1;
+    } else if (zoom <= threshold) {
+        bgWidth = zoom;
     } else {
-        bgWidth = ((zoom - 1) / 2.5) + 5;
+        bgWidth = fgWidth * p;
     }
 
     drawBezierSingleCurve(bgraphState, context, points, bgWidth, '#ffffff');

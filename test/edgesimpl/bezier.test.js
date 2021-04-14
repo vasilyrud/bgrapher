@@ -5,6 +5,8 @@ const pointsFlipXY = bezierRewire.__get__('pointsFlipXY');
 const pointsMove = bezierRewire.__get__('pointsMove');
 const makeCurve = bezierRewire.__get__('makeCurve');
 
+bezierRewire.__Rewire__('RAW', true);
+
 describe('Points transformation', () => {
     const input = [
          0,  0,
@@ -65,12 +67,28 @@ describe('makeCurve', () => {
         ]);
     });
 
+    it('returns forward curve flipped X', () => {
+        expect(makeCurve(3,2,1,4)).to.eql([
+            3, 2, 3, 4, 1, 2, 
+            1, 4
+        ]);
+    });
+
     it('returns direct back curve', () => {
         expect(makeCurve(10,20,1,2)).to.eql([
             10, 20, 10, 24.25, 5.5, 24.25, 
             5.5, 20, 5.5, 2, 5.5, 20, 
             5.5, 2, 5.5, -2.25, 1, -2.25, 
             1, 2
+        ]);
+    });
+
+    it('returns direct back curve flipped X', () => {
+        expect(makeCurve(1,20,10,2)).to.eql([
+            1, 20, 1, 24.25, 5.5, 24.25, 
+            5.5, 20, 5.5, 2, 5.5, 20, 
+            5.5, 2, 5.5, -2.25, 10, -2.25, 
+            10, 2
         ]);
     });
 
