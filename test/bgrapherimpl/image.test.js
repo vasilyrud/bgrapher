@@ -4,6 +4,8 @@ import testOnlyDots from 'bgraphs/testonlydots.js';
 import imageRewire, { ImageImpl } from 'grapherimpl/image.js';
 const xyArray = imageRewire.__get__('xyArray');
 const colorToRGB = imageRewire.__get__('colorToRGB');
+const getArrowPoints = imageRewire.__get__('getArrowPoints');
+const getLineWidths = imageRewire.__get__('getLineWidths');
 
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
@@ -68,17 +70,50 @@ describe('Data structure', () => {
     });
 });
 
-describe('Convert color', () => {
+describe('colorToRGB', () => {
     [
-        [0,[0,0,0]],
-        [1,[0,0,1]],
-        [256,[0,1,0]],
-        [65536,[1,0,0]],
-        [1193046,[18,52,86]],
+        [       0,[  0,  0,  0]],
+        [       1,[  0,  0,  1]],
+        [     256,[  0,  1,  0]],
+        [   65536,[  1,  0,  0]],
+        [ 1193046,[ 18, 52, 86]],
         [16777215,[255,255,255]],
     ].forEach(([color, expectedRGB]) => {
         it(`Correctly converts color ${color}`, () => {
             expect(colorToRGB(color)).to.eql(expectedRGB);
+        });
+    });
+});
+
+describe('getArrowPoints', () => {
+    [
+        [10,20,'up'   ,[10,21,10.5,20],[11,21,10.5,20]],
+        [10,20,'right',[10,20,11,20.5],[10,21,11,20.5]],
+        [10,20,'down' ,[10,20,10.5,21],[11,20,10.5,21]],
+        [10,20,'left' ,[11,20,10,20.5],[11,21,10,20.5]],
+    ].forEach(([x, y, direction, expected0, expected1]) => {
+        it(`Correctly creates points for ${x}, ${y}, ${direction}`, () => {
+            const [points0, points1] = getArrowPoints(x, y, direction);
+
+            expect(points0).to.eql(expected0);
+            expect(points1).to.eql(expected1);
+        });
+    });
+});
+
+describe('getLineWidths', () => {
+    [
+        [ 0.5  , 0.5   , 0    ],
+        [ 1    , 1     , 0    ],
+        [ 1.1  , 1.0022, 1.1  ],
+        [ 2.586, 1.0344, 2.586],
+        [47    , 2     , 5    ],
+    ].forEach(([zoom, fgWidthsExpected, bgWidthsExpected]) => {
+        it(`Correct widths for zoom ${zoom}`, () => {
+            const [fgWidths, bgWidths] = getLineWidths(zoom);
+
+            expect(fgWidths).to.be.closeTo(fgWidthsExpected, 0.0001);
+            expect(bgWidths).to.be.closeTo(bgWidthsExpected, 0.0001);
         });
     });
 });

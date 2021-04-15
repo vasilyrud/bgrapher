@@ -264,7 +264,7 @@ let BgraphEventsImpl = (function () {
             return eventState.cur;
         },
 
-        *edgesToDraw(eventState) {
+        *activeBlockIDs(eventState) {
             for (const clickedBlockID of eventState.clickedBlockIDs) {
                 yield clickedBlockID;
             }

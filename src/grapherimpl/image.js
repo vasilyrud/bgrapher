@@ -16,6 +16,8 @@ limitations under the License.
 
 const CANVAS_TYPE = '2d';
 const DEFAULT_BG = '#ffffff';
+const LINE_COLOR_FG = '#000000';
+const LINE_COLOR_BG = '#ffffff';
 
 function ImageState(
     imageWidth, imageHeight, 
@@ -185,6 +187,30 @@ function generateImage(imageWidth, imageHeight, cbPixels) {
     );
 }
 
+function getLineWidths(zoom) {
+    const width = 1/46;
+    const bgMult = 2.5;
+    const threshold = 2.586;
+    let fgWidth;
+    let bgWidth;
+
+    if (zoom <= 1) {
+        fgWidth = zoom;
+    } else {
+        fgWidth = ((zoom - 1) * width) + 1;
+    }
+
+    if (zoom <= 1) {
+        bgWidth = 0;
+    } else if (zoom <= threshold) {
+        bgWidth = zoom;
+    } else {
+        bgWidth = fgWidth * bgMult;
+    }
+
+    return [fgWidth, bgWidth];
+}
+
 function toCanvas(coord, bgraphState, value) {
     return ((value + bgraphState.offset[coord]) * bgraphState.zoom);
 }
@@ -207,29 +233,62 @@ function drawBezierSingleCurve(bgraphState, context, points, lineWidth, lineColo
 }
 
 function drawBezierLine(bgraphState, context, points) {
-    const zoom = bgraphState.zoom;
-    const k = 1/46; // Line width
-    const p = 2.5; // BG multiplier
-    const threshold = 2.586;
-    let fgWidth;
-    let bgWidth;
+    const [fgWidth, bgWidth] = getLineWidths(bgraphState.zoom);
 
-    if (zoom <= 1) {
-        fgWidth = 1;
-    } else {
-        fgWidth = ((zoom - 1) * k) + 1;
+    drawBezierSingleCurve(bgraphState, context, points, bgWidth, LINE_COLOR_BG);
+    drawBezierSingleCurve(bgraphState, context, points, fgWidth, LINE_COLOR_FG);
+}
+
+function drawSingleLine(bgraphState, context, points, lineWidth, lineColor) {
+    context.beginPath();
+    context.moveTo(
+        toCanvas('x', bgraphState, points[0]), toCanvas('y', bgraphState, points[1])
+    );
+    context.lineTo(
+        toCanvas('x', bgraphState, points[2]), toCanvas('y', bgraphState, points[3])
+    );
+    context.lineWidth = lineWidth;
+    context.strokeStyle = lineColor;
+    context.stroke();
+}
+
+function getArrowPoints(x, y, direction) {
+    const lineDist  = 1/2;
+
+    if (direction == 'up') {
+        return [
+            [x  , y+1, x+lineDist  , y],
+            [x+1, y+1, x+1-lineDist, y],
+        ];
+    } else if (direction == 'right') {
+        return [
+            [x, y  , x+1, y+lineDist  ],
+            [x, y+1, x+1, y+1-lineDist],
+        ];
+    } else if (direction == 'down') {
+        return [
+            [x  , y, x+lineDist  , y+1],
+            [x+1, y, x+1-lineDist, y+1],
+        ];
+    } else if (direction == 'left') {
+        return [
+            [x+1, y  , x, y+lineDist  ],
+            [x+1, y+1, x, y+1-lineDist],
+        ];
     }
 
-    if (zoom <= 1) {
-        bgWidth = 0;
-    } else if (zoom <= threshold) {
-        bgWidth = zoom;
-    } else {
-        bgWidth = fgWidth * p;
-    }
+    throw new Error(`Unsupported edge direction: ${direction}.`);
+}
 
-    drawBezierSingleCurve(bgraphState, context, points, bgWidth, '#ffffff');
-    drawBezierSingleCurve(bgraphState, context, points, fgWidth, '#000000');
+function drawEdgeEndHighlight(bgraphState, context, x, y, direction) {
+    const [fgWidth, bgWidth] = getLineWidths(bgraphState.zoom);
+    if (bgWidth === 0) return;
+
+    const lineWidth = (bgWidth - fgWidth) / 2;
+    const [points0, points1] = getArrowPoints(x, y, direction);
+
+    drawSingleLine(bgraphState, context, points0, lineWidth, LINE_COLOR_BG);
+    drawSingleLine(bgraphState, context, points1, lineWidth, LINE_COLOR_BG);
 }
 
 let ImageImpl = (function () {
@@ -278,6 +337,11 @@ let ImageImpl = (function () {
                 bgraphState.zoom * imageState.imageWidth ,
                 bgraphState.zoom * imageState.imageHeight,
             );
+        },
+
+        drawEdgeEnd: function(bgraphState, imageState, x, y, direction) {
+            let context = imageState.canvas.getContext(CANVAS_TYPE);
+            drawEdgeEndHighlight(bgraphState, context, x, y, direction);
         },
 
         drawBezierEdge: function(bgraphState, imageState, points) {

@@ -4,7 +4,7 @@ import testOnlyDots from 'bgraphs/testonlydots.js';
 import { BgraphState } from 'bgraphstate.js'
 import bgrapherRewire, {BGrapher} from 'bgrapher.js'
 const curBgraphPixel = bgrapherRewire.__get__('curBgraphPixel');
-const SeenEdges = bgrapherRewire.__get__('SeenEdges');
+const EdgeSet = bgrapherRewire.__get__('EdgeSet');
 
 const FakeGrapher = {
     initBgraph: () => {},
@@ -84,6 +84,7 @@ describe('initBgraph', () => {
 
         expect(bgrapher.edgeEndsData).to.have.all.keys(0,100);
         expect(bgrapher.edgeEndsData[100]).to.eql({
+            id: 100,
             x: 1, y: 1,
             direction: 'up',
             isSource: false,
@@ -136,16 +137,16 @@ describe('initBgraph', () => {
     });
 });
 
-describe('SeenEdges', () => {
+describe('EdgeSet', () => {
     it('Default empty can query', () => {
-        let seen = new SeenEdges();
+        let seen = new EdgeSet();
         expect(seen.has(0,0)).to.be.false;
         expect(seen.has(1,2)).to.be.false;
         expect(seen.has(2,1)).to.be.false;
     });
 
     it('Simple add', () => {
-        let seen = new SeenEdges();
+        let seen = new EdgeSet();
         seen.add(1,2);
         expect(seen.has(1,2)).to.be.true;
         expect(seen.has(1,1)).to.be.false;
@@ -153,7 +154,7 @@ describe('SeenEdges', () => {
     });
     
     it('Reverse add', () => {
-        let seen = new SeenEdges();
+        let seen = new EdgeSet();
         seen.add(2,1);
         expect(seen.has(2,1)).to.be.true;
         expect(seen.has(1,1)).to.be.false;
@@ -161,7 +162,7 @@ describe('SeenEdges', () => {
     });
     
     it('Equal add', () => {
-        let seen = new SeenEdges();
+        let seen = new EdgeSet();
         seen.add(0,0);
         expect(seen.has(0,0)).to.be.true;
         expect(seen.has(0,1)).to.be.false;
@@ -169,7 +170,7 @@ describe('SeenEdges', () => {
     });
 
     it('Add the same', () => {
-        let seen = new SeenEdges();
+        let seen = new EdgeSet();
         seen.add(1,2);
         seen.add(1,2);
         expect(seen.has(1,2)).to.be.true;
@@ -178,7 +179,7 @@ describe('SeenEdges', () => {
     });
 
     it('Add and has in reverse', () => {
-        let seen = new SeenEdges();
+        let seen = new EdgeSet();
         seen.add(0,0);
         seen.add(1,2);
         seen.add(4,3);
@@ -188,7 +189,7 @@ describe('SeenEdges', () => {
     });
 
     it('Add the same in reverse', () => {
-        let seen = new SeenEdges();
+        let seen = new EdgeSet();
         seen.add(1,2);
         seen.add(2,1);
         expect(seen.has(1,2)).to.be.true;

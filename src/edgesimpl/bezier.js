@@ -122,8 +122,6 @@ function makeCurve(startX, startY, endX, endY) {
 let BezierImpl = (function () {
     return {
         generatePoints: function(startEdgeEndIn, endEdgeEndIn) {
-            let points;
-
             let [startEdgeEnd  , endEdgeEnd] = ((startEdgeEndIn.isSource) ? 
                 [startEdgeEndIn, endEdgeEndIn] : 
                 [endEdgeEndIn  , startEdgeEndIn]);
@@ -139,7 +137,7 @@ let BezierImpl = (function () {
                     endEdgeEnd.y   + 0,
                 ];
 
-                points = makeCurve(startX, startY, endX, endY);
+                return makeCurve(startX, startY, endX, endY);
 
             } else if (
                 startEdgeEnd.direction == 'right' && 
@@ -152,13 +150,10 @@ let BezierImpl = (function () {
                     endEdgeEnd.y   + 0.5,
                 ]);
 
-                points = makeCurve(startX, startY, endX, endY);
-                points = pointsFlipXY(points);
-            } else {
-                throw new Error(`Unsupported edge directions: from ${startEdgeEnd.direction} to ${endEdgeEnd.direction}.`);
+                return pointsFlipXY(makeCurve(startX, startY, endX, endY));
             }
 
-            return points;
+            throw new Error(`Unsupported edge directions: from ${startEdgeEnd.direction} to ${endEdgeEnd.direction}.`);
         },
     };
 })();

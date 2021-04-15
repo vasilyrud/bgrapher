@@ -18,7 +18,7 @@ import { ImageImpl } from './grapherimpl/image.js'
 import { BezierImpl } from './edgesimpl/bezier.js'
 import { BgraphEventsImpl } from './eventsimpl/bgraphevents.js'
 
-function SeenEdges() {
+function EdgeSet() {
     this.seen = {};
     this.chooseOrder = function(from, to) {
         return (from < to) ? [from, to] : [to, from];
@@ -67,6 +67,7 @@ function getEdgeEndsData(inputData) {
         const edgeEnd = inputData.edgeEnds[i];
 
         edgeEndsData[edgeEnd.id] = {
+            id: edgeEnd.id,
             x: edgeEnd.x,
             y: edgeEnd.y,
             direction: edgeEnd.direction,
@@ -142,6 +143,7 @@ var BGrapher = function(
 
     this.draw = function(bgraphState) {
         this.GrapherImpl.drawBgraph(bgraphState, this.grapherState);
+        this.drawEdgeEnds(bgraphState);
         this.drawEdges(bgraphState);
 
         if (process.env.NODE_ENV === 'development') {
@@ -149,38 +151,71 @@ var BGrapher = function(
         }
     }
 
-    this.iterEdges = function*(blockID) {
-        for (const startEdgeEndID of this.blocksData[blockID].edgeEnds) {
-            for (const endEdgeEndID of this.edgeEndsData[startEdgeEndID].edgeEnds) {
-                yield [startEdgeEndID, endEdgeEndID];
-            }
-        }
-    }
-    
-    this.drawEdges = function(bgraphState) {
-        let drawnEdges = new SeenEdges();
-        
-        for (const blockID of this.EventsImpl.edgesToDraw(this.eventState)) {
-            const blockData = this.getBlockData(blockID);
-            if (blockData === null) continue;
-            
-            for (const [startEdgeEndID, endEdgeEndID] of this.iterEdges(blockID)) {
-                if (drawnEdges.has(startEdgeEndID, endEdgeEndID)) continue;
-                drawnEdges.add(startEdgeEndID, endEdgeEndID);
-                
-                let points = this.EdgesImpl.generatePoints(
-                    this.edgeEndsData[startEdgeEndID], 
-                    this.edgeEndsData[endEdgeEndID]
-                );
-                this.GrapherImpl.drawBezierEdge(bgraphState, this.grapherState, points);
-            }
-        }
-    }
-
     this.getBlockData = function(blockID) {
         if (!this.blocksData) return null;
         if (!(blockID in this.blocksData)) return null;
         return this.blocksData[blockID];
+    }
+
+    this.getEdgeEndData = function(edgeEndID) {
+        if (!this.edgeEndsData) return null;
+        if (!(edgeEndID in this.edgeEndsData)) return null;
+        return this.edgeEndsData[edgeEndID];
+    }
+
+    this.activeEdges = function*() {
+        for (const blockID of this.EventsImpl.activeBlockIDs(this.eventState)) {
+            const blockData = this.getBlockData(blockID);
+            if (blockData === null) continue;
+
+            for (const startEdgeEndID of blockData.edgeEnds) {
+                const startEdgeEndData = this.getEdgeEndData(startEdgeEndID);
+                if (startEdgeEndData === null) continue;
+
+                for (const endEdgeEndID of startEdgeEndData.edgeEnds) {
+                    const endEdgeEndData = this.getEdgeEndData(endEdgeEndID);
+                    if (endEdgeEndData === null) continue;
+
+                    yield [startEdgeEndData, endEdgeEndData];
+                }
+            }
+        }
+    }
+
+    this.drawEdgeEnds = function(bgraphState) {
+        let seenEdgeEnds = new Set();
+
+        for (const [start, end] of this.activeEdges()) {
+            if (!seenEdgeEnds.has(start.id)) {
+                seenEdgeEnds.add(start.id);
+
+                this.GrapherImpl.drawEdgeEnd(bgraphState, this.grapherState, 
+                    start.x, start.y, start.direction
+                );
+            }
+
+            if (!seenEdgeEnds.has(end.id)) {
+                seenEdgeEnds.add(end.id);
+
+                this.GrapherImpl.drawEdgeEnd(bgraphState, this.grapherState, 
+                    end.x, end.y, end.direction
+                );
+            }
+        }
+    }
+
+    this.drawEdges = function(bgraphState) {
+        let seenEdges = new EdgeSet();
+
+        for (const [start, end] of this.activeEdges()) {
+            if (!seenEdges.has(start.id, end.id)) {
+                seenEdges.add(start.id, end.id);
+
+                this.GrapherImpl.drawBezierEdge(bgraphState, this.grapherState, 
+                    this.EdgesImpl.generatePoints(start, end)
+                );
+            }
+        }
     }
 
     this.curBlock = function(bgraphState, cur) {
