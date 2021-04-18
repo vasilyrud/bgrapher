@@ -3,6 +3,8 @@ import { expect } from 'chai';
 import bgrapheventsRewire, {BgraphEventsImpl} from 'eventsimpl/bgraphevents.js'
 const BgraphEventState = bgrapheventsRewire.__get__('BgraphEventState');
 
+describe(require('path').basename(__filename), () => {
+
 describe('BgraphEventState', () => {
     it('withinClickRange detects click by default', () => {
         const eventState = new BgraphEventState();
@@ -46,4 +48,6 @@ describe('BgraphEventState', () => {
             expect(eventState.withinClickRange()).to.be.false;
         });
     });
+});
+
 });

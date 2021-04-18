@@ -6,6 +6,8 @@ const pointsFlipXY = bezierRewire.__get__('pointsFlipXY');
 const pointsMove = bezierRewire.__get__('pointsMove');
 const makeCurve = bezierRewire.__get__('makeCurve');
 
+describe(require('path').basename(__filename), () => {
+
 bezierRewire.__Rewire__('RAW', true);
 
 describe('Points transformation', () => {
@@ -215,4 +217,6 @@ describe('generatePoints', () => {
             });
         });
     });
+});
+
 });

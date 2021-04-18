@@ -25,6 +25,7 @@ import { BGrapher } from './bgrapher.js'
 import defaultBgraph from './bgraphs/default.json';
 import outedgesBgraph from './bgraphs/outedges.json';
 import testOnlyDots from './bgraphs/testonlydots.js';
+import testDotsEdges from './bgraphs/testdotsedges.js';
 
 function BGraph(props) {
     const bgrapher = new BGrapher();
@@ -32,9 +33,11 @@ function BGraph(props) {
 
     if (props.bgraphType == 'graph') {
         bgrapher.initBgraph(props.bgraphStr);
-    } else if (props.bgraphType == 'test') {
+    } else if (props.bgraphType == 'testBlocks') {
         // bgrapher.initBgraph(testOnlyDots(1000, 10000));
         bgrapher.initBgraph(testOnlyDots(1000, 1000));
+    } else if (props.bgraphType == 'testEdges') {
+        bgrapher.initBgraph(testDotsEdges(100, 100));
     } else if (props.bgraphType == 'testLarge') {
         bgrapher.initTestBgraphLarge(5000, 10000);
     }
@@ -126,11 +129,14 @@ function BGraphForm(props) {
             <button className="bgraphFormSubmit" onClick={handleSubmit("compare")}>
                 Compare
             </button>
-            <button className="bgraphFormSubmit" onClick={handleSubmit("test")}>
-                Test graph
+            <button className="bgraphFormSubmit" onClick={handleSubmit("testBlocks")}>
+                Test blocks
+            </button>
+            <button className="bgraphFormSubmit" onClick={handleSubmit("testEdges")}>
+                Test edges
             </button>
             <button className="bgraphFormSubmit" onClick={handleSubmit("testLarge")}>
-                Large test graph
+                Large test image
             </button>
         </form>
     );

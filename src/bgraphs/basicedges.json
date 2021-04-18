@@ -1,0 +1,25 @@
+{
+    "width":  4,
+    "height": 4,
+    "blocks": [],
+    "edgeEnds": [
+        {
+            "id": 0,
+            "x": 0, "y": 0,
+            "direction": "down",
+            "isSource": true,
+            "edgeEnds": [
+                1
+            ]
+        },
+        {
+            "id": 100,
+            "x": 1, "y": 1,
+            "direction": "up",
+            "isSource": false,
+            "edgeEnds": [
+                0
+            ]
+        }
+    ]
+}

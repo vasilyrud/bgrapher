@@ -3,6 +3,8 @@ import { expect } from 'chai';
 import { BgraphState } from 'bgraphstate.js'
 import lookupRewire, { colorToRGB, curBgraphPixel } from 'common/lookup.js';
 
+describe(require('path').basename(__filename), () => {
+
 describe('curBgraphPixel', () => {
     function testCurBgraphPixel(
         x, y, expectedX, expectedY, 
@@ -69,4 +71,6 @@ describe('colorToRGB', () => {
             expect(colorToRGB(color)).to.eql(expectedRGB);
         });
     });
+});
+
 });

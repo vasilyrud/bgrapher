@@ -2,6 +2,8 @@ import { expect } from 'chai';
 
 import structRewire, { ArrayXY, EdgeSet } from 'common/struct.js';
 
+describe(require('path').basename(__filename), () => {
+
 describe('ArrayXY', () => {
     function countDefaults(arr) {
         return arr.data.filter(e => e == -1).length;
@@ -117,4 +119,6 @@ describe('EdgeSet', () => {
         expect(Object.keys(seen.seen).length).to.be.equal(1);
         expect(seen.seen[1].size).to.be.equal(1);
     });
+});
+
 });

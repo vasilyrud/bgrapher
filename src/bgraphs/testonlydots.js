@@ -14,18 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+const ITEM_WIDTH  = 2;
+const ITEM_HEIGHT = 2;
+
 function testOnlyDots(numCols, numRows) {
-    let width  = numCols * 2;
-    let height = numRows * 2;
+    /*
+        Creates a numCols x numRows grid of 1x1 blocks.
+        Does not create any edges.
+    */
+    let width  = numCols * ITEM_WIDTH;
+    let height = numRows * ITEM_HEIGHT;
     let numBlocks = numCols * numRows;
     if (process.env.NODE_ENV !== 'test') {
-        console.log('Making ' + numBlocks + ' test blocks.');
+        console.log(`Making ${numBlocks} test blocks.`);
     }
 
     let testInput = {
         width : width, height  : height,
         blocks:    [], edgeEnds:     [],
-    }
+    };
 
     let i = 0, x = 0, y = 0;
     while (i < numBlocks) {
@@ -40,10 +47,10 @@ function testOnlyDots(numCols, numRows) {
         };
 
         i += 1;
-        x += 2;
+        x += ITEM_WIDTH;
         if (x >= width) {
             x = 0;
-            y += 2;
+            y += ITEM_HEIGHT;
         }
     }
 

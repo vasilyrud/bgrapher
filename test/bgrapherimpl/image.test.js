@@ -17,6 +17,8 @@ const { JSDOM } = jsdom;
 var document = (new JSDOM(`...`)).window.document;
 global.document = document;
 
+describe(require('path').basename(__filename), () => {
+
 describe('getArrowPoints', () => {
     [
         [10,20,Direction['up']   ,[10,21,10.5,20],[11,21,10.5,20]],
@@ -146,4 +148,6 @@ describe('Generate image', () => {
             [5,6,9,10].forEach(i => testColor(bgraph, i, test2));
         });
     });
+});
+
 });
