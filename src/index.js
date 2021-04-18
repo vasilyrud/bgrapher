@@ -33,7 +33,8 @@ function BGraph(props) {
     if (props.bgraphType == 'graph') {
         bgrapher.initBgraph(props.bgraphStr);
     } else if (props.bgraphType == 'test') {
-        bgrapher.initBgraph(testOnlyDots(1000, 10000));
+        // bgrapher.initBgraph(testOnlyDots(1000, 10000));
+        bgrapher.initBgraph(testOnlyDots(1000, 1000));
     } else if (props.bgraphType == 'testLarge') {
         bgrapher.initTestBgraphLarge(5000, 10000);
     }

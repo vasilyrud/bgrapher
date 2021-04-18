@@ -140,14 +140,15 @@ function mousemovePan(bgraphState, eventState, bgrapher, event) {
 
 function mousemoveHover(bgraphState, eventState, bgrapher) {
     const prevHoveredBlockID = eventState.hoveredBlockID;
-    eventState.hoveredBlockID = bgrapher.curBlock(bgraphState, eventState.cur);
+    const hoveredBlock = bgrapher.curBlock(bgraphState, eventState.cur);
 
+    eventState.hoveredBlockID = (hoveredBlock === null) ? null : hoveredBlock.id;
     if (prevHoveredBlockID === eventState.hoveredBlockID) return;
 
     bgrapher.update(bgraphState);
 
     if (process.env.NODE_ENV === 'development') {
-        showBlockInfo(bgrapher, eventState.hoveredBlockID);
+        showBlockInfo(bgrapher, hoveredBlock);
     }
 }
 
@@ -159,16 +160,15 @@ function mouseupClick(eventState) {
     }
 }
 
-function showBlockInfo(bgrapher, hoveredBlockID) {
-    if (hoveredBlockID === null) return;
-    const hoveredBlockData = bgrapher.getBlockData(hoveredBlockID);
+function showBlockInfo(bgrapher, hoveredBlock) {
+    if (hoveredBlock === null) return;
 
-    if (hoveredBlockData && hoveredBlockData.text) {
-        console.log('ID: ' + hoveredBlockID + ', text: ' + hoveredBlockData.text);
+    if (hoveredBlock.text) {
+        console.log('ID: ' + hoveredBlock.id + ', text: ' + hoveredBlock.text);
         return;
     }
     
-    console.log(hoveredBlockID);
+    console.log(hoveredBlock.id);
 }
 
 function initView(bgraphState, bgrapher) {

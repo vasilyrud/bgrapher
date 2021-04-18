@@ -14,70 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { curBgraphPixel, initBlocksData, initEdgeEndsData, BlocksLookup } from './common/lookup.js'
+import { EdgeSet } from './common/struct.js'
 import { ImageImpl } from './grapherimpl/image.js'
 import { BezierImpl } from './edgesimpl/bezier.js'
 import { BgraphEventsImpl } from './eventsimpl/bgraphevents.js'
-
-function EdgeSet() {
-    this.seen = {};
-    this.chooseOrder = function(from, to) {
-        return (from < to) ? [from, to] : [to, from];
-    };
-    this.add = function(from, to) {
-        let [usedFrom, usedTo] = this.chooseOrder(from, to);
-        if (!(usedFrom in this.seen)) this.seen[usedFrom] = new Set();
-        this.seen[usedFrom].add(usedTo);
-    };
-    this.has = function(from, to) {
-        let [usedFrom, usedTo] = this.chooseOrder(from, to);
-        return (
-            (usedFrom in this.seen) &&
-            this.seen[usedFrom].has(usedTo)
-        );
-    };
-}
-
-function curBgraphPixel(coord, bgraphState, cur) {
-    return Math.floor(
-        (cur[coord] / bgraphState.zoom) - bgraphState.offset[coord]
-    );
-}
-
-function getBlocksData(inputData) {
-    const numBlocks = inputData.blocks.length;
-    let blocksData  = {};
-
-    for (let i = 0; i < numBlocks; i++) {
-        const block = inputData.blocks[i];
-
-        blocksData[block.id] = {
-            text:     block.text,
-            edgeEnds: block.edgeEnds,
-        };
-    }
-
-    return blocksData;
-}
-
-function getEdgeEndsData(inputData) {
-    const numEdgeEnds = inputData.edgeEnds.length;
-    let edgeEndsData  = {};
-
-    for (let i = 0; i < numEdgeEnds; i++) {
-        const edgeEnd = inputData.edgeEnds[i];
-
-        edgeEndsData[edgeEnd.id] = {
-            id: edgeEnd.id,
-            x: edgeEnd.x,
-            y: edgeEnd.y,
-            direction: edgeEnd.direction,
-            isSource:  edgeEnd.isSource,
-            edgeEnds:  edgeEnd.edgeEnds,
-        };
-    }
-
-    return edgeEndsData;
-}
 
 var BGrapher = function(
     GrapherImpl = ImageImpl,
@@ -111,12 +52,30 @@ var BGrapher = function(
         );
 
         this.grapherState = this.GrapherImpl.initBgraph(inputData);
-        this.blocksData   = getBlocksData(inputData);
-        this.edgeEndsData = getEdgeEndsData(inputData);
+
+        const numBlocks = inputData.blocks.length;
+        this.blocksData = initBlocksData(numBlocks);
+
+        for (let i = 0; i < numBlocks; i++) {
+            const block = inputData.blocks[i];
+            this.blocksData[block.id] = block;
+        }
+
+        this.lookup = new BlocksLookup(inputData);
+
+        const numEdgeEnds = inputData.edgeEnds.length;
+        this.edgeEndsData = initEdgeEndsData(numEdgeEnds);
+
+        for (let i = 0; i < numEdgeEnds; i++) {
+            const edgeEnd = inputData.edgeEnds[i];
+            this.edgeEndsData[edgeEnd.id] = edgeEnd;
+        }
     }
 
     this.initTestBgraphLarge = function(numCols, numRows) {
         this.grapherState = this.GrapherImpl.initTestBgraphLarge(numCols, numRows);
+        this.blocksData   = {};
+        this.edgeEndsData = {};
     }
 
     this.populateElement = function(bgraphState, bgraphElement) {
@@ -151,30 +110,18 @@ var BGrapher = function(
         }
     }
 
-    this.getBlockData = function(blockID) {
-        if (!this.blocksData) return null;
-        if (!(blockID in this.blocksData)) return null;
-        return this.blocksData[blockID];
-    }
-
-    this.getEdgeEndData = function(edgeEndID) {
-        if (!this.edgeEndsData) return null;
-        if (!(edgeEndID in this.edgeEndsData)) return null;
-        return this.edgeEndsData[edgeEndID];
-    }
-
     this.activeEdges = function*() {
         for (const blockID of this.EventsImpl.activeBlockIDs(this.eventState)) {
-            const blockData = this.getBlockData(blockID);
-            if (blockData === null) continue;
+            const blockData = this.blocksData[blockID];
+            if (!blockData) continue;
 
             for (const startEdgeEndID of blockData.edgeEnds) {
-                const startEdgeEndData = this.getEdgeEndData(startEdgeEndID);
-                if (startEdgeEndData === null) continue;
+                const startEdgeEndData = this.edgeEndsData[startEdgeEndID];
+                if (!startEdgeEndData) continue;
 
                 for (const endEdgeEndID of startEdgeEndData.edgeEnds) {
-                    const endEdgeEndData = this.getEdgeEndData(endEdgeEndID);
-                    if (endEdgeEndData === null) continue;
+                    const endEdgeEndData = this.edgeEndsData[endEdgeEndID];
+                    if (!endEdgeEndData) continue;
 
                     yield [startEdgeEndData, endEdgeEndData];
                 }
@@ -189,17 +136,13 @@ var BGrapher = function(
             if (!seenEdgeEnds.has(start.id)) {
                 seenEdgeEnds.add(start.id);
 
-                this.GrapherImpl.drawEdgeEnd(bgraphState, this.grapherState, 
-                    start.x, start.y, start.direction
-                );
+                this.GrapherImpl.drawEdgeEnd(bgraphState, this.grapherState, start);
             }
 
             if (!seenEdgeEnds.has(end.id)) {
                 seenEdgeEnds.add(end.id);
 
-                this.GrapherImpl.drawEdgeEnd(bgraphState, this.grapherState, 
-                    end.x, end.y, end.direction
-                );
+                this.GrapherImpl.drawEdgeEnd(bgraphState, this.grapherState, end);
             }
         }
     }
@@ -219,10 +162,11 @@ var BGrapher = function(
     }
 
     this.curBlock = function(bgraphState, cur) {
-        return this.GrapherImpl.getCurBlock(this.grapherState,
-            curBgraphPixel('x', bgraphState, cur),
-            curBgraphPixel('y', bgraphState, cur),
-        );
+        const x = curBgraphPixel('x', bgraphState, cur);
+        const y = curBgraphPixel('y', bgraphState, cur);
+
+        if (!this.lookup) return null;
+        return this.blocksData[this.lookup.get(x,y)];
     }
 
     this.printCoords = function(bgraphState, cur) {

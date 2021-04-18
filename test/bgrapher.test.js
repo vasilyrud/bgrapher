@@ -1,13 +1,18 @@
 import { expect } from 'chai';
 
-import testOnlyDots from 'bgraphs/testonlydots.js';
+import emptyBgraph from 'bgraphs/empty.json';
+import nonZeroSizeBgraph from 'bgraphs/nonzerosize.json';
+import basicBgraph from 'bgraphs/basic.json';
+import overlapBgraph from 'bgraphs/overlap.json';
+import sameDepthBgraph from 'bgraphs/samedepth.json';
+
 import { BgraphState } from 'bgraphstate.js'
+import testOnlyDots from 'bgraphs/testonlydots.js';
 import bgrapherRewire, {BGrapher} from 'bgrapher.js'
-const curBgraphPixel = bgrapherRewire.__get__('curBgraphPixel');
-const EdgeSet = bgrapherRewire.__get__('EdgeSet');
 
 const FakeGrapher = {
     initBgraph: () => {},
+    initTestBgraphLarge: () => {},
 };
 
 describe('initBgraph onlyDots', () => {
@@ -16,14 +21,14 @@ describe('initBgraph onlyDots', () => {
     const expectedXYs = [[0,0],[2,0],[0,2],[2,2]];
 
     let bgraphers = {
-        'from object': new BGrapher(FakeGrapher),
-        'from string': new BGrapher(FakeGrapher),
+        'object': new BGrapher(FakeGrapher),
+        'string': new BGrapher(FakeGrapher),
     };
-    bgraphers['from object'].initBgraph(inputData);
-    bgraphers['from string'].initBgraph(JSON.stringify(inputData));
+    bgraphers['object'].initBgraph(inputData);
+    bgraphers['string'].initBgraph(JSON.stringify(inputData));
 
     Object.entries(bgraphers).forEach(([description,bgrapher]) => {
-        it(`Generates the right block data ${description}`, () => {
+        it(`Generates the right block data from ${description}`, () => {
             expect(bgrapher.blocksData).to.have.all.keys(expectedIDs);
             expectedIDs.forEach((id, i) => {
                 expect(bgrapher.blocksData[id]['text']).to.have.string('This is block');
@@ -39,7 +44,7 @@ describe('initBgraph onlyDots', () => {
     });
 });
 
-describe('initBgraph', () => {
+describe('initBgraph data', () => {
     it('Generates empty bgraph', () => {
         let bgrapher = new BGrapher(FakeGrapher);
         bgrapher.initBgraph({
@@ -51,7 +56,7 @@ describe('initBgraph', () => {
 
         expect(bgrapher.blocksData).to.eql({});
         expect(bgrapher.edgeEndsData).to.eql({});
-        expect(bgrapher.getBlockData(0)).to.be.null;
+        expect(bgrapher.blocksData[0]).to.be.null;
     });
 
     it('Generates the right edgeEnd data', () => {
@@ -83,15 +88,12 @@ describe('initBgraph', () => {
         });
 
         expect(bgrapher.edgeEndsData).to.have.all.keys(0,100);
-        expect(bgrapher.edgeEndsData[100]).to.eql({
-            id: 100,
-            x: 1, y: 1,
-            direction: 'up',
-            isSource: false,
-            edgeEnds: [
-                0
-            ],
-        });
+        expect(bgrapher.edgeEndsData[100].id)       .to.eql(100);
+        expect(bgrapher.edgeEndsData[100].x)        .to.eql(1);
+        expect(bgrapher.edgeEndsData[100].y)        .to.eql(1);
+        expect(bgrapher.edgeEndsData[100].direction).to.eql(1);
+        expect(bgrapher.edgeEndsData[100].isSource) .to.eql(false);
+        expect(bgrapher.edgeEndsData[100].edgeEnds) .to.eql([0]);
     });
 
     it('Generates the right block edgeEnd data', () => {
@@ -133,120 +135,108 @@ describe('initBgraph', () => {
             ],
         });
 
-        expect(bgrapher.getBlockData(0).edgeEnds).to.eql([0,100]);
+        expect(bgrapher.blocksData[0].edgeEnds).to.eql([0,100]);
     });
 });
 
-describe('EdgeSet', () => {
-    it('Default empty can query', () => {
-        let seen = new EdgeSet();
-        expect(seen.has(0,0)).to.be.false;
-        expect(seen.has(1,2)).to.be.false;
-        expect(seen.has(2,1)).to.be.false;
-    });
+describe('lookup block testOnlyDots', () => {
+    let bgrapher = new BGrapher(FakeGrapher);
+    bgrapher.initBgraph(testOnlyDots(2,2));
 
-    it('Simple add', () => {
-        let seen = new EdgeSet();
-        seen.add(1,2);
-        expect(seen.has(1,2)).to.be.true;
-        expect(seen.has(1,1)).to.be.false;
-        expect(seen.has(2,2)).to.be.false;
-    });
-    
-    it('Reverse add', () => {
-        let seen = new EdgeSet();
-        seen.add(2,1);
-        expect(seen.has(2,1)).to.be.true;
-        expect(seen.has(1,1)).to.be.false;
-        expect(seen.has(2,2)).to.be.false;
-    });
-    
-    it('Equal add', () => {
-        let seen = new EdgeSet();
-        seen.add(0,0);
-        expect(seen.has(0,0)).to.be.true;
-        expect(seen.has(0,1)).to.be.false;
-        expect(seen.has(1,0)).to.be.false;
-    });
-
-    it('Add the same', () => {
-        let seen = new EdgeSet();
-        seen.add(1,2);
-        seen.add(1,2);
-        expect(seen.has(1,2)).to.be.true;
-        expect(Object.keys(seen.seen).length).to.be.equal(1);
-        expect(seen.seen[1].size).to.be.equal(1);
-    });
-
-    it('Add and has in reverse', () => {
-        let seen = new EdgeSet();
-        seen.add(0,0);
-        seen.add(1,2);
-        seen.add(4,3);
-        expect(seen.has(0,0)).to.be.true;
-        expect(seen.has(2,1)).to.be.true;
-        expect(seen.has(3,4)).to.be.true;
-    });
-
-    it('Add the same in reverse', () => {
-        let seen = new EdgeSet();
-        seen.add(1,2);
-        seen.add(2,1);
-        expect(seen.has(1,2)).to.be.true;
-        expect(Object.keys(seen.seen).length).to.be.equal(1);
-        expect(seen.seen[1].size).to.be.equal(1);
-    });
-});
-
-describe('curBgraphPixel', () => {
-    function testCurBgraphPixel(
-        x, y, expectedX, expectedY, 
-        z=1.0, ox=0, oy=0
-    ) {
-        const bgraphState = new BgraphState();
-        bgraphState.zoom = z;
-        bgraphState.offset = {x: ox, y: oy};
-        const cur = {x: x, y: y};
-
-        expect(curBgraphPixel('x', bgraphState, cur)).to.equal(expectedX);
-        expect(curBgraphPixel('y', bgraphState, cur)).to.equal(expectedY);
-    }
-
-    const testCoords = [
-        [0,0,0,0],
-        [0.5,0.5,0,0],
-        [2.5,2.5,2,2],
-        [1,1,1,1],
-        [-0.1,-0.1,-1,-1],
-        [100,100,100,100],
-        [-100,100,-100,100],
-        [100,-100,100,-100],
-        [-100,-100,-100,-100],
+    const validCoords = [
+        [0,0,0],
+        [2,0,1],
+        [0,2,2],
+        [2,2,3],
     ];
 
-    describe('without zoom and offset', () => {
-        it ('returns the right bgraph coord', () => {
-            testCoords.forEach(([x,y,expectedX,expectedY]) => {
-                testCurBgraphPixel(x, y, expectedX, expectedY);
-            });
+    const invalidCoords = [
+        [   1,    1],
+        [  -1,   -1],
+        [ 100,  100],
+        [-100,  100],
+        [ 100, -100],
+        [-100, -100],
+    ];
+
+    validCoords.forEach(([x,y,id]) => {
+        it (`returns the right block for ${x} ${y}`, () => {
+            expect(bgrapher.lookup.get(x, y)).to.equal(id);
         });
     });
 
-    describe('with zoom and offset', () => {
-        [
-            [1,50,100],
-            [10,0,0],
-            [10,50,100],
-            [1,-50,-100],
-            [10,-50,-100],
-        ].forEach(([z,ox,oy]) => {
-            it (`returns the right bgraph coord with z=${z},ox=${ox},oy=${oy}`, () => {
-                testCoords.map(([x,y,expectedX,expectedY]) => [
-                    (x+ox)*z, (y+oy)*z, expectedX, expectedY
-                ]).forEach(([x,y,expectedX,expectedY]) => {
-                    testCurBgraphPixel(x, y, expectedX, expectedY, z, ox, oy);
-                });
-            });
+    invalidCoords.forEach(([x,y]) => {
+        it (`doesn't return any block for ${x} ${y}`, () => {
+            expect(bgrapher.lookup.get(x, y)).to.be.null;
         });
+    });
+});
+
+describe('lookup block initTestBgraphLarge', () => {
+    let bgrapher = new BGrapher(FakeGrapher);
+    bgrapher.initTestBgraphLarge(2,2);
+    const bgraphState = new BgraphState();
+
+    it (`does not generate lookup`, () => {
+        expect(bgrapher.curBlock(bgraphState, {x: 0,y: 0})).to.be.null;
+        expect(bgrapher.curBlock(bgraphState, {x: 1,y: 1})).to.be.null;
+        expect(bgrapher.curBlock(bgraphState, {x:-1,y:-1})).to.be.null;
+    });
+});
+
+describe('lookup block samples', () => {
+    function testLookup(bgrapher, i, expectedID) {
+        const foundID = bgrapher.lookup.get(
+            i%bgrapher.lookup.width, 
+            Math.floor(i/bgrapher.lookup.width)
+        );
+
+        expect(foundID).to.equal(expectedID);
+    }
+
+    let testBlackDotLocations = [0,2,8,10];
+    let testWhiteDotLocations = [1,3,4,5,6,7,9,11];
+
+    it (`empty bgraph`, () => {
+        let bgrapher = new BGrapher(FakeGrapher);
+        bgrapher.initBgraph(emptyBgraph);
+        expect(bgrapher.lookup).is.not.undefined;
+        expect(bgrapher.lookup.get(0, 0)).to.be.null;
+    });
+
+    it (`non-zero size bgraph`, () => {
+        let bgrapher = new BGrapher(FakeGrapher);
+        bgrapher.initBgraph(nonZeroSizeBgraph);
+        expect(bgrapher.lookup).is.not.undefined;
+        expect(bgrapher.lookup.get(0, 0)).to.be.null;
+        expect(bgrapher.lookup.width).to.equal(4);
+        expect(bgrapher.lookup.height).to.equal(4);
+    });
+
+    it('basic bgraph', () => {
+        let bgrapher = new BGrapher(FakeGrapher);
+        bgrapher.initBgraph(basicBgraph);
+        const basicExpectedIDs = basicBgraph.blocks.map(e => e.id);
+
+        testBlackDotLocations.forEach((i, index) => testLookup(bgrapher, i, basicExpectedIDs[index]));
+        testWhiteDotLocations.forEach((i)        => testLookup(bgrapher, i, null));
+    });
+
+    it('overlapping bgraph', () => {
+        let bgrapher = new BGrapher(FakeGrapher);
+        bgrapher.initBgraph(overlapBgraph);
+
+        [0,1,4].forEach(i => testLookup(bgrapher, i, 0));
+        [5,6,9,10].forEach(i => testLookup(bgrapher, i, 100));
+        [11,14,15].forEach(i => testLookup(bgrapher, i, 2));
+        [2,3,7,8,12,13].forEach(i => testLookup(bgrapher, i, null));
+    });
+
+    it('same depth bgraph', () => {
+        let bgrapher = new BGrapher(FakeGrapher);
+        bgrapher.initBgraph(sameDepthBgraph);
+
+        [0,1,4].forEach(i => testLookup(bgrapher, i, 0));
+        [5,6,9,10].forEach(i => testLookup(bgrapher, i, 100));
     });
 });

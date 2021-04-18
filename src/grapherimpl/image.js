@@ -14,21 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { colorToRGB, Direction } from '../common/lookup.js'
+import { ArrayXY } from '../common/struct.js'
+
 const CANVAS_TYPE = '2d';
 const DEFAULT_BG = '#ffffff';
 const LINE_COLOR_FG = '#000000';
 const LINE_COLOR_BG = '#ffffff';
 
-function ImageState(
-    imageWidth, imageHeight, 
-    buffer,     blocksLookup, 
-) {
+function ImageState(imageWidth, imageHeight, buffer) {
     this.canvas = document.createElement('canvas');
 
     this.imageWidth  = imageWidth;
     this.imageHeight = imageHeight;
     this.buffer = buffer;
-    this.blocksLookup = blocksLookup;
 }
 
 function pixelateImage(context) {
@@ -43,33 +42,7 @@ function resetBG(context, width, height) {
     context.fillRect(0, 0, width, height);
 }
 
-function xyArray(width, height) {
-    /*
-        (x,y)-indexed array of 32-bit (4-byte) numbers.
-    */
-    this.width  = width;
-    this.height = height;
-    this.buffer = new ArrayBuffer(4 * this.height * this.width);
-    this.data   = new Int32Array(this.buffer).fill(-1);
-
-    this.get = function(x, y) {
-        return this.data[y * this.width + x];
-    };
-    this.set = function(x, y, val) {
-        this.data[y * this.width + x] = val;
-    };
-}
-
-function colorToRGB(c) {
-    return [
-        c >> 16 & 255,
-        c >>  8 & 255,
-        c >>  0 & 255,
-    ];
-}
-
-function generateBlockPixels(img, imgWidth, blockData, lookup, depths) {
-    let id = blockData.id;
+function generateBlockPixels(img, imgWidth, blockData, depths) {
     let width  = blockData.width;
     let height = blockData.height;
     let depth = blockData.depth;
@@ -95,7 +68,6 @@ function generateBlockPixels(img, imgWidth, blockData, lookup, depths) {
             img.data[p+3] = 255;
 
             depths.set(x,y,depth);
-            lookup.set(x,y,id);
         }
     }
 }
@@ -112,16 +84,16 @@ function generateEdgeEndPixels(img, imgWidth, edgeEndData) {
 }
 
 function generatePixels(inputData) {
-    return (img, lookup) => {
+    return (img) => {
         let imgWidth  = inputData.width;
         let imgHeight = inputData.height;
         let numBlocks = inputData.blocks.length;
         let numEdgeEnds = inputData.edgeEnds.length;
 
-        let depths = new xyArray(imgWidth, imgHeight);
+        let depths = new ArrayXY(imgWidth, imgHeight);
         for (let i = 0; i < numBlocks; i++) {
             let block = inputData.blocks[i];
-            generateBlockPixels(img, imgWidth, block, lookup, depths);
+            generateBlockPixels(img, imgWidth, block, depths);
         }
 
         for (let i = 0; i < numEdgeEnds; i++) {
@@ -132,9 +104,9 @@ function generatePixels(inputData) {
 }
 
 function generateTestPixels(numBlocks) {
-    return (img, lookup) => {
-        let width  = lookup.width;
-        let height = lookup.height;
+    return (img) => {
+        let width  = img.width;
+        let height = img.height;
         let id = 0, x = 0, y = 0, i = 0, p = 0;
 
         while (id < numBlocks) {
@@ -145,8 +117,6 @@ function generateTestPixels(numBlocks) {
             img.data[p+1] = 0;
             img.data[p+2] = 0;
             img.data[p+3] = 255;
-
-            lookup.data[i] = id;
 
             id += 1;
             x += 2;
@@ -170,21 +140,15 @@ function generateImage(imageWidth, imageHeight, cbPixels) {
     buffer.height = imageHeight;
 
     if (imageWidth * imageHeight == 0) {
-        return new ImageState(
-            imageWidth, imageHeight,
-        );
+        return new ImageState(imageWidth, imageHeight);
     }
 
     let imagedata = bufferContext.createImageData(imageWidth, imageHeight);
-    let lookup = new xyArray(imageWidth, imageHeight);
 
-    cbPixels(imagedata, lookup);
+    cbPixels(imagedata);
     bufferContext.putImageData(imagedata, 0, 0);
 
-    return new ImageState(
-        imageWidth, imageHeight,
-        buffer,     lookup, 
-    );
+    return new ImageState(imageWidth, imageHeight, buffer);
 }
 
 function getLineWidths(zoom) {
@@ -255,22 +219,26 @@ function drawSingleLine(bgraphState, context, points, lineWidth, lineColor) {
 function getArrowPoints(x, y, direction) {
     const lineDist  = 1/2;
 
-    if (direction == 'up') {
+    switch (direction) {
+        case Direction.up:
         return [
             [x  , y+1, x+lineDist  , y],
             [x+1, y+1, x+1-lineDist, y],
         ];
-    } else if (direction == 'right') {
+
+        case Direction.right:
         return [
             [x, y  , x+1, y+lineDist  ],
             [x, y+1, x+1, y+1-lineDist],
         ];
-    } else if (direction == 'down') {
+
+        case Direction.down:
         return [
             [x  , y, x+lineDist  , y+1],
             [x+1, y, x+1-lineDist, y+1],
         ];
-    } else if (direction == 'left') {
+
+        case Direction.left:
         return [
             [x+1, y  , x, y+lineDist  ],
             [x+1, y+1, x, y+1-lineDist],
@@ -280,12 +248,12 @@ function getArrowPoints(x, y, direction) {
     throw new Error(`Unsupported edge direction: ${direction}.`);
 }
 
-function drawEdgeEndHighlight(bgraphState, context, x, y, direction) {
+function drawEdgeEndHighlight(bgraphState, context, edgeEnd) {
     const [fgWidth, bgWidth] = getLineWidths(bgraphState.zoom);
     if (bgWidth === 0) return;
 
     const lineWidth = (bgWidth - fgWidth) / 2;
-    const [points0, points1] = getArrowPoints(x, y, direction);
+    const [points0, points1] = getArrowPoints(edgeEnd.x, edgeEnd.y, edgeEnd.direction);
 
     drawSingleLine(bgraphState, context, points0, lineWidth, LINE_COLOR_BG);
     drawSingleLine(bgraphState, context, points1, lineWidth, LINE_COLOR_BG);
@@ -347,16 +315,6 @@ let ImageImpl = (function () {
         drawBezierEdge: function(bgraphState, imageState, points) {
             let context = imageState.canvas.getContext(CANVAS_TYPE);
             drawBezierLine(bgraphState, context, points);
-        },
-
-        getCurBlock: function(imageState, x, y) {
-            if (y < 0 || y >= imageState.imageHeight) return null;
-            if (x < 0 || x >= imageState.imageWidth ) return null;
-
-            let blockID = imageState.blocksLookup.get(x,y);
-            if (blockID === -1) return null;
-
-            return blockID;
         },
 
         printCoords: function(imageState, x, y) {

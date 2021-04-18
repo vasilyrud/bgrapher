@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 
+import { Direction } from 'common/lookup.js';
 import bezierRewire, { BezierImpl } from 'edgesimpl/bezier.js';
 const pointsFlipXY = bezierRewire.__get__('pointsFlipXY');
 const pointsMove = bezierRewire.__get__('pointsMove');
@@ -121,12 +122,12 @@ describe('generatePoints', () => {
         it ('returns direct from source', () => {
             expect(BezierImpl.generatePoints({
                 isSource: true,
-                direction: "down",
+                direction: Direction['down'],
                 x: 1,
                 y: 2,
             },{
                 isSource: false,
-                direction: "down",
+                direction: Direction['down'],
                 x: 3,
                 y: 4,
             })).to.eql(expectedDirectPoints);
@@ -135,12 +136,12 @@ describe('generatePoints', () => {
         it ('returns direct from dest', () => {
             expect(BezierImpl.generatePoints({
                 isSource: false,
-                direction: "down",
+                direction: Direction['down'],
                 x: 3,
                 y: 4,
             },{
                 isSource: true,
-                direction: "down",
+                direction: Direction['down'],
                 x: 1,
                 y: 2,
             })).to.eql(expectedDirectPoints);
@@ -156,12 +157,12 @@ describe('generatePoints', () => {
         it ('returns direct from source', () => {
             expect(BezierImpl.generatePoints({
                 isSource: true,
-                direction: 'right',
+                direction: Direction['right'],
                 x: 1,
                 y: 2,
             },{
                 isSource: false,
-                direction: 'right',
+                direction: Direction['right'],
                 x: 3,
                 y: 4,
             })).to.eql(expectedDirectPoints);
@@ -170,12 +171,12 @@ describe('generatePoints', () => {
         it ('returns direct from dest', () => {
             expect(BezierImpl.generatePoints({
                 isSource: false,
-                direction: 'right',
+                direction: Direction['right'],
                 x: 3,
                 y: 4,
             },{
                 isSource: true,
-                direction: 'right',
+                direction: Direction['right'],
                 x: 1,
                 y: 2,
             })).to.eql(expectedDirectPoints);

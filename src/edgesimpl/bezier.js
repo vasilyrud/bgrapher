@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Direction } from '../common/lookup.js'
+
 // Whether to disable making small curve 
 // adjustments for visual appeal.
 // Particularly useful for testing.
@@ -122,17 +124,17 @@ function makeCurve(startX, startY, endX, endY) {
 let BezierImpl = (function () {
     return {
         generatePoints: function(startEdgeEndIn, endEdgeEndIn) {
-            let [startEdgeEnd  , endEdgeEnd] = ((startEdgeEndIn.isSource) ? 
-                [startEdgeEndIn, endEdgeEndIn] : 
+            let [startEdgeEnd  , endEdgeEnd    ] = ((startEdgeEndIn.isSource) ? 
+                [startEdgeEndIn, endEdgeEndIn  ] : 
                 [endEdgeEndIn  , startEdgeEndIn]);
 
             if (
-                startEdgeEnd.direction == 'down' && 
-                endEdgeEnd.direction   == 'down'
+                startEdgeEnd.direction == Direction.down && 
+                endEdgeEnd.direction   == Direction.down
             ) {
                 let [startX, startY, endX, endY] = [
-                    startEdgeEnd.x + 0.5, 
-                    startEdgeEnd.y + 1, 
+                    startEdgeEnd.x + 0.5,
+                    startEdgeEnd.y + 1,
                     endEdgeEnd.x   + 0.5, 
                     endEdgeEnd.y   + 0,
                 ];
@@ -140,8 +142,8 @@ let BezierImpl = (function () {
                 return makeCurve(startX, startY, endX, endY);
 
             } else if (
-                startEdgeEnd.direction == 'right' && 
-                endEdgeEnd.direction   == 'right'
+                startEdgeEnd.direction == Direction.right && 
+                endEdgeEnd.direction   == Direction.right
             ) {
                 let [startX, startY, endX, endY] = pointsFlipXY([
                     startEdgeEnd.x + 1,
