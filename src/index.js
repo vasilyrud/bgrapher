@@ -34,10 +34,10 @@ function BGraph(props) {
     if (props.bgraphType == 'graph') {
         bgrapher.initBgraph(props.bgraphStr);
     } else if (props.bgraphType == 'testBlocks') {
-        // bgrapher.initBgraph(testOnlyDots(1000, 10000));
-        bgrapher.initBgraph(testOnlyDots(1000, 1000));
+        bgrapher.initBgraph(testOnlyDots(1000, 10000));
+        // bgrapher.initBgraph(testOnlyDots(1000, 1000));
     } else if (props.bgraphType == 'testEdges') {
-        bgrapher.initBgraph(testDotsEdges(100, 100));
+        bgrapher.initBgraph(testDotsEdges(1000, 1000));
     } else if (props.bgraphType == 'testLarge') {
         bgrapher.initTestBgraphLarge(5000, 10000);
     }

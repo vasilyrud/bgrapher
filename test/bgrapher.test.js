@@ -87,9 +87,8 @@ describe('initBgraph data', () => {
             let bgrapher = new BGrapher(FakeGrapher);
             bgrapher.initBgraph(emptyBgraph);
     
-            expect(bgrapher.blocksData)   .to.eql({});
-            expect(bgrapher.edgeEndsData) .to.eql({});
-            expect(bgrapher.blocksData[0]).to.be.null;
+            expect(bgrapher.blocksData)  .to.eql({});
+            expect(bgrapher.edgeEndsData).to.eql({});
         });
     
         it('Generates the right edgeEnd data', () => {

@@ -14,11 +14,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { curBgraphPixel, initBlocksData, initEdgeEndsData, BlocksLookup } from './common/lookup.js'
+import { curBgraphPixel, BlocksLookup, Direction } from './common/lookup.js'
 import { EdgeSet } from './common/struct.js'
 import { ImageImpl } from './grapherimpl/image.js'
 import { BezierImpl } from './edgesimpl/bezier.js'
 import { BgraphEventsImpl } from './eventsimpl/bgraphevents.js'
+
+function initBlocksData(inputData) {
+    let blocksData = {};
+    const numBlocks = inputData.blocks.length;
+
+    for (let i = 0; i < numBlocks; i++) {
+        const block = inputData.blocks[i];
+        blocksData[block.id] = block;
+    }
+
+    return blocksData;
+}
+
+function initEdgeEndsData(inputData) {
+    let edgeEndsData = {};
+    const numEdgeEnds = inputData.edgeEnds.length;
+
+    for (let i = 0; i < numEdgeEnds; i++) {
+        const edgeEnd = inputData.edgeEnds[i];
+        edgeEndsData[edgeEnd.id] = edgeEnd;
+        edgeEndsData[edgeEnd.id].direction = Direction[edgeEnd.direction];
+    }
+
+    return edgeEndsData;
+}
 
 var BGrapher = function(
     GrapherImpl = ImageImpl,
@@ -53,23 +78,10 @@ var BGrapher = function(
 
         this.grapherState = this.GrapherImpl.initBgraph(inputData);
 
-        const numBlocks = inputData.blocks.length;
-        this.blocksData = initBlocksData(numBlocks);
-
-        for (let i = 0; i < numBlocks; i++) {
-            const block = inputData.blocks[i];
-            this.blocksData[block.id] = block;
-        }
-
+        this.blocksData = initBlocksData(inputData);
         this.lookup = new BlocksLookup(inputData);
 
-        const numEdgeEnds = inputData.edgeEnds.length;
-        this.edgeEndsData = initEdgeEndsData(numEdgeEnds);
-
-        for (let i = 0; i < numEdgeEnds; i++) {
-            const edgeEnd = inputData.edgeEnds[i];
-            this.edgeEndsData[edgeEnd.id] = edgeEnd;
-        }
+        this.edgeEndsData = initEdgeEndsData(inputData);
     }
 
     this.initTestBgraphLarge = function(numCols, numRows) {
