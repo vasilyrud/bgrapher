@@ -114,6 +114,7 @@ var BGrapher = function(
 
     this.draw = function(bgraphState) {
         this.GrapherImpl.drawBgraph(bgraphState, this.grapherState);
+        this.drawBlocks(bgraphState);
         this.drawEdgeEnds(bgraphState);
         this.drawEdges(bgraphState);
 
@@ -122,11 +123,17 @@ var BGrapher = function(
         }
     }
 
-    this.activeEdges = function*() {
+    this.activeBlocks = function*() {
         for (const blockID of this.EventsImpl.activeBlockIDs(this.eventState)) {
             const blockData = this.blocksData[blockID];
             if (!blockData) continue;
 
+            yield blockData;
+        }
+    }
+
+    this.activeEdges = function*() {
+        for (const blockData of this.activeBlocks()) {
             for (const startEdgeEndID of blockData.edgeEnds) {
                 const startEdgeEndData = this.edgeEndsData[startEdgeEndID];
                 if (!startEdgeEndData) continue;
@@ -137,6 +144,18 @@ var BGrapher = function(
 
                     yield [startEdgeEndData, endEdgeEndData];
                 }
+            }
+        }
+    }
+
+    this.drawBlocks = function(bgraphState) {
+        let seenBlocks = new Set();
+
+        for (const block of this.activeBlocks()) {
+            if (!seenBlocks.has(block.id)) {
+                seenBlocks.add(block.id);
+
+                this.GrapherImpl.drawBlock(bgraphState, this.grapherState, block);
             }
         }
     }

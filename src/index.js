@@ -35,7 +35,6 @@ function BGraph(props) {
         bgrapher.initBgraph(props.bgraphStr);
     } else if (props.bgraphType == 'testBlocks') {
         bgrapher.initBgraph(testOnlyDots(1000, 10000));
-        // bgrapher.initBgraph(testOnlyDots(1000, 1000));
     } else if (props.bgraphType == 'testEdges') {
         bgrapher.initBgraph(testDotsEdges(1000, 1000));
     } else if (props.bgraphType == 'testLarge') {

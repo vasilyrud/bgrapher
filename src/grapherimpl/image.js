@@ -183,12 +183,12 @@ function drawBezierSingleCurve(bgraphState, context, points, lineWidth, lineColo
     for (let i = 0; i < points.length-1; i+=6) {
         context.beginPath();
         context.moveTo(
-            toCanvas('x', bgraphState, points[i+0]), toCanvas('y', bgraphState, points[i+1])
+            toCanvas('x', bgraphState, points[i+0]), toCanvas('y', bgraphState, points[i+1]),
         );
         context.bezierCurveTo(
             toCanvas('x', bgraphState, points[i+2]), toCanvas('y', bgraphState, points[i+3]), 
             toCanvas('x', bgraphState, points[i+4]), toCanvas('y', bgraphState, points[i+5]), 
-            toCanvas('x', bgraphState, points[i+6]), toCanvas('y', bgraphState, points[i+7])
+            toCanvas('x', bgraphState, points[i+6]), toCanvas('y', bgraphState, points[i+7]),
         );
         context.lineWidth = lineWidth;
         context.strokeStyle = lineColor;
@@ -253,10 +253,39 @@ function drawEdgeEndHighlight(bgraphState, context, edgeEnd) {
     if (bgWidth === 0) return;
 
     const lineWidth = (bgWidth - fgWidth) / 2;
-    const [points0, points1] = getArrowPoints(edgeEnd.x, edgeEnd.y, edgeEnd.direction);
 
-    drawSingleLine(bgraphState, context, points0, lineWidth, LINE_COLOR_BG);
-    drawSingleLine(bgraphState, context, points1, lineWidth, LINE_COLOR_BG);
+    for (const points of getArrowPoints(edgeEnd.x, edgeEnd.y, edgeEnd.direction)) {
+        drawSingleLine(bgraphState, context, points, lineWidth, LINE_COLOR_BG);
+    }
+}
+
+function drawInnerStrokeBox(bgraphState, context, [x, y, w, h], lineWidthIn, lineColor) {
+    const width  = bgraphState.zoom * w;
+    const height = bgraphState.zoom * h;
+    const lineWidth = Math.min(lineWidthIn, width/2, height/2);
+
+    context.beginPath();
+    context.lineWidth   = lineWidth;
+    context.strokeStyle = lineColor;
+    context.rect(
+        toCanvas('x', bgraphState, x) + lineWidth/2, 
+        toCanvas('y', bgraphState, y) + lineWidth/2,
+        width  - lineWidth,
+        height - lineWidth,
+    );
+    context.stroke();
+}
+
+function drawBlockHighlight(bgraphState, context, block) {
+    const [fgWidth, bgWidth] = getLineWidths(bgraphState.zoom);
+    if (bgWidth === 0) return;
+
+    const bgLineWidth = bgWidth - fgWidth;
+    const fgLineWidth = bgLineWidth / 2;
+
+    const points = [block.x, block.y, block.width, block.height];
+    drawInnerStrokeBox(bgraphState, context, points, bgLineWidth, LINE_COLOR_FG);
+    drawInnerStrokeBox(bgraphState, context, points, fgLineWidth, LINE_COLOR_BG);
 }
 
 let ImageImpl = (function () {
@@ -307,9 +336,14 @@ let ImageImpl = (function () {
             );
         },
 
-        drawEdgeEnd: function(bgraphState, imageState, x, y, direction) {
+        drawBlock: function(bgraphState, imageState, blockData) {
             let context = imageState.canvas.getContext(CANVAS_TYPE);
-            drawEdgeEndHighlight(bgraphState, context, x, y, direction);
+            drawBlockHighlight(bgraphState, context, blockData);
+        },
+
+        drawEdgeEnd: function(bgraphState, imageState, edgeEndData) {
+            let context = imageState.canvas.getContext(CANVAS_TYPE);
+            drawEdgeEndHighlight(bgraphState, context, edgeEndData);
         },
 
         drawBezierEdge: function(bgraphState, imageState, points) {
