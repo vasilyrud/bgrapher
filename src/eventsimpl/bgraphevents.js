@@ -162,7 +162,7 @@ function initView(bgraphState, bgrapher) {
 }
 
 let eventHandlers = {
-    wheel: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+    wheel: function(bgraphState, eventState, bgrapher, event) {
         eventState.cur.x = getLocal('x', event);
         eventState.cur.y = getLocal('y', event);
 
@@ -176,7 +176,7 @@ let eventHandlers = {
 
         bgrapher.update(bgraphState);
     },
-    mousedown: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+    mousedown: function(bgraphState, eventState, bgrapher, event) {
         // Ignore non-left clicks
         if (event.button !== 0) return;
 
@@ -188,7 +188,7 @@ let eventHandlers = {
         eventState.panningPrev.x = getLocal('x', event);
         eventState.panningPrev.y = getLocal('y', event);
     },
-    mouseup: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+    mouseup: function(bgraphState, eventState, bgrapher, event) {
         eventState.panning = false;
 
         if (eventState.isClick) {
@@ -201,15 +201,15 @@ let eventHandlers = {
             bgrapher.notifyParent(bgraphState, eventState.cur);
         }
     },
-    contextmenu: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+    contextmenu: function(bgraphState, eventState, bgrapher, event) {
         if (!eventState.hoveredBlockID) return;
         event.preventDefault();
     },
-    mouseout: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+    mouseout: function(bgraphState, eventState, bgrapher, event) {
         eventState.panning = false;
         eventState.isClick = false;
     },
-    mousemove: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+    mousemove: function(bgraphState, eventState, bgrapher, event) {
         eventState.cur.x = getLocal('x', event);
         eventState.cur.y = getLocal('y', event);
 
@@ -227,7 +227,7 @@ let eventHandlers = {
             bgrapher.printCoords(bgraphState, eventState.cur);
         }
     },
-    resize: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+    resize: function(bgraphState, eventState, bgrapher, event) {
         initView(bgraphState, bgrapher);
 
         bgrapher.updateBgraphSize();
@@ -246,7 +246,7 @@ let BgraphEventsImpl = (function () {
 
                 target.addEventListener(eventType, 
                     eventHandlers[eventType]
-                        .bind(null, bgraphState, eventState, bgrapher, bgraphElement)
+                        .bind(null, bgraphState, eventState, bgrapher)
                 );
             }
 
