@@ -351,18 +351,47 @@ let ImageImpl = (function () {
             drawBezierLine(bgraphState, context, points);
         },
 
+        drawHoverInfo: function(imageState, blockData) {
+            let context = imageState.canvas.getContext(CANVAS_TYPE);
+            if (!blockData.text) return;
+
+            const posX = 5;
+            const posY = 5;
+
+            context.fillStyle = '#ffffff';
+            context.fillRect(posX, posY, 200, 35);
+
+            context.textAlign = 'left';
+            context.fillStyle = '#aaaaaa';
+            context.font = '10px sans-serif';
+            context.fillText('Right click block to show more info.',  posX+4, posY+10);
+
+            context.textAlign = 'left';
+            context.fillStyle = '#000000';
+            context.font = '16px sans-serif';
+            context.fillText(`${blockData.text}`, posX+4, posY+28);
+        },
+
         printCoords: function(imageState, x, y) {
             let context = imageState.canvas.getContext(CANVAS_TYPE);
 
-            context.fillStyle = '#ffffff';
-            context.fillRect(5, 5, 50, 20);
+            const posX =  5;
+            const posY = 45;
 
+            context.fillStyle = '#ffffff';
+            context.fillRect(posX, posY, 120, 18);
+
+            context.textAlign = 'left';
+            context.fillStyle = '#aaaaaa';
+            context.font = '10px sans-serif';
+            context.fillText(`x`, posX+ 2, posY+8);
+            context.fillText(`y`, posX+62, posY+8);
+
+            context.textAlign = 'right';
             context.fillStyle = '#000000';
-            context.font = '16px';
-            context.fillText(
-                `${x} ${y}`, 
-                10, 20
-            );
+            context.font = '12px sans-serif';
+            context.fillText(`${x}`, posX+ 55, posY+13);
+            context.fillText(`${y}`, posX+115, posY+13);
         },
 
         getBgraphWidth: function(imageState) {

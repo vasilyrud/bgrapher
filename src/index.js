@@ -42,7 +42,11 @@ function BGraph(props) {
     }
 
     React.useEffect(() => {
-        bgrapher.populateElement(props.bgraphState, bgraphElement.current);
+        bgrapher.populateElement(
+            props.bgraphState, 
+            bgraphElement.current,
+            data => console.log(data),
+        );
     }, []); // Only run on mount
 
     return (

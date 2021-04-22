@@ -26,10 +26,10 @@ function BgraphEventState() {
         x: 0,
         y: 0,
     };
-    this.withinClickRange = () => (
-        Math.abs(this.cur.x - this.clickStart.x) <= CLICK_DELTA &&
-        Math.abs(this.cur.y - this.clickStart.y) <= CLICK_DELTA
-    );
+    this.withinClickRange = function() {
+        return (Math.abs(this.cur.x - this.clickStart.x) <= CLICK_DELTA &&
+                Math.abs(this.cur.y - this.clickStart.y) <= CLICK_DELTA);
+    };
 
     this.panning = false;
     this.panningPrev = {
@@ -146,10 +146,6 @@ function mousemoveHover(bgraphState, eventState, bgrapher) {
     if (prevHoveredBlockID === eventState.hoveredBlockID) return;
 
     bgrapher.update(bgraphState);
-
-    if (process.env.NODE_ENV === 'development') {
-        showBlockInfo(hoveredBlock);
-    }
 }
 
 function mouseupClick(eventState) {
@@ -158,17 +154,6 @@ function mouseupClick(eventState) {
     } else {
         eventState.clickedBlockIDs.add(eventState.hoveredBlockID);
     }
-}
-
-function showBlockInfo(hoveredBlock) {
-    if (!hoveredBlock) return;
-
-    if (hoveredBlock.text) {
-        console.log(`ID: ${hoveredBlock.id}, text: ${hoveredBlock.text}`);
-        return;
-    }
-    
-    console.log(hoveredBlock.id);
 }
 
 function initView(bgraphState, bgrapher) {
@@ -210,6 +195,15 @@ let eventHandlers = {
             eventState.isClick = false;
             mouseupClick(eventState);
         }
+
+        // Right click, requires "contextmenu" handler
+        if (event.button === 2) {
+            bgrapher.notifyParent(bgraphState, eventState.cur);
+        }
+    },
+    contextmenu: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
+        if (!eventState.hoveredBlockID) return;
+        event.preventDefault();
     },
     mouseout: function(bgraphState, eventState, bgrapher, bgraphElement, event) {
         eventState.panning = false;

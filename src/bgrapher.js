@@ -80,7 +80,6 @@ var BGrapher = function(
 
         this.blocksData = initBlocksData(inputData);
         this.lookup = new BlocksLookup(inputData);
-
         this.edgeEndsData = initEdgeEndsData(inputData);
     }
 
@@ -90,8 +89,9 @@ var BGrapher = function(
         this.edgeEndsData = {};
     }
 
-    this.populateElement = function(bgraphState, bgraphElement) {
+    this.populateElement = function(bgraphState, bgraphElement, cbSelect=()=>{}) {
         this.bgraphElement = bgraphElement;
+        this.cbSelect = cbSelect;
 
         this.GrapherImpl.populateElement(this.grapherState, this.bgraphElement);
         this.updateBgraphSize();
@@ -113,13 +113,16 @@ var BGrapher = function(
     }
 
     this.draw = function(bgraphState) {
+        const cur = this.EventsImpl.getCur(this.eventState);
+
         this.GrapherImpl.drawBgraph(bgraphState, this.grapherState);
         this.drawBlocks(bgraphState);
         this.drawEdgeEnds(bgraphState);
         this.drawEdges(bgraphState);
+        this.drawHoverInfo(bgraphState, cur);
 
         if (process.env.NODE_ENV === 'development') {
-            this.printCoords(bgraphState, this.EventsImpl.getCur(this.eventState));
+            this.printCoords(bgraphState, cur);
         }
     }
 
@@ -190,6 +193,20 @@ var BGrapher = function(
                 );
             }
         }
+    }
+
+    this.drawHoverInfo = function(bgraphState, cur) {
+        const blockData = this.curBlock(bgraphState, cur);
+        if (!blockData) return;
+
+        return this.GrapherImpl.drawHoverInfo(this.grapherState, blockData);
+    }
+
+    this.notifyParent = function(bgraphState, cur) {
+        const blockData = this.curBlock(bgraphState, cur);
+        if (!blockData) return;
+
+        this.cbSelect(blockData);
     }
 
     this.curBlock = function(bgraphState, cur) {
