@@ -371,10 +371,10 @@ let ImageImpl = (function () {
             let context = imageState.canvas.getContext(CANVAS_TYPE);
             if (!blockData.text) return;
 
-            const posX =   5;
-            const posY =   5;
             const boxW = 200;
             const boxH =  35;
+            const posX =   5;
+            const posY =   5;
 
             context.fillStyle = '#ffffff';
             context.fillRect(posX, posY, boxW, boxH);
@@ -393,10 +393,10 @@ let ImageImpl = (function () {
         printCoords: function(imageState, x, y) {
             let context = imageState.canvas.getContext(CANVAS_TYPE);
 
-            const posX =   5;
-            const posY =  45;
             const boxW = 120;
             const boxH =  18;
+            const posX = imageState.canvas.width - boxW - 5;
+            const posY =   5;
 
             context.fillStyle = '#ffffff';
             context.fillRect(posX, posY, boxW, boxH);
