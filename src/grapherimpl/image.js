@@ -288,6 +288,22 @@ function drawBlockHighlight(bgraphState, context, block) {
     drawInnerStrokeBox(bgraphState, context, points, fgLineWidth, LINE_COLOR_BG);
 }
 
+function concatText(context, boxW, text) {
+    const dots = '...';
+    const dotsLen = context.measureText(dots).width;
+    const rightPadding = 15;
+
+    if (context.measureText(text).width > boxW - rightPadding) {
+        let numChars = 8;
+        while (context.measureText(text.slice(0, numChars)).width + dotsLen 
+            < boxW - rightPadding) numChars++;
+
+        return text.slice(0, numChars-1) + dots;
+    }
+
+    return text;
+}
+
 let ImageImpl = (function () {
     return {
         initBgraph: function(inputData) {
@@ -355,11 +371,13 @@ let ImageImpl = (function () {
             let context = imageState.canvas.getContext(CANVAS_TYPE);
             if (!blockData.text) return;
 
-            const posX = 5;
-            const posY = 5;
+            const posX =   5;
+            const posY =   5;
+            const boxW = 200;
+            const boxH =  35;
 
             context.fillStyle = '#ffffff';
-            context.fillRect(posX, posY, 200, 35);
+            context.fillRect(posX, posY, boxW, boxH);
 
             context.textAlign = 'left';
             context.fillStyle = '#aaaaaa';
@@ -369,17 +387,19 @@ let ImageImpl = (function () {
             context.textAlign = 'left';
             context.fillStyle = '#000000';
             context.font = '16px sans-serif';
-            context.fillText(`${blockData.text}`, posX+4, posY+28);
+            context.fillText(`${concatText(context, boxW, blockData.text)}`, posX+4, posY+28);
         },
 
         printCoords: function(imageState, x, y) {
             let context = imageState.canvas.getContext(CANVAS_TYPE);
 
-            const posX =  5;
-            const posY = 45;
+            const posX =   5;
+            const posY =  45;
+            const boxW = 120;
+            const boxH =  18;
 
             context.fillStyle = '#ffffff';
-            context.fillRect(posX, posY, 120, 18);
+            context.fillRect(posX, posY, boxW, boxH);
 
             context.textAlign = 'left';
             context.fillStyle = '#aaaaaa';
