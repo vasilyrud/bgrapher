@@ -22,35 +22,53 @@ import ReactDOM from 'react-dom';
 import { BgraphState } from './bgraphstate.js'
 import { BGrapher } from './bgrapher.js'
 
+import { BlockInfo } from './BlockInfo.jsx'
+
 import defaultBgraph from './bgraphs/default.json';
 import outedgesBgraph from './bgraphs/outedges.json';
 import testOnlyDots from './bgraphs/testonlydots.js';
 import testDotsEdges from './bgraphs/testdotsedges.js';
 
 function BGraph(props) {
-    const bgrapher = new BGrapher();
+    const [bgrapher,] = React.useState(() => {
+        const bgrapher = new BGrapher();
+
+        if (props.bgraphType == 'graph') {
+            bgrapher.initBgraph(props.bgraphStr);
+        } else if (props.bgraphType == 'testBlocks') {
+            bgrapher.initBgraph(testOnlyDots(1000, 10000));
+        } else if (props.bgraphType == 'testEdges') {
+            bgrapher.initBgraph(testDotsEdges(1000, 1000));
+        } else if (props.bgraphType == 'testLarge') {
+            bgrapher.initTestBgraphLarge(5000, 10000);
+        }
+
+        return bgrapher
+    });
+    const [blockData, setBlockData] = React.useState(null);
     const bgraphElement = React.createRef();
 
-    if (props.bgraphType == 'graph') {
-        bgrapher.initBgraph(props.bgraphStr);
-    } else if (props.bgraphType == 'testBlocks') {
-        bgrapher.initBgraph(testOnlyDots(1000, 10000));
-    } else if (props.bgraphType == 'testEdges') {
-        bgrapher.initBgraph(testDotsEdges(1000, 1000));
-    } else if (props.bgraphType == 'testLarge') {
-        bgrapher.initTestBgraphLarge(5000, 10000);
+    function hideBlockInfo() {
+        setBlockData(null)
+    }
+
+    function showBlockInfo(data) {
+        setBlockData(data);
     }
 
     React.useEffect(() => {
         bgrapher.populateElement(
             props.bgraphState, 
             bgraphElement.current,
-            data => console.log(data),
+            showBlockInfo,
         );
     }, []); // Only run on mount
 
     return (
-        <div className="bgraphColumn" ref={bgraphElement}>
+        <div className="bgraphColumn">
+            <BlockInfo blockData={blockData} onClose={hideBlockInfo} />
+            <div className="fullWidth" ref={bgraphElement}>
+            </div>
         </div>
     );
 }

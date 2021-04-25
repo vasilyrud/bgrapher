@@ -369,12 +369,11 @@ let ImageImpl = (function () {
 
         drawHoverInfo: function(imageState, blockData) {
             let context = imageState.canvas.getContext(CANVAS_TYPE);
-            if (!blockData.text) return;
 
             const boxW = 200;
             const boxH =  35;
-            const posX =   5;
-            const posY =   5;
+            const posX =   8;
+            const posY =   8;
 
             context.fillStyle = '#ffffff';
             context.fillRect(posX, posY, boxW, boxH);
@@ -387,7 +386,11 @@ let ImageImpl = (function () {
             context.textAlign = 'left';
             context.fillStyle = '#000000';
             context.font = '16px sans-serif';
-            context.fillText(`${concatText(context, boxW, blockData.text)}`, posX+4, posY+28);
+            if (blockData.text) {
+                context.fillText(`${concatText(context, boxW, blockData.text)}`, posX+4, posY+28);
+            } else {
+                context.fillText(`[${blockData.id}]`, posX+4, posY+28);
+            }
         },
 
         printCoords: function(imageState, x, y) {
@@ -395,8 +398,8 @@ let ImageImpl = (function () {
 
             const boxW = 120;
             const boxH =  18;
-            const posX = imageState.canvas.width - boxW - 5;
-            const posY =   5;
+            const posX = imageState.canvas.width - boxW - 8;
+            const posY =   8;
 
             context.fillStyle = '#ffffff';
             context.fillRect(posX, posY, boxW, boxH);
