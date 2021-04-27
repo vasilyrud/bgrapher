@@ -81,12 +81,15 @@ var BGrapher = function(
         this.blocksData = initBlocksData(inputData);
         this.lookup = new BlocksLookup(inputData);
         this.edgeEndsData = initEdgeEndsData(inputData);
+
+        this.activeBlockIDs = new Set();
     }
 
     this.initTestBgraphLarge = function(numCols, numRows) {
         this.grapherState = this.GrapherImpl.initTestBgraphLarge(numCols, numRows);
         this.blocksData   = {};
         this.edgeEndsData = {};
+        this.activeBlockIDs = new Set();
     }
 
     this.populateElement = function(bgraphState, bgraphElement, cbSelect=()=>{}) {
@@ -126,12 +129,32 @@ var BGrapher = function(
         }
     }
 
-    this.activeBlocks = function*() {
-        for (const blockID of this.EventsImpl.activeBlockIDs(this.eventState)) {
-            const blockData = this.blocksData[blockID];
-            if (!blockData) continue;
+    this.setActiveBlock = function(blockID) {
+        this.activeBlockIDs.add(blockID);
+    }
 
-            yield blockData;
+    this.unsetActiveBlock = function(blockID) {
+        this.activeBlockIDs.delete(blockID);
+    }
+
+    this.toggleActiveBlock = function(blockID) {
+        if (this.activeBlockIDs.has(blockID)) {
+            this.activeBlockIDs.delete(blockID);
+        } else {
+            this.activeBlockIDs.add(blockID);
+        }
+    }
+
+    this.activeBlocks = function*() {
+        for (const activeBlockID of this.activeBlockIDs) {
+            const blockData = this.blocksData[activeBlockID];
+            if (blockData) yield blockData;
+        }
+
+        const hoveredBlockID = this.EventsImpl.hoveredBlockID(this.eventState);
+        if (!this.activeBlockIDs.has(hoveredBlockID)) {
+            const blockData = this.blocksData[hoveredBlockID];
+            if (blockData) yield blockData;
         }
     }
 

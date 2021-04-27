@@ -43,7 +43,6 @@ function BgraphEventState() {
     };
 
     this.hoveredBlockID = null;
-    this.clickedBlockIDs = new Set();
 }
 
 function getLocal(coord, event) {
@@ -148,14 +147,6 @@ function mousemoveHover(bgraphState, eventState, bgrapher) {
     bgrapher.update(bgraphState);
 }
 
-function mouseupClick(eventState) {
-    if (eventState.clickedBlockIDs.has(eventState.hoveredBlockID)) {
-        eventState.clickedBlockIDs.delete(eventState.hoveredBlockID);
-    } else {
-        eventState.clickedBlockIDs.add(eventState.hoveredBlockID);
-    }
-}
-
 function initView(bgraphState, bgrapher) {
     bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);
     bgraphState.offset.y = getInitOffset('y', bgraphState, bgrapher);
@@ -193,7 +184,7 @@ let eventHandlers = {
 
         if (eventState.isClick) {
             eventState.isClick = false;
-            mouseupClick(eventState);
+            bgrapher.toggleActiveBlock(eventState.hoveredBlockID);
         }
 
         // Right click, requires "contextmenu" handler
@@ -258,14 +249,8 @@ let BgraphEventsImpl = (function () {
             return eventState.cur;
         },
 
-        *activeBlockIDs(eventState) {
-            for (const clickedBlockID of eventState.clickedBlockIDs) {
-                yield clickedBlockID;
-            }
-
-            if (!eventState.clickedBlockIDs.has(eventState.hoveredBlockID)) {
-                yield eventState.hoveredBlockID;
-            }
+        hoveredBlockID(eventState) {
+            return eventState.hoveredBlockID;
         },
     }
 })();
