@@ -15,7 +15,7 @@ import bgrapherRewire, {BGrapher} from 'bgrapher.js'
 
 describe(require('path').basename(__filename), () => {
 
-const FakeGrapher = {
+const fakeGrapher = {
     initBgraph: () => {},
     initTestBgraphLarge: () => {},
 };
@@ -27,8 +27,8 @@ describe('initBgraph data', () => {
         const expectedXYs = [[0,0],[2,0],[0,2],[2,2]];
 
         let bgraphers = {
-            'object': new BGrapher(FakeGrapher),
-            'string': new BGrapher(FakeGrapher),
+            'object': new BGrapher(fakeGrapher),
+            'string': new BGrapher(fakeGrapher),
         };
         bgraphers['object'].initBgraph(inputData);
         bgraphers['string'].initBgraph(JSON.stringify(inputData));
@@ -65,7 +65,7 @@ describe('initBgraph data', () => {
             [12,[10],false],[13,[11],false],[14,[ 0],true],[15,[ 1],true],
         ];
 
-        let bgrapher = new BGrapher(FakeGrapher);
+        let bgrapher = new BGrapher(fakeGrapher);
         bgrapher.initBgraph(inputData);
 
         it(`Generates the right block edgeEnds data`, () => {
@@ -84,7 +84,7 @@ describe('initBgraph data', () => {
 
     describe('sample graphs', () => {
         it('Generates empty bgraph', () => {
-            let bgrapher = new BGrapher(FakeGrapher);
+            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(emptyBgraph);
     
             expect(bgrapher.blocksData)  .to.eql({});
@@ -92,7 +92,7 @@ describe('initBgraph data', () => {
         });
     
         it('Generates the right edgeEnd data', () => {
-            let bgrapher = new BGrapher(FakeGrapher);
+            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(basicEdgesBgraph);
     
             expect(bgrapher.edgeEndsData).to.have.all.keys(0,100);
@@ -105,7 +105,7 @@ describe('initBgraph data', () => {
         });
     
         it('Generates the right block edgeEnd data', () => {
-            let bgrapher = new BGrapher(FakeGrapher);
+            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(oneEdgeBgraph);
     
             expect(bgrapher.blocksData[0].edgeEnds).to.eql([0,100]);
@@ -115,7 +115,7 @@ describe('initBgraph data', () => {
 
 describe('initBgraph lookup block', () => {
     describe('testOnlyDots', () => {
-        let bgrapher = new BGrapher(FakeGrapher);
+        let bgrapher = new BGrapher(fakeGrapher);
         bgrapher.initBgraph(testOnlyDots(2,2));
 
         const validCoords = [
@@ -148,7 +148,7 @@ describe('initBgraph lookup block', () => {
     });
 
     describe('initTestBgraphLarge', () => {
-        let bgrapher = new BGrapher(FakeGrapher);
+        let bgrapher = new BGrapher(fakeGrapher);
         bgrapher.initTestBgraphLarge(2,2);
         const bgraphState = new BgraphState();
 
@@ -173,14 +173,14 @@ describe('initBgraph lookup block', () => {
         let testWhiteDotLocations = [1,3,4,5,6,7,9,11];
 
         it (`empty bgraph`, () => {
-            let bgrapher = new BGrapher(FakeGrapher);
+            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(emptyBgraph);
             expect(bgrapher.lookup).is.not.undefined;
             expect(bgrapher.lookup.get(0, 0)).to.be.null;
         });
 
         it (`non-zero size bgraph`, () => {
-            let bgrapher = new BGrapher(FakeGrapher);
+            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(nonZeroSizeBgraph);
             expect(bgrapher.lookup).is.not.undefined;
             expect(bgrapher.lookup.get(0, 0)).to.be.null;
@@ -189,7 +189,7 @@ describe('initBgraph lookup block', () => {
         });
 
         it('basic bgraph', () => {
-            let bgrapher = new BGrapher(FakeGrapher);
+            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(basicBgraph);
             const basicExpectedIDs = basicBgraph.blocks.map(e => e.id);
 
@@ -198,7 +198,7 @@ describe('initBgraph lookup block', () => {
         });
 
         it('overlapping bgraph', () => {
-            let bgrapher = new BGrapher(FakeGrapher);
+            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(overlapBgraph);
 
             [0,1,4].forEach(i => testLookup(bgrapher, i, 0));
@@ -208,7 +208,7 @@ describe('initBgraph lookup block', () => {
         });
 
         it('same depth bgraph', () => {
-            let bgrapher = new BGrapher(FakeGrapher);
+            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(sameDepthBgraph);
 
             [0,1,4].forEach(i => testLookup(bgrapher, i, 0));

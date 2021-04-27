@@ -121,43 +121,42 @@ function makeCurve(startX, startY, endX, endY) {
     return pointsMove(points, startX, startY);
 }
 
-let BezierImpl = (function () {
-    return {
-        generatePoints: function(startEdgeEndIn, endEdgeEndIn) {
-            let [startEdgeEnd  , endEdgeEnd    ] = ((startEdgeEndIn.isSource) ? 
-                [startEdgeEndIn, endEdgeEndIn  ] : 
-                [endEdgeEndIn  , startEdgeEndIn]);
+const bezierImpl = {
 
-            if (
-                startEdgeEnd.direction == Direction.down && 
-                endEdgeEnd.direction   == Direction.down
-            ) {
-                let [startX, startY, endX, endY] = [
-                    startEdgeEnd.x + 0.5,
-                    startEdgeEnd.y + 1,
-                    endEdgeEnd.x   + 0.5, 
-                    endEdgeEnd.y   + 0,
-                ];
+    generatePoints: function(startEdgeEndIn, endEdgeEndIn) {
+        let [startEdgeEnd  , endEdgeEnd    ] = ((startEdgeEndIn.isSource) ? 
+            [startEdgeEndIn, endEdgeEndIn  ] : 
+            [endEdgeEndIn  , startEdgeEndIn]);
 
-                return makeCurve(startX, startY, endX, endY);
+        if (
+            startEdgeEnd.direction == Direction.down && 
+            endEdgeEnd.direction   == Direction.down
+        ) {
+            let [startX, startY, endX, endY] = [
+                startEdgeEnd.x + 0.5,
+                startEdgeEnd.y + 1,
+                endEdgeEnd.x   + 0.5, 
+                endEdgeEnd.y   + 0,
+            ];
 
-            } else if (
-                startEdgeEnd.direction == Direction.right && 
-                endEdgeEnd.direction   == Direction.right
-            ) {
-                let [startX, startY, endX, endY] = pointsFlipXY([
-                    startEdgeEnd.x + 1,
-                    startEdgeEnd.y + 0.5,
-                    endEdgeEnd.x   + 0,
-                    endEdgeEnd.y   + 0.5,
-                ]);
+            return makeCurve(startX, startY, endX, endY);
 
-                return pointsFlipXY(makeCurve(startX, startY, endX, endY));
-            }
+        } else if (
+            startEdgeEnd.direction == Direction.right && 
+            endEdgeEnd.direction   == Direction.right
+        ) {
+            let [startX, startY, endX, endY] = pointsFlipXY([
+                startEdgeEnd.x + 1,
+                startEdgeEnd.y + 0.5,
+                endEdgeEnd.x   + 0,
+                endEdgeEnd.y   + 0.5,
+            ]);
 
-            throw new Error(`Unsupported edge directions: from ${startEdgeEnd.direction} to ${endEdgeEnd.direction}.`);
-        },
-    };
-})();
+            return pointsFlipXY(makeCurve(startX, startY, endX, endY));
+        }
 
-export { BezierImpl }
+        throw new Error(`Unsupported edge directions: from ${startEdgeEnd.direction} to ${endEdgeEnd.direction}.`);
+    },
+};
+
+export { bezierImpl }

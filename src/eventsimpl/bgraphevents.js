@@ -226,33 +226,31 @@ let eventHandlers = {
     },
 };
 
-let BgraphEventsImpl = (function () {
-    return {
+const bgraphEventsImpl = {
 
-        initEvents: function(bgraphState, bgrapher, bgraphElement) {
-            let eventState = new BgraphEventState();
+    initEvents: function(bgraphState, bgrapher, bgraphElement) {
+        let eventState = new BgraphEventState();
 
-            for (const eventType in eventHandlers) {
-                let target = (eventType === 'resize') ? window : bgraphElement;
+        for (const eventType in eventHandlers) {
+            let target = (eventType === 'resize') ? window : bgraphElement;
 
-                target.addEventListener(eventType, 
-                    eventHandlers[eventType]
-                        .bind(null, bgraphState, eventState, bgrapher)
-                );
-            }
+            target.addEventListener(eventType, 
+                eventHandlers[eventType]
+                    .bind(null, bgraphState, eventState, bgrapher)
+            );
+        }
 
-            initView(bgraphState, bgrapher);
-            return eventState;
-        },
+        initView(bgraphState, bgrapher);
+        return eventState;
+    },
 
-        getCur: function(eventState) {
-            return eventState.cur;
-        },
+    getCur: function(eventState) {
+        return eventState.cur;
+    },
 
-        hoveredBlockID(eventState) {
-            return eventState.hoveredBlockID;
-        },
-    }
-})();
+    hoveredBlockID(eventState) {
+        return eventState.hoveredBlockID;
+    },
+};
 
-export { BgraphEventsImpl }
+export { bgraphEventsImpl }

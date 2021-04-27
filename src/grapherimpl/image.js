@@ -304,140 +304,139 @@ function concatText(context, boxW, text) {
     return text;
 }
 
-let ImageImpl = (function () {
-    return {
-        initBgraph: function(inputData) {
-            return generateImage(
-                inputData.width, inputData.height, 
-                generatePixels(inputData)
-            );
-        },
+const imageImpl = {
 
-        initTestBgraphLarge: function(numCols, numRows) {
-            let width  = numCols * 2;
-            let height = numRows * 2;
-            let numBlocks = numCols * numRows;
-            if (process.env.NODE_ENV !== 'test') {
-                console.log('Making ' + numBlocks + ' test blocks.');
-            }
+    initBgraph: function(inputData) {
+        return generateImage(
+            inputData.width, inputData.height, 
+            generatePixels(inputData)
+        );
+    },
 
-            return generateImage(
-                width, height, 
-                generateTestPixels(numBlocks)
-            );
-        },
+    initTestBgraphLarge: function(numCols, numRows) {
+        let width  = numCols * 2;
+        let height = numRows * 2;
+        let numBlocks = numCols * numRows;
+        if (process.env.NODE_ENV !== 'test') {
+            console.log('Making ' + numBlocks + ' test blocks.');
+        }
 
-        populateElement: function(imageState, bgraphElement) {
-            bgraphElement.appendChild(imageState.canvas);
-        },
+        return generateImage(
+            width, height, 
+            generateTestPixels(numBlocks)
+        );
+    },
 
-        drawBgraph: function(bgraphState, imageState) {
-            let canvas = imageState.canvas;            
-            let context = canvas.getContext(CANVAS_TYPE);
-            resetBG(context, canvas.width, canvas.height);
-            
-            if (bgraphState.zoom > 2.5) {
-                pixelateImage(context);
-            }
+    populateElement: function(imageState, bgraphElement) {
+        bgraphElement.appendChild(imageState.canvas);
+    },
 
-            if (imageState.imageWidth * imageState.imageHeight == 0) {
-                return;
-            }
+    drawBgraph: function(bgraphState, imageState) {
+        let canvas = imageState.canvas;            
+        let context = canvas.getContext(CANVAS_TYPE);
+        resetBG(context, canvas.width, canvas.height);
+        
+        if (bgraphState.zoom > 2.5) {
+            pixelateImage(context);
+        }
 
-            context.drawImage(imageState.buffer,
-                bgraphState.zoom * bgraphState.offset.x,
-                bgraphState.zoom * bgraphState.offset.y,
-                bgraphState.zoom * imageState.imageWidth ,
-                bgraphState.zoom * imageState.imageHeight,
-            );
-        },
+        if (imageState.imageWidth * imageState.imageHeight == 0) {
+            return;
+        }
 
-        drawBlock: function(bgraphState, imageState, blockData) {
-            let context = imageState.canvas.getContext(CANVAS_TYPE);
-            drawBlockHighlight(bgraphState, context, blockData);
-        },
+        context.drawImage(imageState.buffer,
+            bgraphState.zoom * bgraphState.offset.x,
+            bgraphState.zoom * bgraphState.offset.y,
+            bgraphState.zoom * imageState.imageWidth ,
+            bgraphState.zoom * imageState.imageHeight,
+        );
+    },
 
-        drawEdgeEnd: function(bgraphState, imageState, edgeEndData) {
-            let context = imageState.canvas.getContext(CANVAS_TYPE);
-            drawEdgeEndHighlight(bgraphState, context, edgeEndData);
-        },
+    drawBlock: function(bgraphState, imageState, blockData) {
+        let context = imageState.canvas.getContext(CANVAS_TYPE);
+        drawBlockHighlight(bgraphState, context, blockData);
+    },
 
-        drawBezierEdge: function(bgraphState, imageState, points) {
-            let context = imageState.canvas.getContext(CANVAS_TYPE);
-            drawBezierLine(bgraphState, context, points);
-        },
+    drawEdgeEnd: function(bgraphState, imageState, edgeEndData) {
+        let context = imageState.canvas.getContext(CANVAS_TYPE);
+        drawEdgeEndHighlight(bgraphState, context, edgeEndData);
+    },
 
-        drawHoverInfo: function(imageState, blockData) {
-            let context = imageState.canvas.getContext(CANVAS_TYPE);
+    drawBezierEdge: function(bgraphState, imageState, points) {
+        let context = imageState.canvas.getContext(CANVAS_TYPE);
+        drawBezierLine(bgraphState, context, points);
+    },
 
-            const boxW = 200;
-            const boxH =  35;
-            const posX =   8;
-            const posY =   8;
+    drawHoverInfo: function(imageState, blockData) {
+        let context = imageState.canvas.getContext(CANVAS_TYPE);
 
-            context.fillStyle = '#ffffff';
-            context.fillRect(posX, posY, boxW, boxH);
+        const boxW = 200;
+        const boxH =  35;
+        const posX =   8;
+        const posY =   8;
 
-            context.textAlign = 'left';
-            context.fillStyle = '#aaaaaa';
-            context.font = '10px sans-serif';
-            context.fillText('Right click block to show more info.',  posX+4, posY+10);
+        context.fillStyle = '#ffffff';
+        context.fillRect(posX, posY, boxW, boxH);
 
-            context.textAlign = 'left';
-            context.fillStyle = '#000000';
-            context.font = '16px sans-serif';
-            if (blockData.text) {
-                context.fillText(`${concatText(context, boxW, blockData.text)}`, posX+4, posY+28);
-            } else {
-                context.fillText(`[${blockData.id}]`, posX+4, posY+28);
-            }
-        },
+        context.textAlign = 'left';
+        context.fillStyle = '#aaaaaa';
+        context.font = '10px sans-serif';
+        context.fillText('Right click block to show more info.',  posX+4, posY+10);
 
-        printCoords: function(imageState, x, y) {
-            let context = imageState.canvas.getContext(CANVAS_TYPE);
+        context.textAlign = 'left';
+        context.fillStyle = '#000000';
+        context.font = '16px sans-serif';
+        if (blockData.text) {
+            context.fillText(`${concatText(context, boxW, blockData.text)}`, posX+4, posY+28);
+        } else {
+            context.fillText(`[${blockData.id}]`, posX+4, posY+28);
+        }
+    },
 
-            const boxW = 120;
-            const boxH =  18;
-            const posX = imageState.canvas.width - boxW - 8;
-            const posY =   8;
+    printCoords: function(imageState, x, y) {
+        let context = imageState.canvas.getContext(CANVAS_TYPE);
 
-            context.fillStyle = '#ffffff';
-            context.fillRect(posX, posY, boxW, boxH);
+        const boxW = 120;
+        const boxH =  18;
+        const posX = imageState.canvas.width - boxW - 8;
+        const posY =   8;
 
-            context.textAlign = 'left';
-            context.fillStyle = '#aaaaaa';
-            context.font = '10px sans-serif';
-            context.fillText(`x`, posX+ 2, posY+8);
-            context.fillText(`y`, posX+62, posY+8);
+        context.fillStyle = '#ffffff';
+        context.fillRect(posX, posY, boxW, boxH);
 
-            context.textAlign = 'right';
-            context.fillStyle = '#000000';
-            context.font = '12px sans-serif';
-            context.fillText(`${x}`, posX+ 55, posY+13);
-            context.fillText(`${y}`, posX+115, posY+13);
-        },
+        context.textAlign = 'left';
+        context.fillStyle = '#aaaaaa';
+        context.font = '10px sans-serif';
+        context.fillText(`x`, posX+ 2, posY+8);
+        context.fillText(`y`, posX+62, posY+8);
 
-        getBgraphWidth: function(imageState) {
-            return imageState.imageWidth;
-        },
+        context.textAlign = 'right';
+        context.fillStyle = '#000000';
+        context.font = '12px sans-serif';
+        context.fillText(`${x}`, posX+ 55, posY+13);
+        context.fillText(`${y}`, posX+115, posY+13);
+    },
 
-        getBgraphHeight: function(imageState) {
-            return imageState.imageHeight;
-        },
+    getBgraphWidth: function(imageState) {
+        return imageState.imageWidth;
+    },
 
-        getClientWidth: function(imageState) {
-            return imageState.canvas.width;
-        },
+    getBgraphHeight: function(imageState) {
+        return imageState.imageHeight;
+    },
 
-        getClientHeight: function(imageState) {
-            return imageState.canvas.height;
-        },
+    getClientWidth: function(imageState) {
+        return imageState.canvas.width;
+    },
 
-        setClientSize: function(imageState, newWidth, newHeight) {
-            imageState.canvas.width  = newWidth;
-            imageState.canvas.height = newHeight;
-        },
-    };
-})();
+    getClientHeight: function(imageState) {
+        return imageState.canvas.height;
+    },
 
-export { ImageImpl }
+    setClientSize: function(imageState, newWidth, newHeight) {
+        imageState.canvas.width  = newWidth;
+        imageState.canvas.height = newHeight;
+    },
+};
+
+export { imageImpl }

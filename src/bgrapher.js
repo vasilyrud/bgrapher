@@ -16,9 +16,9 @@ limitations under the License.
 
 import { curBgraphPixel, BlocksLookup, Direction } from './common/lookup.js'
 import { EdgeSet } from './common/struct.js'
-import { ImageImpl } from './grapherimpl/image.js'
-import { BezierImpl } from './edgesimpl/bezier.js'
-import { BgraphEventsImpl } from './eventsimpl/bgraphevents.js'
+import { imageImpl } from './grapherimpl/image.js'
+import { bezierImpl } from './edgesimpl/bezier.js'
+import { bgraphEventsImpl } from './eventsimpl/bgraphevents.js'
 
 function initBlocksData(inputData) {
     let blocksData = {};
@@ -46,28 +46,28 @@ function initEdgeEndsData(inputData) {
 }
 
 var BGrapher = function(
-    GrapherImpl = ImageImpl,
-    EdgesImpl   = BezierImpl,
-    EventsImpl  = BgraphEventsImpl,
+    grapherImpl = imageImpl,
+    edgesImpl   = bezierImpl,
+    eventsImpl  = bgraphEventsImpl,
 ) {
-    this.GrapherImpl = GrapherImpl;
-    this.EdgesImpl   = EdgesImpl;
-    this.EventsImpl  = EventsImpl;
+    this.grapherImpl = grapherImpl;
+    this.edgesImpl   = edgesImpl;
+    this.eventsImpl  = eventsImpl;
 
     this.bgraphWidth = function() {
-        return this.GrapherImpl.getBgraphWidth(this.grapherState);
+        return this.grapherImpl.getBgraphWidth(this.grapherState);
     }
 
     this.bgraphHeight = function() {
-        return this.GrapherImpl.getBgraphHeight(this.grapherState);
+        return this.grapherImpl.getBgraphHeight(this.grapherState);
     }
 
     this.clientWidth = function() {
-        return this.GrapherImpl.getClientWidth(this.grapherState);
+        return this.grapherImpl.getClientWidth(this.grapherState);
     }
 
     this.clientHeight = function() {
-        return this.GrapherImpl.getClientHeight(this.grapherState);
+        return this.grapherImpl.getClientHeight(this.grapherState);
     }
 
     this.initBgraph = function(bgraph) {
@@ -76,7 +76,7 @@ var BGrapher = function(
             : bgraph
         );
 
-        this.grapherState = this.GrapherImpl.initBgraph(inputData);
+        this.grapherState = this.grapherImpl.initBgraph(inputData);
 
         this.blocksData = initBlocksData(inputData);
         this.lookup = new BlocksLookup(inputData);
@@ -86,7 +86,7 @@ var BGrapher = function(
     }
 
     this.initTestBgraphLarge = function(numCols, numRows) {
-        this.grapherState = this.GrapherImpl.initTestBgraphLarge(numCols, numRows);
+        this.grapherState = this.grapherImpl.initTestBgraphLarge(numCols, numRows);
         this.blocksData   = {};
         this.edgeEndsData = {};
         this.activeBlockIDs = new Set();
@@ -96,16 +96,16 @@ var BGrapher = function(
         this.bgraphElement = bgraphElement;
         this.cbSelect = cbSelect;
 
-        this.GrapherImpl.populateElement(this.grapherState, this.bgraphElement);
+        this.grapherImpl.populateElement(this.grapherState, this.bgraphElement);
         this.updateBgraphSize();
-        this.eventState = this.EventsImpl.initEvents(bgraphState, this, this.bgraphElement);
+        this.eventState = this.eventsImpl.initEvents(bgraphState, this, this.bgraphElement);
 
         bgraphState.attach(this);
         this.draw(bgraphState);
     }
 
     this.updateBgraphSize = function() {
-        this.GrapherImpl.setClientSize(this.grapherState, 
+        this.grapherImpl.setClientSize(this.grapherState, 
             this.bgraphElement.clientWidth, 
             this.bgraphElement.clientHeight
         );
@@ -116,9 +116,9 @@ var BGrapher = function(
     }
 
     this.draw = function(bgraphState) {
-        const cur = this.EventsImpl.getCur(this.eventState);
+        const cur = this.eventsImpl.getCur(this.eventState);
 
-        this.GrapherImpl.drawBgraph(bgraphState, this.grapherState);
+        this.grapherImpl.drawBgraph(bgraphState, this.grapherState);
         this.drawBlocks(bgraphState);
         this.drawEdgeEnds(bgraphState);
         this.drawEdges(bgraphState);
@@ -151,7 +151,7 @@ var BGrapher = function(
             if (blockData) yield blockData;
         }
 
-        const hoveredBlockID = this.EventsImpl.hoveredBlockID(this.eventState);
+        const hoveredBlockID = this.eventsImpl.hoveredBlockID(this.eventState);
         if (!this.activeBlockIDs.has(hoveredBlockID)) {
             const blockData = this.blocksData[hoveredBlockID];
             if (blockData) yield blockData;
@@ -181,7 +181,7 @@ var BGrapher = function(
             if (!seenBlocks.has(block.id)) {
                 seenBlocks.add(block.id);
 
-                this.GrapherImpl.drawBlock(bgraphState, this.grapherState, block);
+                this.grapherImpl.drawBlock(bgraphState, this.grapherState, block);
             }
         }
     }
@@ -193,13 +193,13 @@ var BGrapher = function(
             if (!seenEdgeEnds.has(start.id)) {
                 seenEdgeEnds.add(start.id);
 
-                this.GrapherImpl.drawEdgeEnd(bgraphState, this.grapherState, start);
+                this.grapherImpl.drawEdgeEnd(bgraphState, this.grapherState, start);
             }
 
             if (!seenEdgeEnds.has(end.id)) {
                 seenEdgeEnds.add(end.id);
 
-                this.GrapherImpl.drawEdgeEnd(bgraphState, this.grapherState, end);
+                this.grapherImpl.drawEdgeEnd(bgraphState, this.grapherState, end);
             }
         }
     }
@@ -211,8 +211,8 @@ var BGrapher = function(
             if (!seenEdges.has(start.id, end.id)) {
                 seenEdges.add(start.id, end.id);
 
-                this.GrapherImpl.drawBezierEdge(bgraphState, this.grapherState, 
-                    this.EdgesImpl.generatePoints(start, end)
+                this.grapherImpl.drawBezierEdge(bgraphState, this.grapherState, 
+                    this.edgesImpl.generatePoints(start, end)
                 );
             }
         }
@@ -222,7 +222,7 @@ var BGrapher = function(
         const blockData = this.curBlock(bgraphState, cur);
         if (!blockData) return;
 
-        return this.GrapherImpl.drawHoverInfo(this.grapherState, blockData);
+        return this.grapherImpl.drawHoverInfo(this.grapherState, blockData);
     }
 
     this.notifyParent = function(bgraphState, cur) {
@@ -241,7 +241,7 @@ var BGrapher = function(
     }
 
     this.printCoords = function(bgraphState, cur) {
-        return this.GrapherImpl.printCoords(this.grapherState,
+        return this.grapherImpl.printCoords(this.grapherState,
             curBgraphPixel('x', bgraphState, cur),
             curBgraphPixel('y', bgraphState, cur),
         );

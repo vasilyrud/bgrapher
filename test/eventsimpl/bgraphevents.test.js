@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import bgrapheventsRewire, {BgraphEventsImpl} from 'eventsimpl/bgraphevents.js'
+import bgrapheventsRewire, {bgraphEventsImpl} from 'eventsimpl/bgraphevents.js'
 const BgraphEventState = bgrapheventsRewire.__get__('BgraphEventState');
 
 describe(require('path').basename(__filename), () => {

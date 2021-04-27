@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 import { Direction } from 'common/lookup.js';
-import bezierRewire, { BezierImpl } from 'edgesimpl/bezier.js';
+import bezierRewire, { bezierImpl } from 'edgesimpl/bezier.js';
 const pointsFlipXY = bezierRewire.__get__('pointsFlipXY');
 const pointsMove = bezierRewire.__get__('pointsMove');
 const makeCurve = bezierRewire.__get__('makeCurve');
@@ -122,7 +122,7 @@ describe('generatePoints', () => {
         ];
 
         it ('returns direct from source', () => {
-            expect(BezierImpl.generatePoints({
+            expect(bezierImpl.generatePoints({
                 isSource: true,
                 direction: Direction['down'],
                 x: 1,
@@ -136,7 +136,7 @@ describe('generatePoints', () => {
         });
 
         it ('returns direct from dest', () => {
-            expect(BezierImpl.generatePoints({
+            expect(bezierImpl.generatePoints({
                 isSource: false,
                 direction: Direction['down'],
                 x: 3,
@@ -157,7 +157,7 @@ describe('generatePoints', () => {
         ];
 
         it ('returns direct from source', () => {
-            expect(BezierImpl.generatePoints({
+            expect(bezierImpl.generatePoints({
                 isSource: true,
                 direction: Direction['right'],
                 x: 1,
@@ -171,7 +171,7 @@ describe('generatePoints', () => {
         });
 
         it ('returns direct from dest', () => {
-            expect(BezierImpl.generatePoints({
+            expect(bezierImpl.generatePoints({
                 isSource: false,
                 direction: Direction['right'],
                 x: 3,
@@ -205,7 +205,7 @@ describe('generatePoints', () => {
 
         invalidDirections.forEach(([from, to]) => {
             it (`disallows invalid directions ${from} ${to}`, () => {
-                expect(() => BezierImpl.generatePoints({
+                expect(() => bezierImpl.generatePoints({
                     isSource: true,
                     direction: from,
                     x: 1, y: 2,

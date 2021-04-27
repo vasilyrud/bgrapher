@@ -8,7 +8,7 @@ import sameDepthBgraph from 'bgraphs/samedepth.json';
 
 import { Direction } from 'common/lookup.js';
 import testOnlyDots from 'bgraphs/testonlydots.js';
-import imageRewire, { ImageImpl } from 'grapherimpl/image.js';
+import imageRewire, { imageImpl } from 'grapherimpl/image.js';
 const getArrowPoints = imageRewire.__get__('getArrowPoints');
 const getLineWidths = imageRewire.__get__('getLineWidths');
 
@@ -77,7 +77,7 @@ describe('Generate image', () => {
     let testWhiteDotLocations = [1,3,4,5,6,7,9,11];
 
     describe('initTestBgraphLarge', () => {
-        const bgraph = ImageImpl.initTestBgraphLarge(2,2);
+        const bgraph = imageImpl.initTestBgraphLarge(2,2);
 
         it('Generates the right image size', () => {
             expect(bgraph.imageWidth).to.equal(4);
@@ -91,7 +91,7 @@ describe('Generate image', () => {
     });
 
     describe('initBgraph only dots', () => {
-        const bgraph = ImageImpl.initBgraph(testOnlyDots(2,2));
+        const bgraph = imageImpl.initBgraph(testOnlyDots(2,2));
 
         it('Generates the right image size', () => {
             expect(bgraph.imageWidth).to.equal(4);
@@ -106,7 +106,7 @@ describe('Generate image', () => {
 
     describe('initBgraph image', () => {
         it('Generates empty bgraph', () => {
-            const bgraph = ImageImpl.initBgraph(emptyBgraph);
+            const bgraph = imageImpl.initBgraph(emptyBgraph);
 
             expect(bgraph.imageWidth).to.equal(0);
             expect(bgraph.imageHeight).to.equal(0);
@@ -115,7 +115,7 @@ describe('Generate image', () => {
         });
 
         it('Generates the right non-zero size', () => {
-            const bgraph = ImageImpl.initBgraph(nonZeroSizeBgraph);
+            const bgraph = imageImpl.initBgraph(nonZeroSizeBgraph);
 
             expect(bgraph.imageWidth).to.equal(4);
             expect(bgraph.imageHeight).to.equal(4);
@@ -126,14 +126,14 @@ describe('Generate image', () => {
         });
 
         it('Generates the right image', () => {
-            const bgraph = ImageImpl.initBgraph(basicBgraph);
+            const bgraph = imageImpl.initBgraph(basicBgraph);
 
             testBlackDotLocations.forEach(i => testColor(bgraph, i, black));
             testWhiteDotLocations.forEach(i => testColor(bgraph, i, white));
         });
 
         it('Generates the right overlapping image', () => {
-            const bgraph = ImageImpl.initBgraph(overlapBgraph);
+            const bgraph = imageImpl.initBgraph(overlapBgraph);
 
             [0,1,4].forEach(i => testColor(bgraph, i, test1));
             [5,6,9,10].forEach(i => testColor(bgraph, i, test2));
@@ -142,7 +142,7 @@ describe('Generate image', () => {
         });
 
         it('Generates the right overlapping same depth image', () => {
-            const bgraph = ImageImpl.initBgraph(sameDepthBgraph);
+            const bgraph = imageImpl.initBgraph(sameDepthBgraph);
 
             [0,1,4].forEach(i => testColor(bgraph, i, test1));
             [5,6,9,10].forEach(i => testColor(bgraph, i, test2));
