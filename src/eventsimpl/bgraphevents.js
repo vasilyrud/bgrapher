@@ -189,7 +189,7 @@ let eventHandlers = {
 
         // Right click, requires "contextmenu" handler
         if (event.button === 2) {
-            bgrapher.notifyParent(bgraphState, eventState.cur);
+            bgrapher.selectBlock(bgraphState, eventState.cur);
         }
     },
     contextmenu: function(bgraphState, eventState, bgrapher, event) {
@@ -244,7 +244,7 @@ const bgraphEventsImpl = {
         return eventState;
     },
 
-    getCur: function(eventState) {
+    cur: function(eventState) {
         return eventState.cur;
     },
 

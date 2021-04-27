@@ -116,7 +116,7 @@ var BGrapher = function(
     }
 
     this.draw = function(bgraphState) {
-        const cur = this.eventsImpl.getCur(this.eventState);
+        const cur = this.eventsImpl.cur(this.eventState);
 
         this.grapherImpl.drawBgraph(bgraphState, this.grapherState);
         this.drawBlocks(bgraphState);
@@ -225,7 +225,7 @@ var BGrapher = function(
         return this.grapherImpl.drawHoverInfo(this.grapherState, blockData);
     }
 
-    this.notifyParent = function(bgraphState, cur) {
+    this.selectBlock = function(bgraphState, cur) {
         const blockData = this.curBlock(bgraphState, cur);
         if (!blockData) return;
 
