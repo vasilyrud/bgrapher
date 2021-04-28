@@ -136,20 +136,20 @@ describe('initBgraph lookup block', () => {
 
         validCoords.forEach(([x,y,id]) => {
             it (`returns the right block for ${x} ${y}`, () => {
-                expect(bgrapher.lookup.get(x, y)).to.equal(id);
+                expect(bgrapher._lookup.get(x, y)).to.equal(id);
             });
         });
 
         invalidCoords.forEach(([x,y]) => {
             it (`doesn't return any block for ${x} ${y}`, () => {
-                expect(bgrapher.lookup.get(x, y)).to.be.null;
+                expect(bgrapher._lookup.get(x, y)).to.be.null;
             });
         });
     });
 
     describe('initTestBgraphLarge', () => {
         let bgrapher = new BGrapher(fakeGrapher);
-        bgrapher.initTestBgraphLarge(2,2);
+        bgrapher._initTestBgraphLarge(2,2);
         const bgraphState = new BgraphState();
 
         it (`does not generate lookup`, () => {
@@ -161,9 +161,9 @@ describe('initBgraph lookup block', () => {
 
     describe('sample graphs', () => {
         function testLookup(bgrapher, i, expectedID) {
-            const foundID = bgrapher.lookup.get(
-                i%bgrapher.lookup.width, 
-                Math.floor(i/bgrapher.lookup.width)
+            const foundID = bgrapher._lookup.get(
+                i%bgrapher._lookup.width, 
+                Math.floor(i/bgrapher._lookup.width)
             );
 
             expect(foundID).to.equal(expectedID);
@@ -175,17 +175,17 @@ describe('initBgraph lookup block', () => {
         it (`empty bgraph`, () => {
             let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(emptyBgraph);
-            expect(bgrapher.lookup).is.not.undefined;
-            expect(bgrapher.lookup.get(0, 0)).to.be.null;
+            expect(bgrapher._lookup).is.not.undefined;
+            expect(bgrapher._lookup.get(0, 0)).to.be.null;
         });
 
         it (`non-zero size bgraph`, () => {
             let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(nonZeroSizeBgraph);
-            expect(bgrapher.lookup).is.not.undefined;
-            expect(bgrapher.lookup.get(0, 0)).to.be.null;
-            expect(bgrapher.lookup.width).to.equal(4);
-            expect(bgrapher.lookup.height).to.equal(4);
+            expect(bgrapher._lookup).is.not.undefined;
+            expect(bgrapher._lookup.get(0, 0)).to.be.null;
+            expect(bgrapher._lookup.width).to.equal(4);
+            expect(bgrapher._lookup.height).to.equal(4);
         });
 
         it('basic bgraph', () => {

@@ -20,7 +20,7 @@ import { imageImpl } from './grapherimpl/image.js'
 import { bezierImpl } from './edgesimpl/bezier.js'
 import { bgraphEventsImpl } from './eventsimpl/bgraphevents.js'
 
-function initBlocksData(inputData) {
+function _initBlocksData(inputData) {
     let blocksData = {};
     const numBlocks = inputData.blocks.length;
 
@@ -32,7 +32,7 @@ function initBlocksData(inputData) {
     return blocksData;
 }
 
-function initEdgeEndsData(inputData) {
+function _initEdgeEndsData(inputData) {
     let edgeEndsData = {};
     const numEdgeEnds = inputData.edgeEnds.length;
 
@@ -50,24 +50,24 @@ var BGrapher = function(
     edgesImpl   = bezierImpl,
     eventsImpl  = bgraphEventsImpl,
 ) {
-    this.grapherImpl = grapherImpl;
-    this.edgesImpl   = edgesImpl;
-    this.eventsImpl  = eventsImpl;
+    this._grapherImpl = grapherImpl;
+    this._edgesImpl   = edgesImpl;
+    this._eventsImpl  = eventsImpl;
 
     this.bgraphWidth = function() {
-        return this.grapherImpl.getBgraphWidth(this.grapherState);
+        return this._grapherImpl.getBgraphWidth(this._grapherState);
     }
 
     this.bgraphHeight = function() {
-        return this.grapherImpl.getBgraphHeight(this.grapherState);
+        return this._grapherImpl.getBgraphHeight(this._grapherState);
     }
 
     this.clientWidth = function() {
-        return this.grapherImpl.getClientWidth(this.grapherState);
+        return this._grapherImpl.getClientWidth(this._grapherState);
     }
 
     this.clientHeight = function() {
-        return this.grapherImpl.getClientHeight(this.grapherState);
+        return this._grapherImpl.getClientHeight(this._grapherState);
     }
 
     this.initBgraph = function(bgraph) {
@@ -76,38 +76,38 @@ var BGrapher = function(
             : bgraph
         );
 
-        this.grapherState = this.grapherImpl.initBgraph(inputData);
+        this._grapherState = this._grapherImpl.initBgraph(inputData);
 
-        this.blocksData = initBlocksData(inputData);
-        this.lookup = new BlocksLookup(inputData);
-        this.edgeEndsData = initEdgeEndsData(inputData);
+        this.blocksData = _initBlocksData(inputData);
+        this.edgeEndsData = _initEdgeEndsData(inputData);
 
-        this.activeBlockIDs = new Set();
+        this._lookup = new BlocksLookup(inputData);
+        this._activeBlockIDs = new Set();
     }
 
-    this.initTestBgraphLarge = function(numCols, numRows) {
-        this.grapherState = this.grapherImpl.initTestBgraphLarge(numCols, numRows);
+    this._initTestBgraphLarge = function(numCols, numRows) {
+        this._grapherState = this._grapherImpl.initTestBgraphLarge(numCols, numRows);
         this.blocksData   = {};
         this.edgeEndsData = {};
-        this.activeBlockIDs = new Set();
+        this._activeBlockIDs = new Set();
     }
 
     this.populateElement = function(bgraphState, bgraphElement, cbSelect=()=>{}) {
-        this.bgraphElement = bgraphElement;
+        this._bgraphElement = bgraphElement;
         this.cbSelect = cbSelect;
 
-        this.grapherImpl.populateElement(this.grapherState, this.bgraphElement);
+        this._grapherImpl.populateElement(this._grapherState, this._bgraphElement);
         this.updateBgraphSize();
-        this.eventState = this.eventsImpl.initEvents(bgraphState, this, this.bgraphElement);
+        this._eventState = this._eventsImpl.initEvents(bgraphState, this, this._bgraphElement);
 
         bgraphState.attach(this);
         this.draw(bgraphState);
     }
 
     this.updateBgraphSize = function() {
-        this.grapherImpl.setClientSize(this.grapherState, 
-            this.bgraphElement.clientWidth, 
-            this.bgraphElement.clientHeight
+        this._grapherImpl.setClientSize(this._grapherState, 
+            this._bgraphElement.clientWidth, 
+            this._bgraphElement.clientHeight
         );
     }
 
@@ -116,43 +116,43 @@ var BGrapher = function(
     }
 
     this.draw = function(bgraphState) {
-        const cur = this.eventsImpl.cur(this.eventState);
+        const cur = this._eventsImpl.cur(this._eventState);
 
-        this.grapherImpl.drawBgraph(bgraphState, this.grapherState);
-        this.drawBlocks(bgraphState);
-        this.drawEdgeEnds(bgraphState);
-        this.drawEdges(bgraphState);
-        this.drawHoverInfo(bgraphState, cur);
+        this._grapherImpl.drawBgraph(bgraphState, this._grapherState);
+        this._drawBlocks(bgraphState);
+        this._drawEdgeEnds(bgraphState);
+        this._drawEdges(bgraphState);
+        this._drawHoverInfo(bgraphState, cur);
 
         if (process.env.NODE_ENV === 'development') {
-            this.printCoords(bgraphState, cur);
+            this._printCoords(bgraphState, cur);
         }
     }
 
     this.setActiveBlock = function(blockID) {
-        this.activeBlockIDs.add(blockID);
+        this._activeBlockIDs.add(blockID);
     }
 
     this.unsetActiveBlock = function(blockID) {
-        this.activeBlockIDs.delete(blockID);
+        this._activeBlockIDs.delete(blockID);
     }
 
     this.toggleActiveBlock = function(blockID) {
-        if (this.activeBlockIDs.has(blockID)) {
-            this.activeBlockIDs.delete(blockID);
+        if (this._activeBlockIDs.has(blockID)) {
+            this._activeBlockIDs.delete(blockID);
         } else {
-            this.activeBlockIDs.add(blockID);
+            this._activeBlockIDs.add(blockID);
         }
     }
 
     this.activeBlocks = function*() {
-        for (const activeBlockID of this.activeBlockIDs) {
+        for (const activeBlockID of this._activeBlockIDs) {
             const blockData = this.blocksData[activeBlockID];
             if (blockData) yield blockData;
         }
 
-        const hoveredBlockID = this.eventsImpl.hoveredBlockID(this.eventState);
-        if (!this.activeBlockIDs.has(hoveredBlockID)) {
+        const hoveredBlockID = this._eventsImpl.hoveredBlockID(this._eventState);
+        if (!this._activeBlockIDs.has(hoveredBlockID)) {
             const blockData = this.blocksData[hoveredBlockID];
             if (blockData) yield blockData;
         }
@@ -174,74 +174,72 @@ var BGrapher = function(
         }
     }
 
-    this.drawBlocks = function(bgraphState) {
+    this._drawBlocks = function(bgraphState) {
         let seenBlocks = new Set();
 
         for (const block of this.activeBlocks()) {
             if (!seenBlocks.has(block.id)) {
                 seenBlocks.add(block.id);
 
-                this.grapherImpl.drawBlock(bgraphState, this.grapherState, block);
+                this._grapherImpl.drawBlock(bgraphState, this._grapherState, block);
             }
         }
     }
 
-    this.drawEdgeEnds = function(bgraphState) {
+    this._drawEdgeEnds = function(bgraphState) {
         let seenEdgeEnds = new Set();
 
         for (const [start, end] of this.activeEdges()) {
             if (!seenEdgeEnds.has(start.id)) {
                 seenEdgeEnds.add(start.id);
 
-                this.grapherImpl.drawEdgeEnd(bgraphState, this.grapherState, start);
+                this._grapherImpl.drawEdgeEnd(bgraphState, this._grapherState, start);
             }
 
             if (!seenEdgeEnds.has(end.id)) {
                 seenEdgeEnds.add(end.id);
 
-                this.grapherImpl.drawEdgeEnd(bgraphState, this.grapherState, end);
+                this._grapherImpl.drawEdgeEnd(bgraphState, this._grapherState, end);
             }
         }
     }
 
-    this.drawEdges = function(bgraphState) {
+    this._drawEdges = function(bgraphState) {
         let seenEdges = new EdgeSet();
 
         for (const [start, end] of this.activeEdges()) {
             if (!seenEdges.has(start.id, end.id)) {
                 seenEdges.add(start.id, end.id);
 
-                this.grapherImpl.drawBezierEdge(bgraphState, this.grapherState, 
-                    this.edgesImpl.generatePoints(start, end)
+                this._grapherImpl.drawBezierEdge(bgraphState, this._grapherState, 
+                    this._edgesImpl.generatePoints(start, end)
                 );
             }
         }
     }
 
-    this.drawHoverInfo = function(bgraphState, cur) {
+    this._drawHoverInfo = function(bgraphState, cur) {
         const blockData = this.curBlock(bgraphState, cur);
         if (!blockData) return;
 
-        return this.grapherImpl.drawHoverInfo(this.grapherState, blockData);
+        return this._grapherImpl.drawHoverInfo(this._grapherState, blockData);
     }
 
-    this.selectBlock = function(bgraphState, cur) {
-        const blockData = this.curBlock(bgraphState, cur);
-        if (!blockData) return;
-
-        this.cbSelect(blockData);
+    this.selectBlock = function(blockID) {
+        if (!blockID || !(blockID in this.blocksData)) return;
+        this.cbSelect(this.blocksData[blockID]);
     }
 
     this.curBlock = function(bgraphState, cur) {
         const x = curBgraphPixel('x', bgraphState, cur);
         const y = curBgraphPixel('y', bgraphState, cur);
 
-        if (!this.lookup) return null;
-        return this.blocksData[this.lookup.get(x,y)];
+        if (!this._lookup) return null;
+        return this.blocksData[this._lookup.get(x,y)];
     }
 
-    this.printCoords = function(bgraphState, cur) {
-        return this.grapherImpl.printCoords(this.grapherState,
+    this._printCoords = function(bgraphState, cur) {
+        return this._grapherImpl.printCoords(this._grapherState,
             curBgraphPixel('x', bgraphState, cur),
             curBgraphPixel('y', bgraphState, cur),
         );

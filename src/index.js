@@ -40,7 +40,7 @@ function BGraph(props) {
         } else if (props.bgraphType == 'testEdges') {
             bgrapher.initBgraph(testDotsEdges(1000, 1000));
         } else if (props.bgraphType == 'testLarge') {
-            bgrapher.initTestBgraphLarge(5000, 10000);
+            bgrapher._initTestBgraphLarge(5000, 10000);
         }
 
         return bgrapher

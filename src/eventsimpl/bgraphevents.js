@@ -187,9 +187,10 @@ let eventHandlers = {
             bgrapher.toggleActiveBlock(eventState.hoveredBlockID);
         }
 
-        // Right click, requires "contextmenu" handler
+        // Right click, also depends on "contextmenu" handler
         if (event.button === 2) {
-            bgrapher.selectBlock(bgraphState, eventState.cur);
+            const selectedBlock = bgrapher.curBlock(bgraphState, eventState.cur);
+            if (selectedBlock) bgrapher.selectBlock(selectedBlock.id);
         }
     },
     contextmenu: function(bgraphState, eventState, bgrapher, event) {
@@ -215,7 +216,7 @@ let eventHandlers = {
         ) eventState.isClick = false;
 
         if (process.env.NODE_ENV === 'development') {
-            bgrapher.printCoords(bgraphState, eventState.cur);
+            bgrapher._printCoords(bgraphState, eventState.cur);
         }
     },
     resize: function(bgraphState, eventState, bgrapher, event) {
