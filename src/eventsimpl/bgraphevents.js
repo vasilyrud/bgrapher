@@ -42,7 +42,8 @@ function BgraphEventState() {
         y: 0,
     };
 
-    this.hoveredBlockID = null;
+    this.hoveredBlockID   = null;
+    this.hoveredEdgeEndID = null;
 }
 
 function getLocal(coord, event) {
@@ -138,11 +139,22 @@ function mousemovePan(bgraphState, eventState, bgrapher, event) {
 }
 
 function mousemoveHover(bgraphState, eventState, bgrapher) {
-    const prevHoveredBlockID = eventState.hoveredBlockID;
-    const hoveredBlock = bgrapher.curBlock(bgraphState, eventState.cur);
+    const prevHoveredBlockID   = eventState.hoveredBlockID;
+    const prevHoveredEdgeEndID = eventState.hoveredEdgeEndID;
+    const hoveredBlock   = bgrapher.curBlock(bgraphState, eventState.cur);
+    const hoveredEdgeEnd = bgrapher.curEdgeEnd(bgraphState, eventState.cur);
 
-    eventState.hoveredBlockID = !hoveredBlock ? null : hoveredBlock.id;
-    if (prevHoveredBlockID === eventState.hoveredBlockID) return;
+    eventState.hoveredBlockID   = (!hoveredBlock || hoveredEdgeEnd) 
+        ? null : hoveredBlock.id;
+    eventState.hoveredEdgeEndID = (!hoveredEdgeEnd) 
+        ? null : hoveredEdgeEnd.id;
+
+    if (eventState.hoveredBlockID   === prevHoveredBlockID &&
+        eventState.hoveredEdgeEndID === prevHoveredEdgeEndID
+    ) return;
+
+    if (eventState.hoveredBlockID !== null)
+        bgrapher.hoverBlock(eventState.hoveredBlockID);
 
     bgrapher.update(bgraphState);
 }
@@ -185,6 +197,7 @@ let eventHandlers = {
         if (eventState.isClick) {
             eventState.isClick = false;
             bgrapher.toggleActiveBlock(eventState.hoveredBlockID);
+            bgrapher.toggleActiveEdgeEnd(eventState.hoveredEdgeEndID);
         }
 
         // Right click, also depends on "contextmenu" handler
@@ -251,6 +264,10 @@ const bgraphEventsImpl = {
 
     hoveredBlockID(eventState) {
         return eventState.hoveredBlockID;
+    },
+
+    hoveredEdgeEndID(eventState) {
+        return eventState.hoveredEdgeEndID;
     },
 };
 

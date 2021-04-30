@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { curBgraphPixel, BlocksLookup, Direction } from './common/lookup.js'
+import { curBgraphPixel, Direction, BlocksLookup, EdgeEndsLookup } from './common/lookup.js'
 import { EdgeSet } from './common/struct.js'
 import { imageImpl } from './grapherimpl/image.js'
 import { bezierImpl } from './edgesimpl/bezier.js'
@@ -54,6 +54,8 @@ var BGrapher = function(
     this._edgesImpl   = edgesImpl;
     this._eventsImpl  = eventsImpl;
 
+    this.doDrawHoverInfo = true;
+
     this.bgraphWidth = function() {
         return this._grapherImpl.getBgraphWidth(this._grapherState);
     }
@@ -78,11 +80,14 @@ var BGrapher = function(
 
         this._grapherState = this._grapherImpl.initBgraph(inputData);
 
-        this.blocksData = _initBlocksData(inputData);
+        this.blocksData   = _initBlocksData(inputData);
         this.edgeEndsData = _initEdgeEndsData(inputData);
 
-        this._lookup = new BlocksLookup(inputData);
-        this._activeBlockIDs = new Set();
+        this._blocksLookup   = new BlocksLookup(inputData);
+        this._edgeEndsLookup = new EdgeEndsLookup(inputData);
+
+        this._activeBlockIDs   = new Set();
+        this._activeEdgeEndIDs = new Set();
     }
 
     this._initTestBgraphLarge = function(numCols, numRows) {
@@ -92,9 +97,10 @@ var BGrapher = function(
         this._activeBlockIDs = new Set();
     }
 
-    this.populateElement = function(bgraphState, bgraphElement, cbSelect=()=>{}) {
+    this.populateElement = function(bgraphState, bgraphElement) {
         this._bgraphElement = bgraphElement;
-        this.cbSelect = cbSelect;
+        this.selectCallback = ()=>{};
+        this.hoverCallback  = ()=>{};
 
         this._grapherImpl.populateElement(this._grapherState, this._bgraphElement);
         this.updateBgraphSize();
@@ -102,6 +108,14 @@ var BGrapher = function(
 
         bgraphState.attach(this);
         this.draw(bgraphState);
+    }
+
+    this.setSelectCallback = function(cbSelect) {
+        this.selectCallback = cbSelect;
+    }
+
+    this.setHoverCallback = function(cbHover) {
+        this.hoverCallback = cbHover;
     }
 
     this.updateBgraphSize = function() {
@@ -122,7 +136,10 @@ var BGrapher = function(
         this._drawBlocks(bgraphState);
         this._drawEdgeEnds(bgraphState);
         this._drawEdges(bgraphState);
-        this._drawHoverInfo(bgraphState, cur);
+
+        if (this.doDrawHoverInfo) {
+            this._drawHoverInfo(bgraphState, cur);
+        }
 
         if (process.env.NODE_ENV === 'development') {
             this._printCoords(bgraphState, cur);
@@ -130,18 +147,66 @@ var BGrapher = function(
     }
 
     this.setActiveBlock = function(blockID) {
+        if (blockID === null) return;
         this._activeBlockIDs.add(blockID);
+
+        for (const edgeEndID of this.blocksData[blockID].edgeEnds) {
+            this._activeEdgeEndIDs.add(edgeEndID);
+        }
     }
 
     this.unsetActiveBlock = function(blockID) {
+        if (blockID === null) return;
         this._activeBlockIDs.delete(blockID);
+
+        for (const edgeEndID of this.blocksData[blockID].edgeEnds) {
+            this._activeEdgeEndIDs.delete(edgeEndID);
+        }
     }
 
     this.toggleActiveBlock = function(blockID) {
+        if (blockID === null) return;
+
         if (this._activeBlockIDs.has(blockID)) {
-            this._activeBlockIDs.delete(blockID);
+            this.unsetActiveBlock(blockID);
         } else {
-            this._activeBlockIDs.add(blockID);
+            this.setActiveBlock(blockID);
+        }
+    }
+
+    this.setActiveEdgeEnd = function(edgeEndID) {
+        if (edgeEndID === null) return;
+        this._activeEdgeEndIDs.add(edgeEndID);
+
+        for (const otherEdgeEndID of this.edgeEndsData[edgeEndID].edgeEnds) {
+            this._activeEdgeEndIDs.add(otherEdgeEndID);
+        }
+    }
+
+    this.unsetActiveEdgeEnd = function(edgeEndID) {
+        if (edgeEndID === null) return;
+        this._activeEdgeEndIDs.delete(edgeEndID);
+
+        for (const otherEdgeEndID of this.edgeEndsData[edgeEndID].edgeEnds) {
+            this._activeEdgeEndIDs.delete(otherEdgeEndID);
+        }
+    }
+
+    this.toggleActiveEdgeEnd = function(edgeEndID) {
+        if (edgeEndID === null) return;
+
+        if (this._activeEdgeEndIDs.has(edgeEndID)) {
+            this.unsetActiveEdgeEnd(edgeEndID);
+        } else {
+            this.setActiveEdgeEnd(edgeEndID);
+        }
+    }
+
+    this._activeHoveredBlock = function*() {
+        const hoveredBlockID = this._eventsImpl.hoveredBlockID(this._eventState);
+        if (!this._activeBlockIDs.has(hoveredBlockID)) {
+            const blockData = this.blocksData[hoveredBlockID];
+            if (blockData) yield blockData;
         }
     }
 
@@ -151,25 +216,46 @@ var BGrapher = function(
             if (blockData) yield blockData;
         }
 
-        const hoveredBlockID = this._eventsImpl.hoveredBlockID(this._eventState);
-        if (!this._activeBlockIDs.has(hoveredBlockID)) {
-            const blockData = this.blocksData[hoveredBlockID];
-            if (blockData) yield blockData;
+        for (const hoveredBlockData of this._activeHoveredBlock()) {
+            yield hoveredBlockData;
+        }
+    }
+
+    this._activeHoveredEdgeEnd = function*() {
+        const hoveredEdgeEndID = this._eventsImpl.hoveredEdgeEndID(this._eventState);
+        if (!this._activeEdgeEndIDs.has(hoveredEdgeEndID)) {
+            const edgeEndData = this.edgeEndsData[hoveredEdgeEndID];
+            if (edgeEndData) yield edgeEndData;
+        }
+    }
+
+    this.activeEdgeEnds = function*() {
+        for (const activeEdgeEndID of this._activeEdgeEndIDs) {
+            const edgeEndData = this.edgeEndsData[activeEdgeEndID];
+            if (edgeEndData) yield edgeEndData;
+        }
+
+        for (const hoveredEdgeEndData of this._activeHoveredEdgeEnd()) {
+            yield hoveredEdgeEndData;
+        }
+
+        for (const hoveredBlockData of this._activeHoveredBlock()) {
+            for (const hoveredBlockEdgeEndID of hoveredBlockData.edgeEnds) {
+                const edgeEndData = this.edgeEndsData[hoveredBlockEdgeEndID];
+                if (edgeEndData) yield edgeEndData;
+            }
         }
     }
 
     this.activeEdges = function*() {
-        for (const blockData of this.activeBlocks()) {
-            for (const startEdgeEndID of blockData.edgeEnds) {
-                const startEdgeEndData = this.edgeEndsData[startEdgeEndID];
-                if (!startEdgeEndData) continue;
+        for (const startEdgeEndData of this.activeEdgeEnds()) {
+            if (!startEdgeEndData) continue;
 
-                for (const endEdgeEndID of startEdgeEndData.edgeEnds) {
-                    const endEdgeEndData = this.edgeEndsData[endEdgeEndID];
-                    if (!endEdgeEndData) continue;
+            for (const endEdgeEndID of startEdgeEndData.edgeEnds) {
+                const endEdgeEndData = this.edgeEndsData[endEdgeEndID];
+                if (!endEdgeEndData) continue;
 
-                    yield [startEdgeEndData, endEdgeEndData];
-                }
+                yield [startEdgeEndData, endEdgeEndData];
             }
         }
     }
@@ -227,15 +313,28 @@ var BGrapher = function(
 
     this.selectBlock = function(blockID) {
         if (!blockID || !(blockID in this.blocksData)) return;
-        this.cbSelect(this.blocksData[blockID]);
+        this.selectCallback(this.blocksData[blockID]);
+    }
+
+    this.hoverBlock = function(blockID) {
+        if (!blockID || !(blockID in this.blocksData)) return;
+        this.hoverCallback(this.blocksData[blockID]);
     }
 
     this.curBlock = function(bgraphState, cur) {
         const x = curBgraphPixel('x', bgraphState, cur);
         const y = curBgraphPixel('y', bgraphState, cur);
 
-        if (!this._lookup) return null;
-        return this.blocksData[this._lookup.get(x,y)];
+        if (!this._blocksLookup) return null;
+        return this.blocksData[this._blocksLookup.get(x,y)];
+    }
+
+    this.curEdgeEnd = function(bgraphState, cur) {
+        const x = curBgraphPixel('x', bgraphState, cur);
+        const y = curBgraphPixel('y', bgraphState, cur);
+
+        if (!this._edgeEndsLookup) return null;
+        return this.edgeEndsData[this._edgeEndsLookup.get(x,y)];
     }
 
     this._printCoords = function(bgraphState, cur) {

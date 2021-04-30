@@ -37,6 +37,14 @@ const Direction = Object.freeze({
     left:  4,
 });
 
+function lookupGet(x, y) {
+    if (y < 0 || y >= this.lookup.height) return null;
+    if (x < 0 || x >= this.lookup.width ) return null;
+
+    const id = this.lookup.get(x, y);
+    return (id === -1) ? null : id;
+}
+
 function BlocksLookup(data) {
     this.width  = data.width;
     this.height = data.height;
@@ -61,13 +69,21 @@ function BlocksLookup(data) {
         }
     }
 
-    this.get = function(x, y) {
-        if (y < 0 || y >= this.lookup.height) return null;
-        if (x < 0 || x >= this.lookup.width ) return null;
-
-        const id = this.lookup.get(x, y);
-        return (id === -1) ? null : id;
-    };
+    this.get = lookupGet.bind(this);
 }
 
-export { colorToRGB, curBgraphPixel, Direction, BlocksLookup }
+function EdgeEndsLookup(data) {
+    this.width  = data.width;
+    this.height = data.height;
+    this.lookup = new ArrayXY(this.width, this.height);
+    
+    const numEdgeEnds = data.edgeEnds.length;
+    for (let i = 0; i < numEdgeEnds; i++) {
+        const edgeEnd = data.edgeEnds[i];
+        this.lookup.set(edgeEnd.x, edgeEnd.y, edgeEnd.id);
+    }
+
+    this.get = lookupGet.bind(this);
+}
+
+export { colorToRGB, curBgraphPixel, Direction, BlocksLookup, EdgeEndsLookup }
