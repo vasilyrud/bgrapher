@@ -1,0 +1,22 @@
+{
+    "width":  2,
+    "height": 1,
+    "blocks": [
+        {
+            "id": 0,
+            "x": 0, "y": 0,
+            "width": 2, "height": 1,
+            "depth": 0, "color": 0,
+            "edgeEnds": []
+        }
+    ],
+    "edgeEnds": [
+        {
+            "id": 0,
+            "x": 1, "y": 0,
+            "direction": "down",
+            "isSource": true,
+            "edgeEnds": []
+        }
+    ]
+}

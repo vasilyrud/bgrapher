@@ -7,6 +7,7 @@ import basicEdgesBgraph from 'bgraphs/basicedges.json';
 import oneEdgeBgraph from 'bgraphs/oneedge.json';
 import overlapBgraph from 'bgraphs/overlap.json';
 import sameDepthBgraph from 'bgraphs/samedepth.json';
+import overlapEdgeEndBlock from 'bgraphs/overlapedgeendblock.json';
 
 import { BgraphState } from 'bgraphstate.js'
 import testOnlyDots from 'bgraphs/testonlydots.js';
@@ -113,7 +114,7 @@ describe('initBgraph data', () => {
     });
 });
 
-describe('initBgraph lookup block', () => {
+describe('initBgraph lookups', () => {
     describe('testOnlyDots', () => {
         let bgrapher = new BGrapher(fakeGrapher);
         bgrapher.initBgraph(testOnlyDots(2,2));
@@ -126,8 +127,8 @@ describe('initBgraph lookup block', () => {
         ];
 
         const invalidCoords = [
-            [   1,    1],
             [  -1,   -1],
+            [   1,    1],
             [ 100,  100],
             [-100,  100],
             [ 100, -100],
@@ -137,12 +138,61 @@ describe('initBgraph lookup block', () => {
         validCoords.forEach(([x,y,id]) => {
             it (`returns the right block for ${x} ${y}`, () => {
                 expect(bgrapher._blocksLookup.get(x, y)).to.equal(id);
+                expect(bgrapher._edgeEndsLookup.get(x, y)).to.be.null;
             });
         });
 
         invalidCoords.forEach(([x,y]) => {
             it (`doesn't return any block for ${x} ${y}`, () => {
                 expect(bgrapher._blocksLookup.get(x, y)).to.be.null;
+                expect(bgrapher._edgeEndsLookup.get(x, y)).to.be.null;
+            });
+        });
+    });
+
+    describe('testDotsEdges', () => {
+        let bgrapher = new BGrapher(fakeGrapher);
+        bgrapher.initBgraph(testDotsEdges(2,2));
+
+        const validBlockCoords = [
+            [0,1,0],[1,1,0],
+            [3,5,3],[4,5,3],
+        ];
+        const validEdgeEndCoords = [
+            [0,0, 0],[1,0, 1],[0,2, 2],[1,2, 3],
+            [3,4,12],[4,4,13],[3,6,14],[4,6,15],
+        ];
+
+        const invalidBlockCoords = [
+            [0,0],[1,0], // is edgeEnd, not block
+            [2,0],[2,3], // empty
+        ];
+        const invalidEdgeEndCoords = [
+            [0,1],[1,1], // is block, not edgeEnd
+            [2,0],[2,3], // empty
+        ];
+
+        validBlockCoords.forEach(([x,y,id]) => {
+            it (`returns the right block for ${x} ${y}`, () => {
+                expect(bgrapher._blocksLookup.get(x, y)).to.equal(id);
+            });
+        });
+
+        validEdgeEndCoords.forEach(([x,y,id]) => {
+            it (`returns the right edgeEnd for ${x} ${y}`, () => {
+                expect(bgrapher._edgeEndsLookup.get(x, y)).to.equal(id);
+            });
+        });
+
+        invalidBlockCoords.forEach(([x,y]) => {
+            it (`doesn't return any block for ${x} ${y}`, () => {
+                expect(bgrapher._blocksLookup.get(x, y)).to.be.null;
+            });
+        });
+
+        invalidEdgeEndCoords.forEach(([x,y]) => {
+            it (`doesn't return any edgeEnd for ${x} ${y}`, () => {
+                expect(bgrapher._edgeEndsLookup.get(x, y)).to.be.null;
             });
         });
     });
@@ -160,10 +210,9 @@ describe('initBgraph lookup block', () => {
     });
 
     describe('sample graphs', () => {
-        function testLookup(bgrapher, i, expectedID) {
-            const foundID = bgrapher._blocksLookup.get(
-                i%bgrapher._blocksLookup.width, 
-                Math.floor(i/bgrapher._blocksLookup.width)
+        function testLookup(lookup, i, expectedID) {
+            const foundID = lookup.get(
+                i%lookup.width, Math.floor(i/lookup.width)
             );
 
             expect(foundID).to.equal(expectedID);
@@ -176,16 +225,25 @@ describe('initBgraph lookup block', () => {
             let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(emptyBgraph);
             expect(bgrapher._blocksLookup).is.not.undefined;
+            expect(bgrapher._edgeEndsLookup).is.not.undefined;
+
             expect(bgrapher._blocksLookup.get(0, 0)).to.be.null;
+            expect(bgrapher._edgeEndsLookup.get(0, 0)).to.be.null;
         });
 
         it (`non-zero size bgraph`, () => {
             let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(nonZeroSizeBgraph);
             expect(bgrapher._blocksLookup).is.not.undefined;
+            expect(bgrapher._edgeEndsLookup).is.not.undefined;
+
             expect(bgrapher._blocksLookup.get(0, 0)).to.be.null;
+            expect(bgrapher._edgeEndsLookup.get(0, 0)).to.be.null;
+
             expect(bgrapher._blocksLookup.width).to.equal(4);
             expect(bgrapher._blocksLookup.height).to.equal(4);
+            expect(bgrapher._edgeEndsLookup.width).to.equal(4);
+            expect(bgrapher._edgeEndsLookup.height).to.equal(4);
         });
 
         it('basic bgraph', () => {
@@ -193,26 +251,47 @@ describe('initBgraph lookup block', () => {
             bgrapher.initBgraph(basicBgraph);
             const basicExpectedIDs = basicBgraph.blocks.map(e => e.id);
 
-            testBlackDotLocations.forEach((i, index) => testLookup(bgrapher, i, basicExpectedIDs[index]));
-            testWhiteDotLocations.forEach((i)        => testLookup(bgrapher, i, null));
+            testBlackDotLocations.forEach((i, index) => 
+                testLookup(bgrapher._blocksLookup, i, basicExpectedIDs[index]));
+            testWhiteDotLocations.forEach((i) => 
+                testLookup(bgrapher._blocksLookup, i, null));
+        });
+
+        it('basic edges bgraph', () => {
+            let bgrapher = new BGrapher(fakeGrapher);
+            bgrapher.initBgraph(basicEdgesBgraph);
+
+            testLookup(bgrapher._edgeEndsLookup, 0, 0);
+            testLookup(bgrapher._edgeEndsLookup, 5, 100);
+            [1,2,3,4,6,7,8].forEach(i => testLookup(bgrapher._edgeEndsLookup, i, null));
         });
 
         it('overlapping bgraph', () => {
             let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(overlapBgraph);
 
-            [0,1,4].forEach(i => testLookup(bgrapher, i, 0));
-            [5,6,9,10].forEach(i => testLookup(bgrapher, i, 100));
-            [11,14,15].forEach(i => testLookup(bgrapher, i, 2));
-            [2,3,7,8,12,13].forEach(i => testLookup(bgrapher, i, null));
+            [0,1,4].forEach(i => testLookup(bgrapher._blocksLookup, i, 0));
+            [5,6,9,10].forEach(i => testLookup(bgrapher._blocksLookup, i, 100));
+            [11,14,15].forEach(i => testLookup(bgrapher._blocksLookup, i, 2));
+            [2,3,7,8,12,13].forEach(i => testLookup(bgrapher._blocksLookup, i, null));
         });
 
         it('same depth bgraph', () => {
             let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(sameDepthBgraph);
 
-            [0,1,4].forEach(i => testLookup(bgrapher, i, 0));
-            [5,6,9,10].forEach(i => testLookup(bgrapher, i, 100));
+            [0,1,4].forEach(i => testLookup(bgrapher._blocksLookup, i, 0));
+            [5,6,9,10].forEach(i => testLookup(bgrapher._blocksLookup, i, 100));
+        });
+
+        it('overlapping edgEnd and block', () => {
+            let bgrapher = new BGrapher(fakeGrapher);
+            bgrapher.initBgraph(overlapEdgeEndBlock);
+
+            testLookup(bgrapher._blocksLookup, 0, 0);
+            testLookup(bgrapher._blocksLookup, 1, 0);
+            testLookup(bgrapher._edgeEndsLookup, 0, null);
+            testLookup(bgrapher._edgeEndsLookup, 1, 0);
         });
     });
 });

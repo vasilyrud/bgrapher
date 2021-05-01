@@ -262,11 +262,11 @@ const bgraphEventsImpl = {
         return eventState.cur;
     },
 
-    hoveredBlockID(eventState) {
+    hoveredBlockID: function(eventState) {
         return eventState.hoveredBlockID;
     },
 
-    hoveredEdgeEndID(eventState) {
+    hoveredEdgeEndID: function(eventState) {
         return eventState.hoveredEdgeEndID;
     },
 };
