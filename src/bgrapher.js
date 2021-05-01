@@ -147,7 +147,7 @@ var BGrapher = function(
         this._activeBlockIDs.add(blockID);
 
         for (const edgeEndID of this.blocksData[blockID].edgeEnds) {
-            this._activeEdgeEndIDs.add(edgeEndID);
+            this.setActiveEdgeEnd(edgeEndID);
         }
     }
 
@@ -156,7 +156,7 @@ var BGrapher = function(
         this._activeBlockIDs.delete(blockID);
 
         for (const edgeEndID of this.blocksData[blockID].edgeEnds) {
-            this._activeEdgeEndIDs.delete(edgeEndID);
+            this.unsetActiveEdgeEnd(edgeEndID);
         }
     }
 
@@ -179,22 +179,45 @@ var BGrapher = function(
         }
     }
 
+    this._doRemoveEdgeEnd = function(edgeEndID, srcEdgeEndID) {
+        for (const otherEdgeEndID of this.edgeEndsData[edgeEndID].edgeEnds) {
+            if (otherEdgeEndID !== srcEdgeEndID &&
+                this._activeEdgeEndIDs.has(otherEdgeEndID)
+            ) return false;
+        }
+
+        return true;
+    }
+
+    this._doCreateEdgeEnd = function(edgeEndID) {
+        if (!this._activeEdgeEndIDs.has(edgeEndID))
+            return true;
+
+        for (const otherEdgeEndID of this.edgeEndsData[edgeEndID].edgeEnds) {
+            if (!this._activeEdgeEndIDs.has(otherEdgeEndID))
+                return true;
+        }
+
+        return false;
+    }
+
     this.unsetActiveEdgeEnd = function(edgeEndID) {
         if (edgeEndID === null) return;
         this._activeEdgeEndIDs.delete(edgeEndID);
 
         for (const otherEdgeEndID of this.edgeEndsData[edgeEndID].edgeEnds) {
-            this._activeEdgeEndIDs.delete(otherEdgeEndID);
+            if (this._doRemoveEdgeEnd(otherEdgeEndID, edgeEndID))
+                this._activeEdgeEndIDs.delete(otherEdgeEndID);
         }
     }
 
     this.toggleActiveEdgeEnd = function(edgeEndID) {
         if (edgeEndID === null) return;
 
-        if (this._activeEdgeEndIDs.has(edgeEndID)) {
-            this.unsetActiveEdgeEnd(edgeEndID);
-        } else {
+        if (this._doCreateEdgeEnd(edgeEndID)) {
             this.setActiveEdgeEnd(edgeEndID);
+        } else {
+            this.unsetActiveEdgeEnd(edgeEndID);
         }
     }
 
@@ -225,29 +248,59 @@ var BGrapher = function(
         }
     }
 
+    this._activeHoveredEdgeEndIDs = function() {
+        let activeHoveredEdgeEnds = new Set();
+
+        for (const hoveredEdgeEnd of this._activeHoveredEdgeEnd()) {
+            activeHoveredEdgeEnds.add(hoveredEdgeEnd.id);
+
+            for (const otherEdgeEndID of hoveredEdgeEnd.edgeEnds) {
+                activeHoveredEdgeEnds.add(otherEdgeEndID);
+            }
+        }
+
+        for (const hoveredEdgeEnd of this._activeHoveredBlock()) {
+            for (const hoveredBlockEdgeEndID of hoveredEdgeEnd.edgeEnds) {
+                const hoveredBlockEdgeEnd = this.edgeEndsData[hoveredBlockEdgeEndID];
+                if (!hoveredBlockEdgeEnd) continue;
+
+                activeHoveredEdgeEnds.add(hoveredBlockEdgeEndID);
+                for (const otherEdgeEndID of hoveredBlockEdgeEnd.edgeEnds) {
+                    const otherEdgeEnd = this.edgeEndsData[otherEdgeEndID];
+                    if (!otherEdgeEnd) continue;
+
+                    activeHoveredEdgeEnds.add(otherEdgeEndID);
+                }
+            }
+        }
+
+        return activeHoveredEdgeEnds;
+    }
+
     this.activeEdgeEnds = function*() {
         for (const activeEdgeEndID of this._activeEdgeEndIDs) {
             const edgeEndData = this.edgeEndsData[activeEdgeEndID];
             if (edgeEndData) yield edgeEndData;
         }
 
-        for (const hoveredEdgeEndData of this._activeHoveredEdgeEnd()) {
-            yield hoveredEdgeEndData;
-        }
-
-        for (const hoveredBlockData of this._activeHoveredBlock()) {
-            for (const hoveredBlockEdgeEndID of hoveredBlockData.edgeEnds) {
-                const edgeEndData = this.edgeEndsData[hoveredBlockEdgeEndID];
-                if (edgeEndData) yield edgeEndData;
-            }
+        for (const hoveredEdgeEndID of this._activeHoveredEdgeEndIDs()) {
+            const hoveredEdgeEnd = this.edgeEndsData[hoveredEdgeEndID];
+            if (!hoveredEdgeEnd) continue;
+            yield hoveredEdgeEnd;
         }
     }
 
     this.activeEdges = function*() {
+        const activeHoveredEdgeEndIDs = this._activeHoveredEdgeEndIDs();
+
         for (const startEdgeEndData of this.activeEdgeEnds()) {
             if (!startEdgeEndData) continue;
 
             for (const endEdgeEndID of startEdgeEndData.edgeEnds) {
+                if (!this._activeEdgeEndIDs.has(endEdgeEndID) &&
+                    !activeHoveredEdgeEndIDs.has(endEdgeEndID)
+                ) continue;
+
                 const endEdgeEndData = this.edgeEndsData[endEdgeEndID];
                 if (!endEdgeEndData) continue;
 
