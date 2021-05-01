@@ -132,7 +132,7 @@ function mousemovePan(bgraphState, eventState, bgrapher, event) {
     bgraphState.offset.x = getPanOffset('x', bgraphState, eventState, bgrapher);
     bgraphState.offset.y = getPanOffset('y', bgraphState, eventState, bgrapher);
 
-    bgrapher.update(bgraphState);
+    bgraphState.update();
 
     eventState.panningPrev.x = getLocal('x', event);
     eventState.panningPrev.y = getLocal('y', event);
@@ -156,7 +156,7 @@ function mousemoveHover(bgraphState, eventState, bgrapher) {
     if (eventState.hoveredBlockID !== null)
         bgrapher.hoverBlock(eventState.hoveredBlockID);
 
-    bgrapher.update(bgraphState);
+    bgraphState.update();
 }
 
 function initView(bgraphState, bgrapher) {
@@ -177,7 +177,7 @@ let eventHandlers = {
         bgraphState.offset.x = getZoomOffset('x', bgraphState, eventState, bgrapher, deltaUsed);
         bgraphState.offset.y = getZoomOffset('y', bgraphState, eventState, bgrapher, deltaUsed);
 
-        bgrapher.update(bgraphState);
+        bgraphState.update();
     },
     mousedown: function(bgraphState, eventState, bgrapher, event) {
         // Ignore non-left clicks
@@ -194,14 +194,15 @@ let eventHandlers = {
     mouseup: function(bgraphState, eventState, bgrapher, event) {
         eventState.panning = false;
 
-        if (eventState.isClick) {
+        if (event.button === 0 && eventState.isClick) {
             eventState.isClick = false;
             bgrapher.toggleActiveBlock(eventState.hoveredBlockID);
             bgrapher.toggleActiveEdgeEnd(eventState.hoveredEdgeEndID);
-        }
+
+            bgraphState.update();
 
         // Right click, also depends on "contextmenu" handler
-        if (event.button === 2) {
+        } else if (event.button === 2) {
             const selectedBlock = bgrapher.curBlock(bgraphState, eventState.cur);
             if (selectedBlock) bgrapher.selectBlock(selectedBlock.id);
         }
@@ -236,7 +237,7 @@ let eventHandlers = {
         initView(bgraphState, bgrapher);
 
         bgrapher.updateBgraphSize();
-        bgrapher.update(bgraphState);
+        bgraphState.update();
     },
 };
 

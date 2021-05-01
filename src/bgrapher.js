@@ -125,10 +125,6 @@ var BGrapher = function(
         );
     }
 
-    this.update = function(bgraphState) {
-        bgraphState.update();
-    }
-
     this.draw = function(bgraphState) {
         const cur = this._eventsImpl.cur(this._eventState);
 
