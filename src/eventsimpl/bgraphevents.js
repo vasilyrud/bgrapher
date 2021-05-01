@@ -41,9 +41,6 @@ function BgraphEventState() {
         x: 0,
         y: 0,
     };
-
-    this.hoveredBlockID   = null;
-    this.hoveredEdgeEndID = null;
 }
 
 function getLocal(coord, event) {
@@ -139,22 +136,19 @@ function mousemovePan(bgraphState, eventState, bgrapher, event) {
 }
 
 function mousemoveHover(bgraphState, eventState, bgrapher) {
-    const prevHoveredBlockID   = eventState.hoveredBlockID;
-    const prevHoveredEdgeEndID = eventState.hoveredEdgeEndID;
     const hoveredBlock   = bgrapher.curBlock(bgraphState, eventState.cur);
     const hoveredEdgeEnd = bgrapher.curEdgeEnd(bgraphState, eventState.cur);
 
-    eventState.hoveredBlockID   = (!hoveredBlock || hoveredEdgeEnd) 
-        ? null : hoveredBlock.id;
-    eventState.hoveredEdgeEndID = (!hoveredEdgeEnd) 
-        ? null : hoveredEdgeEnd.id;
-
-    if (eventState.hoveredBlockID   === prevHoveredBlockID &&
-        eventState.hoveredEdgeEndID === prevHoveredEdgeEndID
-    ) return;
-
-    if (eventState.hoveredBlockID !== null)
-        bgrapher.hoverBlock(eventState.hoveredBlockID);
+    if (hoveredEdgeEnd) {
+        bgrapher.hoverBlock(null);
+        bgrapher.hoverEdgeEnd(hoveredEdgeEnd.id);
+    } else if (hoveredBlock) {
+        bgrapher.hoverBlock(hoveredBlock.id);
+        bgrapher.hoverEdgeEnd(null);
+    } else {
+        bgrapher.hoverBlock(null);
+        bgrapher.hoverEdgeEnd(null);
+    }
 
     bgraphState.update();
 }
@@ -196,8 +190,8 @@ let eventHandlers = {
 
         if (event.button === 0 && eventState.isClick) {
             eventState.isClick = false;
-            bgrapher.toggleActiveBlock(eventState.hoveredBlockID);
-            bgrapher.toggleActiveEdgeEnd(eventState.hoveredEdgeEndID);
+            bgrapher.toggleActiveBlock(bgrapher.hoveredBlockID);
+            bgrapher.toggleActiveEdgeEnd(bgrapher.hoveredEdgeEndID);
 
             bgraphState.update();
 
@@ -208,7 +202,7 @@ let eventHandlers = {
         }
     },
     contextmenu: function(bgraphState, eventState, bgrapher, event) {
-        if (!eventState.hoveredBlockID) return;
+        if (bgrapher.hoveredBlockID === null) return;
         event.preventDefault();
     },
     mouseout: function(bgraphState, eventState, bgrapher, event) {
@@ -261,14 +255,6 @@ const bgraphEventsImpl = {
 
     cur: function(eventState) {
         return eventState.cur;
-    },
-
-    hoveredBlockID: function(eventState) {
-        return eventState.hoveredBlockID;
-    },
-
-    hoveredEdgeEndID: function(eventState) {
-        return eventState.hoveredEdgeEndID;
     },
 };
 

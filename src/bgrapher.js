@@ -56,22 +56,6 @@ var BGrapher = function(
 
     this.doDrawHoverInfo = true;
 
-    this.bgraphWidth = function() {
-        return this._grapherImpl.getBgraphWidth(this._grapherState);
-    }
-
-    this.bgraphHeight = function() {
-        return this._grapherImpl.getBgraphHeight(this._grapherState);
-    }
-
-    this.clientWidth = function() {
-        return this._grapherImpl.getClientWidth(this._grapherState);
-    }
-
-    this.clientHeight = function() {
-        return this._grapherImpl.getClientHeight(this._grapherState);
-    }
-
     this.initBgraph = function(bgraph) {
         const inputData = ((typeof bgraph === 'string' || bgraph instanceof String)
             ? JSON.parse(bgraph)
@@ -88,6 +72,9 @@ var BGrapher = function(
 
         this._activeBlockIDs   = new Set();
         this._activeEdgeEndIDs = new Set();
+
+        this.hoveredBlockID   = null;
+        this.hoveredEdgeEndID = null;
     }
 
     this._initTestBgraphLarge = function(numCols, numRows) {
@@ -99,8 +86,10 @@ var BGrapher = function(
 
     this.populateElement = function(bgraphState, bgraphElement) {
         this._bgraphElement = bgraphElement;
+
+        this.hoverBlockCallback   = ()=>{};
+        this.hoverEdgeEndCallback = ()=>{};
         this.selectCallback = ()=>{};
-        this.hoverCallback  = ()=>{};
 
         this._grapherImpl.populateElement(this._grapherState, this._bgraphElement);
         this.updateBgraphSize();
@@ -114,8 +103,28 @@ var BGrapher = function(
         this.selectCallback = cbSelect;
     }
 
-    this.setHoverCallback = function(cbHover) {
-        this.hoverCallback = cbHover;
+    this.setHoverBlockCallback = function(cbHover) {
+        this.hoverBlockCallback = cbHover;
+    }
+
+    this.setHoverEdgeEndCallback = function(cbHover) {
+        this.hoverEdgeEndCallback = cbHover;
+    }
+
+    this.bgraphWidth = function() {
+        return this._grapherImpl.getBgraphWidth(this._grapherState);
+    }
+
+    this.bgraphHeight = function() {
+        return this._grapherImpl.getBgraphHeight(this._grapherState);
+    }
+
+    this.clientWidth = function() {
+        return this._grapherImpl.getClientWidth(this._grapherState);
+    }
+
+    this.clientHeight = function() {
+        return this._grapherImpl.getClientHeight(this._grapherState);
     }
 
     this.updateBgraphSize = function() {
@@ -222,7 +231,7 @@ var BGrapher = function(
     }
 
     this._activeHoveredBlock = function*() {
-        const hoveredBlockID = this._eventsImpl.hoveredBlockID(this._eventState);
+        const hoveredBlockID = this.hoveredBlockID;
         if (!this._activeBlockIDs.has(hoveredBlockID)) {
             const blockData = this.blocksData[hoveredBlockID];
             if (blockData) yield blockData;
@@ -241,7 +250,7 @@ var BGrapher = function(
     }
 
     this._activeHoveredEdgeEnd = function*() {
-        const hoveredEdgeEndID = this._eventsImpl.hoveredEdgeEndID(this._eventState);
+        const hoveredEdgeEndID = this.hoveredEdgeEndID;
         if (!this._activeEdgeEndIDs.has(hoveredEdgeEndID)) {
             const edgeEndData = this.edgeEndsData[hoveredEdgeEndID];
             if (edgeEndData) yield edgeEndData;
@@ -366,8 +375,23 @@ var BGrapher = function(
     }
 
     this.hoverBlock = function(blockID) {
-        if (!blockID || !(blockID in this.blocksData)) return;
-        this.hoverCallback(this.blocksData[blockID]);
+        const prevHoveredBlockID = this.hoveredBlockID;
+        this.hoveredBlockID = blockID;
+
+        if (this.hoveredBlockID === prevHoveredBlockID) return;
+
+        const hoveredBlock = this.blocksData[blockID];
+        if (hoveredBlock) this.hoverBlockCallback(hoveredBlock);
+    }
+
+    this.hoverEdgeEnd = function(edgeEndID) {
+        const prevHoveredEdgeEndID = this.hoveredEdgeEndID;
+        this.hoveredEdgeEndID = edgeEndID;
+
+        if (this.hoveredEdgeEndID === prevHoveredEdgeEndID) return;
+
+        const hoveredEdgeEnd = this.edgeEndsData[edgeEndID];
+        if (hoveredEdgeEnd) this.hoverEdgeEndCallback(hoveredEdgeEnd);
     }
 
     this.curBlock = function(bgraphState, cur) {
