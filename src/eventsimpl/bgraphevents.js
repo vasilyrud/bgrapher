@@ -187,26 +187,26 @@ let eventHandlers = {
     },
     mouseup: function(bgraphState, eventState, bgrapher, event) {
         eventState.panning = false;
+        const hoveredBlock   = bgrapher.hoveredBlock();
+        const hoveredEdgeEnd = bgrapher.hoveredEdgeEnd();
 
         if (event.button === 0 && eventState.isClick) {
             eventState.isClick = false;
-            const [hoveredBlock, hoveredEdgeEnd] = [
-                bgrapher.hoveredBlock(), bgrapher.hoveredEdgeEnd()
-            ];
-            if (hoveredBlock   !== null) bgrapher.toggleBlock(hoveredBlock.id);
-            if (hoveredEdgeEnd !== null) bgrapher.toggleEdgeEnd(hoveredEdgeEnd.id);
+            if (hoveredBlock  ) bgrapher.toggleBlock(hoveredBlock.id);
+            if (hoveredEdgeEnd) bgrapher.toggleEdgeEnd(hoveredEdgeEnd.id);
 
             bgraphState.update();
 
         // Right click, also depends on "contextmenu" handler
         } else if (event.button === 2) {
-            const selectedBlock = bgrapher.curBlock(bgraphState, eventState.cur);
-            if (selectedBlock) bgrapher.selectBlock(selectedBlock.id);
+            if (hoveredBlock  ) bgrapher.selectBlock(hoveredBlock.id);
+            if (hoveredEdgeEnd) bgrapher.selectEdgeEnd(hoveredEdgeEnd.id);
         }
     },
     contextmenu: function(bgraphState, eventState, bgrapher, event) {
-        if (bgrapher.hoveredBlock() === null) return;
-        event.preventDefault();
+        if (bgrapher.hoveredBlock() ||
+            bgrapher.hoveredEdgeEnd()
+        ) event.preventDefault();
     },
     mouseout: function(bgraphState, eventState, bgrapher, event) {
         eventState.panning = false;

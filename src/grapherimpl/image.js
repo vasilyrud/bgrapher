@@ -367,7 +367,7 @@ const imageImpl = {
         drawBezierLine(bgraphState, context, points);
     },
 
-    drawHoverInfo: function(imageState, blockData) {
+    drawHoverInfo: function(imageState, blockData, prefix) {
         let context = imageState.canvas.getContext(CANVAS_TYPE);
 
         const boxW = 200;
@@ -393,7 +393,7 @@ const imageImpl = {
             context.fillText(`${concatText(context, boxW, blockData.text)}`, 
                 posX+xOffset, posY+yOffset);
         } else {
-            context.fillText(`B[${blockData.id}]`, 
+            context.fillText(`${prefix}[${blockData.id}]`, 
                 posX+xOffset, posY+yOffset);
         }
     },

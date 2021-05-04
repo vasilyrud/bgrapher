@@ -55,7 +55,8 @@ var BGrapher = function(
     this._eventsImpl  = eventsImpl;
 
     this.doDrawHoverInfo = true;
-    this.selectCallback = ()=>{};
+    this.selectBlockCallback = ()=>{};
+    this.selectEdgeEndCallback = ()=>{};
     this.hoverBlockCallback = ()=>{};
     this.hoverEdgeEndCallback = ()=>{};
 
@@ -99,15 +100,19 @@ var BGrapher = function(
         this.draw(bgraphState);
     }
 
-    this.setSelectCallback = function(cbSelect) {
-        this.selectCallback = cbSelect;
+    this.onBlockSelect = function(cbSelect) {
+        this.selectBlockCallback = cbSelect;
     }
 
-    this.setHoverBlockCallback = function(cbHover) {
+    this.onEdgeEndSelect = function(cbSelect) {
+        this.selectEdgeEndCallback = cbSelect;
+    }
+
+    this.onBlockHover = function(cbHover) {
         this.hoverBlockCallback = cbHover;
     }
 
-    this.setHoverEdgeEndCallback = function(cbHover) {
+    this.onEdgeEndHover = function(cbHover) {
         this.hoverEdgeEndCallback = cbHover;
     }
 
@@ -369,15 +374,27 @@ var BGrapher = function(
     }
 
     this._drawHoverInfo = function(bgraphState, cur) {
-        const blockData = this.curBlock(bgraphState, cur);
-        if (!blockData) return;
+        const edgeEndData = this.curEdgeEnd(bgraphState, cur);
+        if (edgeEndData) {
+            this._grapherImpl.drawHoverInfo(this._grapherState, edgeEndData, 'E');
+            return;
+        }
 
-        return this._grapherImpl.drawHoverInfo(this._grapherState, blockData);
+        const blockData = this.curBlock(bgraphState, cur);
+        if (blockData) {
+            this._grapherImpl.drawHoverInfo(this._grapherState, blockData, 'B');
+            return;
+        }
     }
 
     this.selectBlock = function(blockID) {
         if (!blockID || !(blockID in this.blocksData)) return;
-        this.selectCallback(this.blocksData[blockID]);
+        this.selectBlockCallback(this.blocksData[blockID]);
+    }
+
+    this.selectEdgeEnd = function(edgeEndID) {
+        if (!edgeEndID || !(edgeEndID in this.edgeEndsData)) return;
+        this.selectEdgeEndCallback(this.edgeEndsData[edgeEndID]);
     }
 
     this.hoveredBlock = function() {
