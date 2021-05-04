@@ -325,7 +325,9 @@ var BGrapher = function(
                 if (seenEdges.has(startEdgeEndData.id, endEdgeEndData.id)) continue;
                 seenEdges.add(startEdgeEndData.id, endEdgeEndData.id);
 
-                yield [startEdgeEndData, endEdgeEndData];
+                yield startEdgeEndData.isSource
+                    ? [startEdgeEndData, endEdgeEndData]
+                    : [endEdgeEndData, startEdgeEndData];
             }
         }
     }
