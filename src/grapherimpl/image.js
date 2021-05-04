@@ -374,6 +374,7 @@ const imageImpl = {
         const boxH =  35;
         const posX =   8;
         const posY =   8;
+        const xOffset = 4;
 
         context.fillStyle = '#ffffff';
         context.fillRect(posX, posY, boxW, boxH);
@@ -381,15 +382,19 @@ const imageImpl = {
         context.textAlign = 'left';
         context.fillStyle = '#aaaaaa';
         context.font = '10px sans-serif';
-        context.fillText('Right click block to show more info.',  posX+4, posY+10);
+        context.fillText('Right click to show more info.',  
+            posX+xOffset, posY+31);
 
         context.textAlign = 'left';
         context.fillStyle = '#000000';
         context.font = '16px sans-serif';
+        const yOffset = 17;
         if (blockData.text) {
-            context.fillText(`${concatText(context, boxW, blockData.text)}`, posX+4, posY+28);
+            context.fillText(`${concatText(context, boxW, blockData.text)}`, 
+                posX+xOffset, posY+yOffset);
         } else {
-            context.fillText(`[${blockData.id}]`, posX+4, posY+28);
+            context.fillText(`B[${blockData.id}]`, 
+                posX+xOffset, posY+yOffset);
         }
     },
 
