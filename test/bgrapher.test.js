@@ -7,7 +7,8 @@ import basicEdgesBgraph from 'bgraphs/basicedges.json';
 import oneEdgeBgraph from 'bgraphs/oneedge.json';
 import overlapBgraph from 'bgraphs/overlap.json';
 import sameDepthBgraph from 'bgraphs/samedepth.json';
-import overlapEdgeEndBlock from 'bgraphs/overlapedgeendblock.json';
+import overlapEdgeEndBlockBgraph from 'bgraphs/overlapedgeendblock.json';
+import edgesBgraph from 'bgraphs/edges.json';
 
 import { BgraphState } from 'bgraphstate.js'
 import testOnlyDots from 'bgraphs/testonlydots.js';
@@ -84,8 +85,12 @@ describe('initBgraph data', () => {
     });
 
     describe('sample graphs', () => {
+        let bgrapher;
+        beforeEach(function() {
+            bgrapher = new BGrapher(fakeGrapher);
+        });
+
         it('Generates empty bgraph', () => {
-            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(emptyBgraph);
     
             expect(bgrapher.blocksData)  .to.eql({});
@@ -93,7 +98,6 @@ describe('initBgraph data', () => {
         });
     
         it('Generates the right edgeEnd data', () => {
-            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(basicEdgesBgraph);
     
             expect(bgrapher.edgeEndsData).to.have.all.keys(0,100);
@@ -106,7 +110,6 @@ describe('initBgraph data', () => {
         });
     
         it('Generates the right block edgeEnd data', () => {
-            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(oneEdgeBgraph);
     
             expect(bgrapher.blocksData[0].edgeEnds).to.eql([0,100]);
@@ -210,6 +213,11 @@ describe('initBgraph lookups', () => {
     });
 
     describe('sample graphs', () => {
+        let bgrapher;
+        beforeEach(function() {
+            bgrapher = new BGrapher(fakeGrapher);
+        });
+
         function testLookup(lookup, i, expectedID) {
             const foundID = lookup.get(
                 i%lookup.width, Math.floor(i/lookup.width)
@@ -222,7 +230,6 @@ describe('initBgraph lookups', () => {
         let testWhiteDotLocations = [1,3,4,5,6,7,9,11];
 
         it (`empty bgraph`, () => {
-            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(emptyBgraph);
             expect(bgrapher._blocksLookup).is.not.undefined;
             expect(bgrapher._edgeEndsLookup).is.not.undefined;
@@ -232,7 +239,6 @@ describe('initBgraph lookups', () => {
         });
 
         it (`non-zero size bgraph`, () => {
-            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(nonZeroSizeBgraph);
             expect(bgrapher._blocksLookup).is.not.undefined;
             expect(bgrapher._edgeEndsLookup).is.not.undefined;
@@ -247,7 +253,6 @@ describe('initBgraph lookups', () => {
         });
 
         it('basic bgraph', () => {
-            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(basicBgraph);
             const basicExpectedIDs = basicBgraph.blocks.map(e => e.id);
 
@@ -258,7 +263,6 @@ describe('initBgraph lookups', () => {
         });
 
         it('basic edges bgraph', () => {
-            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(basicEdgesBgraph);
 
             testLookup(bgrapher._edgeEndsLookup, 0, 0);
@@ -267,7 +271,6 @@ describe('initBgraph lookups', () => {
         });
 
         it('overlapping bgraph', () => {
-            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(overlapBgraph);
 
             [0,1,4].forEach(i => testLookup(bgrapher._blocksLookup, i, 0));
@@ -277,7 +280,6 @@ describe('initBgraph lookups', () => {
         });
 
         it('same depth bgraph', () => {
-            let bgrapher = new BGrapher(fakeGrapher);
             bgrapher.initBgraph(sameDepthBgraph);
 
             [0,1,4].forEach(i => testLookup(bgrapher._blocksLookup, i, 0));
@@ -285,13 +287,628 @@ describe('initBgraph lookups', () => {
         });
 
         it('overlapping edgEnd and block', () => {
-            let bgrapher = new BGrapher(fakeGrapher);
-            bgrapher.initBgraph(overlapEdgeEndBlock);
+            bgrapher.initBgraph(overlapEdgeEndBlockBgraph);
 
             testLookup(bgrapher._blocksLookup, 0, 0);
             testLookup(bgrapher._blocksLookup, 1, 0);
             testLookup(bgrapher._edgeEndsLookup, 0, null);
             testLookup(bgrapher._edgeEndsLookup, 1, 0);
+        });
+    });
+});
+
+
+describe('interaction', () => {
+    let bgrapher;
+    beforeEach(function() {
+        bgrapher = new BGrapher(fakeGrapher);
+        bgrapher.initBgraph(edgesBgraph);
+    });
+
+    function activeBlockIDs(bgrapher) {
+        return [...bgrapher.activeBlocks()]
+            .map(b=>b.id);
+    }
+
+    function activeEdgeIDs(bgrapher) {
+        return [...bgrapher.activeEdges()]
+            .map(([s,e])=>[s.id,e.id]);
+    }
+
+    describe('block', () => {
+
+        describe('hover', () => {
+            it(`doesn't show for null`, () => {
+                bgrapher.hoverBlock(null);
+
+                expect(activeBlockIDs(bgrapher)).to.be.empty;
+                expect(activeEdgeIDs(bgrapher)).to.be.empty;
+            });
+
+            const validHoverBlocksEdges = [
+                [0,[
+                    [0,2],[0,3],[0,4],[1,2],[1,3]
+                ]],
+                [1,[
+                    [2,0],[2,1],[3,0],[3,1]
+                ]],
+                [2,[
+                    [4,0]
+                ]],
+            ];
+
+            validHoverBlocksEdges.forEach(([id,edges]) => {
+                it (`shows for block ${id}`, () => {
+                    bgrapher.hoverBlock(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.eql([id]);
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+
+            validHoverBlocksEdges.forEach(([id,]) => {
+                it(`stops showing after unhover for block ${id}`, () => {
+                    bgrapher.hoverBlock(id);
+                    bgrapher.hoverBlock(null);
+
+                    expect(activeBlockIDs(bgrapher)).to.be.empty;
+                    expect(activeEdgeIDs(bgrapher)).to.be.empty;
+                });
+            });
+
+            const validHoverBlocksWithActiveEdgeEnds = [
+                [0,[0],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [0,[0,1],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [1,[0,1],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [0,[2],[
+                    [2,0],[2,1],[0,3],[0,4],[1,3]
+                ]],
+                [2,[0],[
+                    [0,2],[0,3],[0,4]
+                ]],
+                [2,[4],[
+                    [4,0]
+                ]],
+                [1,[4],[
+                    [4,0],[0,2],[0,3],[2,1],[3,1]
+                ]],
+            ];
+            
+            validHoverBlocksWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,edges]) => {
+                it(`shows for block ${id} when active edge ends ${setEdgeEndIDs}`, () => {
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+
+                    bgrapher.hoverBlock(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.eql([id]);
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+
+            validHoverBlocksWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,]) => {
+                it(`stops showing for block ${id} when active edge ends ${setEdgeEndIDs}`, () => {
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+                    const prevActiveBlocks = activeBlockIDs(bgrapher);
+                    const prevActiveEdges = activeEdgeIDs(bgrapher);
+
+                    bgrapher.hoverBlock(id);
+                    bgrapher.hoverBlock(null);
+
+                    expect(activeBlockIDs(bgrapher)).to.eql(prevActiveBlocks);
+                    expect(activeEdgeIDs(bgrapher)).to.eql(prevActiveEdges);
+                });
+            });
+
+            const validHoverBlocksWithActiveBlocks = [
+                [0,[1,2],[
+                    [2,0],[2,1],[0,3],[0,4],[1,3]
+                ]],
+                [1,[0,2],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [2,[0,1],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [0,[2],[
+                    [4,0],[0,2],[0,3],[1,2],[1,3]
+                ]],
+            ]
+            
+            validHoverBlocksWithActiveBlocks.forEach(([id,setBlockIDs,edges]) => {
+                it(`shows for block ${id} when active blocks ${setBlockIDs}`, () => {
+                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+
+                    bgrapher.hoverBlock(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs.concat([id]));
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+            
+            validHoverBlocksWithActiveBlocks.forEach(([id,setBlockIDs]) => {
+                it(`stops showing for block ${id} when active blocks ${setBlockIDs}`, () => {
+                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+                    const prevActiveBlocks = activeBlockIDs(bgrapher);
+                    const prevActiveEdges = activeEdgeIDs(bgrapher);
+
+                    bgrapher.hoverBlock(id);
+                    bgrapher.hoverBlock(null);
+
+                    expect(activeBlockIDs(bgrapher)).to.eql(prevActiveBlocks);
+                    expect(activeEdgeIDs(bgrapher)).to.eql(prevActiveEdges);
+                });
+            });
+        });
+
+        describe('toggle', () => {
+            it(`doesn't show for null`, () => {
+                bgrapher.toggleActiveBlock(null);
+
+                expect(activeBlockIDs(bgrapher)).to.be.empty;
+                expect(activeEdgeIDs(bgrapher)).to.be.empty;
+            });
+
+            const validActiveBlocksEdges = [
+                [0,[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [1,[
+                    [2,0],[2,1],[0,3],[1,3]
+                ]],
+                [2,[
+                    [4,0]
+                ]],
+            ];
+
+            validActiveBlocksEdges.forEach(([id,edges]) => {
+                it (`shows for block ${id}`, () => {
+                    bgrapher.toggleActiveBlock(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.eql([id]);
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+
+            validActiveBlocksEdges.forEach(([id,]) => {
+                it(`stops showing after untoggle for block ${id}`, () => {
+                    bgrapher.toggleActiveBlock(id);
+                    bgrapher.toggleActiveBlock(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.be.empty;
+                    expect(activeEdgeIDs(bgrapher)).to.be.empty;
+                });
+            });
+
+            const validActiveBlocksWithActiveEdgeEnds = [
+                [0,[0],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [0,[0,1],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [1,[0,1],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [0,[2],[
+                    [2,0],[2,1],[0,3],[0,4],[1,3]
+                ]],
+                [2,[0],[
+                    [0,2],[0,3],[0,4]
+                ]],
+                [2,[4],[
+                    [4,0]
+                ]],
+                [1,[4],[
+                    [4,0],[0,2],[0,3],[2,1],[1,3]
+                ]],
+            ];
+
+            validActiveBlocksWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,edges]) => {
+                it(`shows for block ${id} when active edge ends ${setEdgeEndIDs}`, () => {
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+
+                    bgrapher.toggleActiveBlock(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.eql([id]);
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+
+            const validActiveBlocksWithActiveBlocks = [
+                [0,[1,2],[
+                    [2,0],[2,1],[0,3],[0,4],[1,3]
+                ]],
+                [1,[0,2],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [2,[0,1],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [0,[2],[
+                    [4,0],[0,2],[0,3],[2,1],[3,1]
+                ]],
+            ]
+
+            validActiveBlocksWithActiveBlocks.forEach(([id,setBlockIDs,edges]) => {
+                it(`shows for block ${id} when active blocks ${setBlockIDs}`, () => {
+                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+
+                    bgrapher.toggleActiveBlock(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs.concat([id]));
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+
+            [
+                [0,[0],[]],
+                [0,[0,1],[]],
+                [1,[0,1],[
+                    [0,4]
+                ]],
+                [2,[0],[
+                    [0,2],[0,3]
+                ]],
+                [2,[4],[]],
+                [1,[4],[
+                    [4,0]
+                ]],
+            ].forEach(([id,setEdgeEndIDs,edges]) => {
+                it(`stops showing for block ${id} when active edge ends ${setEdgeEndIDs}`, () => {
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+
+                    bgrapher.toggleActiveBlock(id);
+                    bgrapher.toggleActiveBlock(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.be.empty;
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+
+            [
+                [0,[2],[]],
+                [0,[1,2],[]],
+                [1,[0],[
+                    [0,4]
+                ]],
+                [1,[0,2],[
+                    [0,4]
+                ]],
+                [2,[0,1],[
+                    [0,2],[0,3],[2,1],[3,1]
+                ]],
+                [2,[0],[
+                    [0,2],[0,3],[2,1],[3,1]
+                ]],
+                [2,[1],[
+                    [2,0],[2,1],[0,3],[1,3]
+                ]],
+            ].forEach(([id,setBlockIDs,edges]) => {
+                it(`stops showing for block ${id} when active blocks ${setBlockIDs}`, () => {
+                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+
+                    bgrapher.toggleActiveBlock(id);
+                    bgrapher.toggleActiveBlock(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs);
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+        });
+    });
+
+    describe('edge end', () => {
+        describe('hover', () => {
+            it(`doesn't show for null`, () => {
+                bgrapher.hoverEdgeEnd(null);
+
+                expect(activeBlockIDs(bgrapher)).to.be.empty;
+                expect(activeEdgeIDs(bgrapher)).to.be.empty;
+            });
+
+            const validHoverEdgeEndsEdges = [
+                [0,[
+                    [0,2],[0,3],[0,4]
+                ]],
+                [1,[
+                    [1,2],[1,3]
+                ]],
+                [2,[
+                    [2,0],[2,1]
+                ]],
+                [3,[
+                    [3,0],[3,1]
+                ]],
+                [4,[
+                    [4,0]
+                ]],
+            ];
+
+            validHoverEdgeEndsEdges.forEach(([id,edges]) => {
+                it (`shows for edge end ${id}`, () => {
+                    bgrapher.hoverEdgeEnd(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.be.empty;
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+
+            validHoverEdgeEndsEdges.forEach(([id,]) => {
+                it(`stops showing after unhover for edge end ${id}`, () => {
+                    bgrapher.hoverEdgeEnd(id);
+                    bgrapher.hoverEdgeEnd(null);
+
+                    expect(activeBlockIDs(bgrapher)).to.be.empty;
+                    expect(activeEdgeIDs(bgrapher)).to.be.empty;
+                });
+            });
+
+            const validHoverEdgeEndsWithActiveEdgeEnds = [
+                [0,[0],[
+                    [0,2],[0,3],[0,4]
+                ]],
+                [0,[0,1],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [1,[0,1],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                // [0,[2],[
+                //     [2,0],[2,1],[0,3],[0,4],[1,3]
+                // ]],
+                // [2,[0],[
+                //     [0,2],[0,3],[0,4],[2,1],[3,1]
+                // ]],
+                [2,[4],[
+                    [4,0],[0,2],[2,1]
+                ]],
+                // [0,[4],[
+                //     [4,0],[0,2],[0,3]
+                // ]],
+            ];
+            
+            validHoverEdgeEndsWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,edges]) => {
+                it(`shows for edge end ${id} when active edge ends ${setEdgeEndIDs}`, () => {
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+
+                    bgrapher.hoverEdgeEnd(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.be.empty;
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+
+            validHoverEdgeEndsWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,]) => {
+                it(`stops showing for edge end ${id} when active edge ends ${setEdgeEndIDs}`, () => {
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+                    const prevActiveBlocks = activeBlockIDs(bgrapher);
+                    const prevActiveEdges = activeEdgeIDs(bgrapher);
+
+                    bgrapher.hoverEdgeEnd(id);
+                    bgrapher.hoverEdgeEnd(null);
+
+                    expect(activeBlockIDs(bgrapher)).to.eql(prevActiveBlocks);
+                    expect(activeEdgeIDs(bgrapher)).to.eql(prevActiveEdges);
+                });
+            });
+
+            const validHoverEdgeEndsWithActiveBlocks = [
+                [0,[1,2],[
+                    [2,0],[2,1],[0,3],[0,4],[1,3]
+                ]],
+                [2,[0],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [4,[0,1],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [0,[2],[
+                    [4,0]
+                ]],
+                [4,[1],[
+                    [2,0],[2,1],[0,3],[0,4],[1,3]
+                ]],
+                // [0,[2],[
+                //     [4,0],[0,2],[0,3]
+                // ]],
+                // [0,[1],[
+                //     [2,0],[2,1],[0,3],[0,4],[1,3]
+                // ]],
+            ]
+            
+            validHoverEdgeEndsWithActiveBlocks.forEach(([id,setBlockIDs,edges]) => {
+                it(`shows for edge end ${id} when active blocks ${setBlockIDs}`, () => {
+                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+
+                    bgrapher.hoverEdgeEnd(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs);
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+            
+            validHoverEdgeEndsWithActiveBlocks.forEach(([id,setBlockIDs]) => {
+                it(`stops showing for edge end ${id} when active blocks ${setBlockIDs}`, () => {
+                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+                    const prevActiveBlocks = activeBlockIDs(bgrapher);
+                    const prevActiveEdges = activeEdgeIDs(bgrapher);
+
+                    bgrapher.hoverEdgeEnd(id);
+                    bgrapher.hoverEdgeEnd(null);
+
+                    expect(activeBlockIDs(bgrapher)).to.eql(prevActiveBlocks);
+                    expect(activeEdgeIDs(bgrapher)).to.eql(prevActiveEdges);
+                });
+            });
+        });
+
+        describe('toggle', () => {
+            it(`doesn't show for null`, () => {
+                bgrapher.toggleActiveEdgeEnd(null);
+
+                expect(activeBlockIDs(bgrapher)).to.be.empty;
+                expect(activeEdgeIDs(bgrapher)).to.be.empty;
+            });
+
+            const validActiveEdgeEndsEdges = [
+                [0,[
+                    [0,2],[0,3],[0,4]
+                ]],
+                [1,[
+                    [1,2],[1,3]
+                ]],
+                [2,[
+                    [2,0],[2,1]
+                ]],
+                [3,[
+                    [3,0],[3,1]
+                ]],
+                [4,[
+                    [4,0]
+                ]],
+            ];
+
+            validActiveEdgeEndsEdges.forEach(([id,edges]) => {
+                it (`shows for edge end ${id}`, () => {
+                    bgrapher.toggleActiveEdgeEnd(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.be.empty;
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+
+            validActiveEdgeEndsEdges.forEach(([id,]) => {
+                it(`stops showing after untoggle for edge end ${id}`, () => {
+                    bgrapher.toggleActiveEdgeEnd(id);
+                    bgrapher.toggleActiveEdgeEnd(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.be.empty;
+                    expect(activeEdgeIDs(bgrapher)).to.be.empty;
+                });
+            });
+
+            [
+                [0,[0],[]],
+                [3,[3],[]],
+                [3,[4,3],[
+                    [4,0]
+                ]],
+                [0,[0,1],[
+                    [2,1],[3,1]
+                ]],
+                [1,[0,1],[
+                    [0,2],[0,3],[0,4]
+                ]],
+                [0,[2],[
+                    [2,0],[2,1],[0,3],[0,4],[1,3]
+                ]],
+                [2,[0],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [2,[4],[
+                    [4,0],[0,2],[2,1]
+                ]],
+                [0,[4],[
+                    [4,0],[0,2],[0,3]
+                ]],
+            ].forEach(([id,setEdgeEndIDs,edges]) => {
+                it(`shows for edge end ${id} when active edge ends ${setEdgeEndIDs}`, () => {
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+
+                    bgrapher.toggleActiveEdgeEnd(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.be.empty;
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+
+            [
+                [0,[1,2],[
+                    [2,1],[1,3]
+                ]],
+                [2,[0],[
+                    [0,3],[0,4],[3,1]
+                ]],
+                [4,[0,1],[
+                    [0,2],[0,3],[2,1],[3,1]
+                ]],
+                [0,[2],[
+                    [4,0],[0,2],[0,3]
+                ]],
+                [4,[1],[
+                    [2,0],[2,1],[0,3],[0,4],[1,3]
+                ]],
+                [0,[2],[
+                    [4,0],[0,2],[0,3]
+                ]],
+                [0,[1],[
+                    [2,0],[2,1],[0,3],[0,4],[1,3]
+                ]],
+            ].forEach(([id,setBlockIDs,edges]) => {
+                it(`shows for edge end ${id} when active blocks ${setBlockIDs}`, () => {
+                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+
+                    bgrapher.toggleActiveEdgeEnd(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs);
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+
+            [
+                [0,[1],[
+                    [1,2],[1,3]
+                ]],
+                [1,[0],[
+                    [0,2],[0,3],[0,4]
+                ]],
+                [2,[0],[
+                    [0,3],[0,4],[3,1]
+                ]],
+                [2,[4],[
+                    [4,0]
+                ]],
+                [3,[2,4],[
+                    [2,0],[2,1],[0,4]
+                ]],
+                [0,[4],[]],
+            ].forEach(([id,setEdgeEndIDs,edges]) => {
+                it(`stops showing for edge end ${id} when active edge ends ${setEdgeEndIDs}`, () => {
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+
+                    bgrapher.toggleActiveEdgeEnd(id);
+                    bgrapher.toggleActiveEdgeEnd(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.be.empty;
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
+
+            [
+                [0,[2],[]],
+                [4,[0],[
+                    [0,2],[0,3],[0,4],[2,1],[3,1]
+                ]],
+                [0,[1],[
+                    [2,1],[1,3]
+                ]],
+            ].forEach(([id,setBlockIDs,edges]) => {
+                it(`stops showing for edge end ${id} when active blocks ${setBlockIDs}`, () => {
+                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+
+                    bgrapher.toggleActiveEdgeEnd(id);
+                    bgrapher.toggleActiveEdgeEnd(id);
+
+                    expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs);
+                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+                });
+            });
         });
     });
 });

@@ -9,7 +9,7 @@
             "depth": 0, "color": 13421772,
             "edgeEnds": [
                 0,
-				4
+				1
             ]
         },
         {
@@ -18,8 +18,8 @@
             "width": 2, "height": 1,
             "depth": 0, "color": 13421772,
             "edgeEnds": [
-                1,
-				2
+                2,
+				3
             ]
         },
         {
@@ -28,7 +28,7 @@
             "width": 1, "height": 1,
             "depth": 0, "color": 13421772,
             "edgeEnds": [
-                3
+                4
             ]
         }
     ],
@@ -39,43 +39,43 @@
             "direction": "down",
             "isSource": true,
             "edgeEnds": [
-                1,
-				2,
-				3
-            ]
-        },
-        {
-            "id": 4,
-            "x": 1, "y": 1,
-            "direction": "down",
-            "isSource": true,
-            "edgeEnds": [
-                1,
-				2
+                2,
+				3,
+				4
             ]
         },
         {
             "id": 1,
+            "x": 1, "y": 1,
+            "direction": "down",
+            "isSource": true,
+            "edgeEnds": [
+                2,
+				3
+            ]
+        },
+        {
+            "id": 2,
             "x": 0, "y": 3,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
                 0,
-				4
+				1
             ]
         },
         {
-            "id": 2,
+            "id": 3,
             "x": 1, "y": 3,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
                 0,
-				4
+				1
             ]
         },
         {
-            "id": 3,
+            "id": 4,
             "x": 3, "y": 3,
             "direction": "down",
             "isSource": false,

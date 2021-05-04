@@ -55,6 +55,9 @@ var BGrapher = function(
     this._eventsImpl  = eventsImpl;
 
     this.doDrawHoverInfo = true;
+    this.selectCallback = ()=>{};
+    this.hoverBlockCallback = ()=>{};
+    this.hoverEdgeEndCallback = ()=>{};
 
     this.initBgraph = function(bgraph) {
         const inputData = ((typeof bgraph === 'string' || bgraph instanceof String)
@@ -81,15 +84,12 @@ var BGrapher = function(
         this._grapherState = this._grapherImpl.initTestBgraphLarge(numCols, numRows);
         this.blocksData   = {};
         this.edgeEndsData = {};
-        this._activeBlockIDs = new Set();
+        this._activeBlockIDs   = new Set();
+        this._activeEdgeEndIDs = new Set();
     }
 
     this.populateElement = function(bgraphState, bgraphElement) {
         this._bgraphElement = bgraphElement;
-
-        this.hoverBlockCallback   = ()=>{};
-        this.hoverEdgeEndCallback = ()=>{};
-        this.selectCallback = ()=>{};
 
         this._grapherImpl.populateElement(this._grapherState, this._bgraphElement);
         this.updateBgraphSize();
@@ -262,7 +262,9 @@ var BGrapher = function(
 
         for (const hoveredEdgeEnd of this._activeHoveredEdgeEnd()) {
             activeHoveredEdgeEnds.add(hoveredEdgeEnd.id);
+        }
 
+        for (const hoveredEdgeEnd of this._activeHoveredEdgeEnd()) {
             for (const otherEdgeEndID of hoveredEdgeEnd.edgeEnds) {
                 activeHoveredEdgeEnds.add(otherEdgeEndID);
             }
@@ -274,6 +276,12 @@ var BGrapher = function(
                 if (!hoveredBlockEdgeEnd) continue;
 
                 activeHoveredEdgeEnds.add(hoveredBlockEdgeEndID);
+            }
+
+            for (const hoveredBlockEdgeEndID of hoveredEdgeEnd.edgeEnds) {
+                const hoveredBlockEdgeEnd = this.edgeEndsData[hoveredBlockEdgeEndID];
+                if (!hoveredBlockEdgeEnd) continue;
+
                 for (const otherEdgeEndID of hoveredBlockEdgeEnd.edgeEnds) {
                     const otherEdgeEnd = this.edgeEndsData[otherEdgeEndID];
                     if (!otherEdgeEnd) continue;
@@ -302,6 +310,7 @@ var BGrapher = function(
     this.activeEdges = function*() {
         const activeHoveredEdgeEndIDs = this._activeHoveredEdgeEndIDs();
 
+        let seenEdges = new EdgeSet();
         for (const startEdgeEndData of this.activeEdgeEnds()) {
             if (!startEdgeEndData) continue;
 
@@ -312,6 +321,9 @@ var BGrapher = function(
 
                 const endEdgeEndData = this.edgeEndsData[endEdgeEndID];
                 if (!endEdgeEndData) continue;
+
+                if (seenEdges.has(startEdgeEndData.id, endEdgeEndData.id)) continue;
+                seenEdges.add(startEdgeEndData.id, endEdgeEndData.id);
 
                 yield [startEdgeEndData, endEdgeEndData];
             }
@@ -349,16 +361,10 @@ var BGrapher = function(
     }
 
     this._drawEdges = function(bgraphState) {
-        let seenEdges = new EdgeSet();
-
         for (const [start, end] of this.activeEdges()) {
-            if (!seenEdges.has(start.id, end.id)) {
-                seenEdges.add(start.id, end.id);
-
-                this._grapherImpl.drawBezierEdge(bgraphState, this._grapherState, 
-                    this._edgesImpl.generatePoints(start, end)
-                );
-            }
+            this._grapherImpl.drawBezierEdge(bgraphState, this._grapherState, 
+                this._edgesImpl.generatePoints(start, end)
+            );
         }
     }
 
