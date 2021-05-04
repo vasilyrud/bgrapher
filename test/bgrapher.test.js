@@ -382,7 +382,7 @@ describe('interaction', () => {
             
             validHoverBlocksWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,edges]) => {
                 it(`shows for block ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
 
                     bgrapher.hoverBlock(id);
 
@@ -393,7 +393,7 @@ describe('interaction', () => {
 
             validHoverBlocksWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,]) => {
                 it(`stops showing for block ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
                     const prevActiveBlocks = activeBlockIDs(bgrapher);
                     const prevActiveEdges = activeEdgeIDs(bgrapher);
 
@@ -422,7 +422,7 @@ describe('interaction', () => {
             
             validHoverBlocksWithActiveBlocks.forEach(([id,setBlockIDs,edges]) => {
                 it(`shows for block ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
 
                     bgrapher.hoverBlock(id);
 
@@ -433,7 +433,7 @@ describe('interaction', () => {
             
             validHoverBlocksWithActiveBlocks.forEach(([id,setBlockIDs]) => {
                 it(`stops showing for block ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
                     const prevActiveBlocks = activeBlockIDs(bgrapher);
                     const prevActiveEdges = activeEdgeIDs(bgrapher);
 
@@ -448,7 +448,7 @@ describe('interaction', () => {
 
         describe('toggle', () => {
             it(`doesn't show for null`, () => {
-                bgrapher.toggleActiveBlock(null);
+                bgrapher.toggleBlock(null);
 
                 expect(activeBlockIDs(bgrapher)).to.be.empty;
                 expect(activeEdgeIDs(bgrapher)).to.be.empty;
@@ -468,7 +468,7 @@ describe('interaction', () => {
 
             validActiveBlocksEdges.forEach(([id,edges]) => {
                 it (`shows for block ${id}`, () => {
-                    bgrapher.toggleActiveBlock(id);
+                    bgrapher.toggleBlock(id);
 
                     expect(activeBlockIDs(bgrapher)).to.eql([id]);
                     expect(activeEdgeIDs(bgrapher)).to.eql(edges);
@@ -477,8 +477,8 @@ describe('interaction', () => {
 
             validActiveBlocksEdges.forEach(([id,]) => {
                 it(`stops showing after untoggle for block ${id}`, () => {
-                    bgrapher.toggleActiveBlock(id);
-                    bgrapher.toggleActiveBlock(id);
+                    bgrapher.toggleBlock(id);
+                    bgrapher.toggleBlock(id);
 
                     expect(activeBlockIDs(bgrapher)).to.be.empty;
                     expect(activeEdgeIDs(bgrapher)).to.be.empty;
@@ -511,9 +511,9 @@ describe('interaction', () => {
 
             validActiveBlocksWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,edges]) => {
                 it(`shows for block ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
 
-                    bgrapher.toggleActiveBlock(id);
+                    bgrapher.toggleBlock(id);
 
                     expect(activeBlockIDs(bgrapher)).to.eql([id]);
                     expect(activeEdgeIDs(bgrapher)).to.eql(edges);
@@ -537,9 +537,9 @@ describe('interaction', () => {
 
             validActiveBlocksWithActiveBlocks.forEach(([id,setBlockIDs,edges]) => {
                 it(`shows for block ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
 
-                    bgrapher.toggleActiveBlock(id);
+                    bgrapher.toggleBlock(id);
 
                     expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs.concat([id]));
                     expect(activeEdgeIDs(bgrapher)).to.eql(edges);
@@ -561,10 +561,10 @@ describe('interaction', () => {
                 ]],
             ].forEach(([id,setEdgeEndIDs,edges]) => {
                 it(`stops showing for block ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
 
-                    bgrapher.toggleActiveBlock(id);
-                    bgrapher.toggleActiveBlock(id);
+                    bgrapher.toggleBlock(id);
+                    bgrapher.toggleBlock(id);
 
                     expect(activeBlockIDs(bgrapher)).to.be.empty;
                     expect(activeEdgeIDs(bgrapher)).to.eql(edges);
@@ -591,10 +591,10 @@ describe('interaction', () => {
                 ]],
             ].forEach(([id,setBlockIDs,edges]) => {
                 it(`stops showing for block ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
 
-                    bgrapher.toggleActiveBlock(id);
-                    bgrapher.toggleActiveBlock(id);
+                    bgrapher.toggleBlock(id);
+                    bgrapher.toggleBlock(id);
 
                     expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs);
                     expect(activeEdgeIDs(bgrapher)).to.eql(edges);
@@ -675,7 +675,7 @@ describe('interaction', () => {
             
             validHoverEdgeEndsWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,edges]) => {
                 it(`shows for edge end ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
 
                     bgrapher.hoverEdgeEnd(id);
 
@@ -686,7 +686,7 @@ describe('interaction', () => {
 
             validHoverEdgeEndsWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,]) => {
                 it(`stops showing for edge end ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
                     const prevActiveBlocks = activeBlockIDs(bgrapher);
                     const prevActiveEdges = activeEdgeIDs(bgrapher);
 
@@ -724,7 +724,7 @@ describe('interaction', () => {
             
             validHoverEdgeEndsWithActiveBlocks.forEach(([id,setBlockIDs,edges]) => {
                 it(`shows for edge end ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
 
                     bgrapher.hoverEdgeEnd(id);
 
@@ -735,7 +735,7 @@ describe('interaction', () => {
             
             validHoverEdgeEndsWithActiveBlocks.forEach(([id,setBlockIDs]) => {
                 it(`stops showing for edge end ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
                     const prevActiveBlocks = activeBlockIDs(bgrapher);
                     const prevActiveEdges = activeEdgeIDs(bgrapher);
 
@@ -750,7 +750,7 @@ describe('interaction', () => {
 
         describe('toggle', () => {
             it(`doesn't show for null`, () => {
-                bgrapher.toggleActiveEdgeEnd(null);
+                bgrapher.toggleEdgeEnd(null);
 
                 expect(activeBlockIDs(bgrapher)).to.be.empty;
                 expect(activeEdgeIDs(bgrapher)).to.be.empty;
@@ -776,7 +776,7 @@ describe('interaction', () => {
 
             validActiveEdgeEndsEdges.forEach(([id,edges]) => {
                 it (`shows for edge end ${id}`, () => {
-                    bgrapher.toggleActiveEdgeEnd(id);
+                    bgrapher.toggleEdgeEnd(id);
 
                     expect(activeBlockIDs(bgrapher)).to.be.empty;
                     expect(activeEdgeIDs(bgrapher)).to.eql(edges);
@@ -785,8 +785,8 @@ describe('interaction', () => {
 
             validActiveEdgeEndsEdges.forEach(([id,]) => {
                 it(`stops showing after untoggle for edge end ${id}`, () => {
-                    bgrapher.toggleActiveEdgeEnd(id);
-                    bgrapher.toggleActiveEdgeEnd(id);
+                    bgrapher.toggleEdgeEnd(id);
+                    bgrapher.toggleEdgeEnd(id);
 
                     expect(activeBlockIDs(bgrapher)).to.be.empty;
                     expect(activeEdgeIDs(bgrapher)).to.be.empty;
@@ -819,9 +819,9 @@ describe('interaction', () => {
                 ]],
             ].forEach(([id,setEdgeEndIDs,edges]) => {
                 it(`shows for edge end ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
 
-                    bgrapher.toggleActiveEdgeEnd(id);
+                    bgrapher.toggleEdgeEnd(id);
 
                     expect(activeBlockIDs(bgrapher)).to.be.empty;
                     expect(activeEdgeIDs(bgrapher)).to.eql(edges);
@@ -852,9 +852,9 @@ describe('interaction', () => {
                 ]],
             ].forEach(([id,setBlockIDs,edges]) => {
                 it(`shows for edge end ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
 
-                    bgrapher.toggleActiveEdgeEnd(id);
+                    bgrapher.toggleEdgeEnd(id);
 
                     expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs);
                     expect(activeEdgeIDs(bgrapher)).to.eql(edges);
@@ -880,10 +880,10 @@ describe('interaction', () => {
                 [0,[4],[]],
             ].forEach(([id,setEdgeEndIDs,edges]) => {
                 it(`stops showing for edge end ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleActiveEdgeEnd(ee));
+                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
 
-                    bgrapher.toggleActiveEdgeEnd(id);
-                    bgrapher.toggleActiveEdgeEnd(id);
+                    bgrapher.toggleEdgeEnd(id);
+                    bgrapher.toggleEdgeEnd(id);
 
                     expect(activeBlockIDs(bgrapher)).to.be.empty;
                     expect(activeEdgeIDs(bgrapher)).to.eql(edges);
@@ -900,10 +900,10 @@ describe('interaction', () => {
                 ]],
             ].forEach(([id,setBlockIDs,edges]) => {
                 it(`stops showing for edge end ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleActiveBlock(b));
+                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
 
-                    bgrapher.toggleActiveEdgeEnd(id);
-                    bgrapher.toggleActiveEdgeEnd(id);
+                    bgrapher.toggleEdgeEnd(id);
+                    bgrapher.toggleEdgeEnd(id);
 
                     expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs);
                     expect(activeEdgeIDs(bgrapher)).to.eql(edges);

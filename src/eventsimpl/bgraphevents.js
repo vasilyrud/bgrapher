@@ -190,8 +190,11 @@ let eventHandlers = {
 
         if (event.button === 0 && eventState.isClick) {
             eventState.isClick = false;
-            bgrapher.toggleActiveBlock(bgrapher.hoveredBlockID);
-            bgrapher.toggleActiveEdgeEnd(bgrapher.hoveredEdgeEndID);
+            const [hoveredBlock, hoveredEdgeEnd] = [
+                bgrapher.hoveredBlock(), bgrapher.hoveredEdgeEnd()
+            ];
+            if (hoveredBlock   !== null) bgrapher.toggleBlock(hoveredBlock.id);
+            if (hoveredEdgeEnd !== null) bgrapher.toggleEdgeEnd(hoveredEdgeEnd.id);
 
             bgraphState.update();
 
@@ -202,7 +205,7 @@ let eventHandlers = {
         }
     },
     contextmenu: function(bgraphState, eventState, bgrapher, event) {
-        if (bgrapher.hoveredBlockID === null) return;
+        if (bgrapher.hoveredBlock() === null) return;
         event.preventDefault();
     },
     mouseout: function(bgraphState, eventState, bgrapher, event) {
