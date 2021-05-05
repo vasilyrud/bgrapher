@@ -254,10 +254,8 @@ var BGrapher = function(
     }
 
     this._activeHoveredEdgeEnd = function*() {
-        if (!this._activeEdgeEndIDs.has(this._hoveredEdgeEndID)) {
-            const edgeEndData = this.edgeEndsData[this._hoveredEdgeEndID];
-            if (edgeEndData) yield edgeEndData;
-        }
+        const edgeEndData = this.edgeEndsData[this._hoveredEdgeEndID];
+        if (edgeEndData) yield edgeEndData;
     }
 
     this._activeHoveredEdgeEndIDs = function() {
@@ -388,12 +386,12 @@ var BGrapher = function(
     }
 
     this.selectBlock = function(blockID) {
-        if (!blockID || !(blockID in this.blocksData)) return;
+        if (blockID === null || !(blockID in this.blocksData)) return;
         this.selectBlockCallback(this.blocksData[blockID]);
     }
 
     this.selectEdgeEnd = function(edgeEndID) {
-        if (!edgeEndID || !(edgeEndID in this.edgeEndsData)) return;
+        if (edgeEndID === null || !(edgeEndID in this.edgeEndsData)) return;
         this.selectEdgeEndCallback(this.edgeEndsData[edgeEndID]);
     }
 
