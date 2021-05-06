@@ -326,7 +326,7 @@ describe('interaction', () => {
         },
     };
 
-    function testInteractions(interactions) {
+    function testInteractions(interactions, checkOrder=true) {
         interactions.forEach(interaction => {
             const description = interaction.actns
                 .map(([a,c,id]) => [a,c,id === null ? 'null' : id])
@@ -338,8 +338,13 @@ describe('interaction', () => {
                     bgrapher[functionMap[action][component]](id);
                 });
 
-                expect( activeEdgeIDs(bgrapher)).to.eql(interaction.edges);
-                expect(activeBlockIDs(bgrapher)).to.eql(interaction.blcks);
+                if (checkOrder) {
+                    expect( activeEdgeIDs(bgrapher)).to.eql(interaction.edges);
+                    expect(activeBlockIDs(bgrapher)).to.eql(interaction.blcks);
+                } else {
+                    expect(new Set( activeEdgeIDs(bgrapher))).to.eql(new Set(interaction.edges));
+                    expect(new Set(activeBlockIDs(bgrapher))).to.eql(new Set(interaction.blcks));
+                }
             });
         });
     }
@@ -937,6 +942,28 @@ describe('interaction', () => {
                 edges: [[0,2],[1,2],[0,3],[1,3]],
                 blcks: [1],
             },
+            {
+                actns: [['toggle','block',1],
+                        ['toggle','edgeEnd',4],
+                        ['toggle','block',0]],
+                edges: [[0,2],[1,2],[0,3],[0,4],[1,3]],
+                blcks: [1,0],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['toggle','edgeEnd',4],
+                        ['toggle','block',0],
+                        ['toggle','block',0]],
+                edges: [],
+                blcks: [1],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','edgeEnd',0],
+                        ['toggle','block',0]],
+                edges: [],
+                blcks: [],
+            },
         ]);
     });
 
@@ -1219,6 +1246,12 @@ describe('interaction', () => {
                         ['toggle','edgeEnd',0]],
                 edges: [[1,2],[1,3]],
                 blcks: [1,2],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','edgeEnd',0]],
+                edges: [[1,2],[1,3]],
+                blcks: [0],
             },
             {
                 actns: [['toggle','block',0],
