@@ -367,6 +367,11 @@ describe('interaction', () => {
                 blcks: [2],
             },
             {
+                actns: [['hover','block',3]],
+                edges: [],
+                blcks: [3],
+            },
+            {
                 actns: [['hover','block',2],
                         ['hover','block',2]],
                 edges: [[0,4]],
@@ -414,6 +419,11 @@ describe('interaction', () => {
                 actns: [['toggle','block',2]],
                 edges: [[0,4]],
                 blcks: [2],
+            },
+            {
+                actns: [['toggle','block',3]],
+                edges: [],
+                blcks: [3],
             },
             {
                 actns: [['toggle','block',2],
@@ -475,6 +485,11 @@ describe('interaction', () => {
                 blcks: [],
             },
             {
+                actns: [['hover','edgeEnd',5]],
+                edges: [],
+                blcks: [],
+            },
+            {
                 actns: [['hover','edgeEnd',4],
                         ['hover','edgeEnd',4]],
                 edges: [[0,4]],
@@ -528,6 +543,11 @@ describe('interaction', () => {
                 blcks: [],
             },
             {
+                actns: [['toggle','edgeEnd',5]],
+                edges: [],
+                blcks: [],
+            },
+            {
                 actns: [['toggle','edgeEnd',4],
                         ['toggle','edgeEnd',null]],
                 edges: [[0,4]],
@@ -550,6 +570,24 @@ describe('interaction', () => {
 
     describe('hover block after toggles', () => {
         testInteractions([
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['hover','block',3]],
+                edges: [[0,4]],
+                blcks: [3],
+            },
+            {
+                actns: [['toggle','edgeEnd',5],
+                        ['hover','block',3]],
+                edges: [],
+                blcks: [3],
+            },
+            {
+                actns: [['toggle','edgeEnd',5],
+                        ['hover','block',2]],
+                edges: [[0,4]],
+                blcks: [2],
+            },
             {
                 actns: [['toggle','edgeEnd',0],
                         ['hover','block',0]],
@@ -644,6 +682,12 @@ describe('interaction', () => {
                         ['hover','block',null]],
                 edges: [[0,4]],
                 blcks: [],
+            },
+            {
+                actns: [['toggle','block',3],
+                        ['hover','block',2]],
+                edges: [[0,4]],
+                blcks: [3,2],
             },
             {
                 actns: [['toggle','block',1],
@@ -709,10 +753,22 @@ describe('interaction', () => {
     describe('toggle block after toggles', () => {
         testInteractions([
             {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','block',3]],
+                edges: [[0,4]],
+                blcks: [3],
+            },
+            {
                 actns: [['toggle','edgeEnd',0],
                         ['toggle','block',0]],
                 edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
                 blcks: [0],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','block',2]],
+                edges: [[0,4]],
+                blcks: [2],
             },
             {
                 actns: [['toggle','edgeEnd',0],
@@ -751,6 +807,12 @@ describe('interaction', () => {
                         ['toggle','block',1]],
                 edges: [[0,4],[0,2],[0,3],[1,2],[1,3]],
                 blcks: [1],
+            },
+            {
+                actns: [['toggle','block',3],
+                        ['toggle','block',2]],
+                edges: [[0,4]],
+                blcks: [3,2],
             },
             {
                 actns: [['toggle','block',1],
@@ -881,6 +943,18 @@ describe('interaction', () => {
     describe('hover edge end after toggles', () => {
         testInteractions([
             {
+                actns: [['toggle','edgeEnd',5],
+                        ['hover','edgeEnd',4]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['hover','edgeEnd',5]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
                 actns: [['toggle','edgeEnd',0],
                         ['hover','edgeEnd',0]],
                 edges: [[0,2],[0,3],[0,4]],
@@ -976,6 +1050,12 @@ describe('interaction', () => {
                 blcks: [],
             },
             {
+                actns: [['toggle','block',3],
+                        ['hover','edgeEnd',4]],
+                edges: [[0,4]],
+                blcks: [3],
+            },
+            {
                 actns: [['toggle','block',1],
                         ['toggle','block',2],
                         ['hover','edgeEnd',0]],
@@ -1064,6 +1144,20 @@ describe('interaction', () => {
         testInteractions([
             {
                 actns: [['toggle','edgeEnd',4],
+                        ['toggle','edgeEnd',5],
+                        ['toggle','edgeEnd',5]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',5],
+                        ['toggle','edgeEnd',4],
+                        ['toggle','edgeEnd',4]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
                         ['toggle','edgeEnd',3],
                         ['toggle','edgeEnd',3]],
                 edges: [[0,4]],
@@ -1106,6 +1200,18 @@ describe('interaction', () => {
                         ['toggle','edgeEnd',0]],
                 edges: [[0,4],[0,2],[0,3]],
                 blcks: [],
+            },
+            {
+                actns: [['toggle','block',3],
+                        ['toggle','edgeEnd',4]],
+                edges: [[0,4]],
+                blcks: [3],
+            },
+            {
+                actns: [['toggle','block',2],
+                        ['toggle','edgeEnd',5]],
+                edges: [[0,4]],
+                blcks: [2],
             },
             {
                 actns: [['toggle','block',1],

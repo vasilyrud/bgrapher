@@ -1,5 +1,5 @@
 {
-    "width":  4,
+    "width":  5,
     "height": 5,
     "blocks": [
         {
@@ -29,6 +29,14 @@
             "depth": 0, "color": 13421772,
             "edgeEnds": [
                 4
+            ]
+        },
+        {
+            "id": 3,
+            "x": 3, "y": 0,
+            "width": 1, "height": 1,
+            "depth": 0, "color": 13421772,
+            "edgeEnds": [
             ]
         }
     ],
@@ -81,6 +89,14 @@
             "isSource": false,
             "edgeEnds": [
                 0
+            ]
+        },
+        {
+            "id": 5,
+            "x": 4, "y": 1,
+            "direction": "down",
+            "isSource": true,
+            "edgeEnds": [
             ]
         }
     ]
