@@ -315,598 +315,901 @@ describe('interaction', () => {
             .map(([s,e])=>[s.id,e.id]);
     }
 
-    describe('block', () => {
+    const functionMap = {
+        hover: {
+            block:   'hoverBlock',
+            edgeEnd: 'hoverEdgeEnd'
+        },
+        toggle: {
+            block:   'toggleBlock',
+            edgeEnd: 'toggleEdgeEnd'
+        },
+    };
 
-        describe('hover', () => {
-            it(`doesn't show for null`, () => {
-                bgrapher.hoverBlock(null);
+    function testInteractions(interactions) {
+        interactions.forEach(interaction => {
+            const description = interaction.actns
+                .map(([a,c,id]) => [a,c,id === null ? 'null' : id])
+                .map(a => `${a.join(' ')}`)
+                .join(', ');
 
-                expect(activeBlockIDs(bgrapher)).to.be.empty;
-                expect(activeEdgeIDs(bgrapher)).to.be.empty;
-            });
-
-            const validHoverBlocksEdges = [
-                [0,[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [1,[
-                    [0,2],[1,2],[0,3],[1,3]
-                ]],
-                [2,[
-                    [0,4]
-                ]],
-            ];
-
-            validHoverBlocksEdges.forEach(([id,edges]) => {
-                it (`shows for block ${id}`, () => {
-                    bgrapher.hoverBlock(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.eql([id]);
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
+            it (`${description}`, () => {
+                interaction.actns.forEach(([action, component, id]) => {
+                    bgrapher[functionMap[action][component]](id);
                 });
-            });
 
-            validHoverBlocksEdges.forEach(([id,]) => {
-                it(`stops showing after unhover for block ${id}`, () => {
-                    bgrapher.hoverBlock(id);
-                    bgrapher.hoverBlock(null);
-
-                    expect(activeBlockIDs(bgrapher)).to.be.empty;
-                    expect(activeEdgeIDs(bgrapher)).to.be.empty;
-                });
-            });
-
-            const validHoverBlocksWithActiveEdgeEnds = [
-                [0,[0],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [0,[0,1],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [1,[0,1],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [0,[2],[
-                    [0,2],[1,2],[0,3],[0,4],[1,3]
-                ]],
-                [2,[0],[
-                    [0,2],[0,3],[0,4]
-                ]],
-                [2,[4],[
-                    [0,4]
-                ]],
-                [1,[4],[
-                    [0,4],[0,2],[0,3],[1,2],[1,3]
-                ]],
-            ];
-            
-            validHoverBlocksWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,edges]) => {
-                it(`shows for block ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
-
-                    bgrapher.hoverBlock(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.eql([id]);
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
-
-            validHoverBlocksWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,]) => {
-                it(`stops showing for block ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
-                    const prevActiveBlocks = activeBlockIDs(bgrapher);
-                    const prevActiveEdges = activeEdgeIDs(bgrapher);
-
-                    bgrapher.hoverBlock(id);
-                    bgrapher.hoverBlock(null);
-
-                    expect(activeBlockIDs(bgrapher)).to.eql(prevActiveBlocks);
-                    expect(activeEdgeIDs(bgrapher)).to.eql(prevActiveEdges);
-                });
-            });
-
-            const validHoverBlocksWithActiveBlocks = [
-                [0,[1,2],[
-                    [0,2],[1,2],[0,3],[0,4],[1,3]
-                ]],
-                [1,[0,2],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [2,[0,1],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [0,[2],[
-                    [0,4],[0,2],[0,3],[1,2],[1,3]
-                ]],
-            ]
-            
-            validHoverBlocksWithActiveBlocks.forEach(([id,setBlockIDs,edges]) => {
-                it(`shows for block ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
-
-                    bgrapher.hoverBlock(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs.concat([id]));
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
-            
-            validHoverBlocksWithActiveBlocks.forEach(([id,setBlockIDs]) => {
-                it(`stops showing for block ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
-                    const prevActiveBlocks = activeBlockIDs(bgrapher);
-                    const prevActiveEdges = activeEdgeIDs(bgrapher);
-
-                    bgrapher.hoverBlock(id);
-                    bgrapher.hoverBlock(null);
-
-                    expect(activeBlockIDs(bgrapher)).to.eql(prevActiveBlocks);
-                    expect(activeEdgeIDs(bgrapher)).to.eql(prevActiveEdges);
-                });
+                expect( activeEdgeIDs(bgrapher)).to.eql(interaction.edges);
+                expect(activeBlockIDs(bgrapher)).to.eql(interaction.blcks);
             });
         });
+    }
 
-        describe('toggle', () => {
-            it(`doesn't show for null`, () => {
-                bgrapher.toggleBlock(null);
-
-                expect(activeBlockIDs(bgrapher)).to.be.empty;
-                expect(activeEdgeIDs(bgrapher)).to.be.empty;
-            });
-
-            const validActiveBlocksEdges = [
-                [0,[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [1,[
-                    [0,2],[1,2],[0,3],[1,3]
-                ]],
-                [2,[
-                    [0,4]
-                ]],
-            ];
-
-            validActiveBlocksEdges.forEach(([id,edges]) => {
-                it (`shows for block ${id}`, () => {
-                    bgrapher.toggleBlock(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.eql([id]);
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
-
-            validActiveBlocksEdges.forEach(([id,]) => {
-                it(`stops showing after untoggle for block ${id}`, () => {
-                    bgrapher.toggleBlock(id);
-                    bgrapher.toggleBlock(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.be.empty;
-                    expect(activeEdgeIDs(bgrapher)).to.be.empty;
-                });
-            });
-
-            const validActiveBlocksWithActiveEdgeEnds = [
-                [0,[0],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [0,[0,1],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [1,[0,1],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [0,[2],[
-                    [0,2],[1,2],[0,3],[0,4],[1,3]
-                ]],
-                [2,[0],[
-                    [0,2],[0,3],[0,4]
-                ]],
-                [2,[4],[
-                    [0,4]
-                ]],
-                [1,[4],[
-                    [0,4],[0,2],[0,3],[1,2],[1,3]
-                ]],
-            ];
-
-            validActiveBlocksWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,edges]) => {
-                it(`shows for block ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
-
-                    bgrapher.toggleBlock(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.eql([id]);
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
-
-            const validActiveBlocksWithActiveBlocks = [
-                [0,[1,2],[
-                    [0,2],[1,2],[0,3],[0,4],[1,3]
-                ]],
-                [1,[0,2],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [2,[0,1],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [0,[2],[
-                    [0,4],[0,2],[0,3],[1,2],[1,3]
-                ]],
-            ]
-
-            validActiveBlocksWithActiveBlocks.forEach(([id,setBlockIDs,edges]) => {
-                it(`shows for block ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
-
-                    bgrapher.toggleBlock(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs.concat([id]));
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
-
-            [
-                [0,[0],[]],
-                [0,[0,1],[]],
-                [1,[0,1],[
-                    [0,4]
-                ]],
-                [2,[0],[
-                    [0,2],[0,3]
-                ]],
-                [2,[4],[]],
-                [1,[4],[
-                    [0,4]
-                ]],
-            ].forEach(([id,setEdgeEndIDs,edges]) => {
-                it(`stops showing for block ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
-
-                    bgrapher.toggleBlock(id);
-                    bgrapher.toggleBlock(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.be.empty;
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
-
-            [
-                [0,[2],[]],
-                [0,[1,2],[]],
-                [1,[0],[
-                    [0,4]
-                ]],
-                [1,[0,2],[
-                    [0,4]
-                ]],
-                [2,[0,1],[
-                    [0,2],[0,3],[1,2],[1,3]
-                ]],
-                [2,[0],[
-                    [0,2],[0,3],[1,2],[1,3]
-                ]],
-                [2,[1],[
-                    [0,2],[1,2],[0,3],[1,3]
-                ]],
-            ].forEach(([id,setBlockIDs,edges]) => {
-                it(`stops showing for block ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
-
-                    bgrapher.toggleBlock(id);
-                    bgrapher.toggleBlock(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs);
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
-        });
+    describe('hover block', () => {
+        testInteractions([
+            {
+                actns: [['hover','block',null]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['hover','block',0]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0],
+            },
+            {
+                actns: [['hover','block',1]],
+                edges: [[0,2],[1,2],[0,3],[1,3]],
+                blcks: [1],
+            },
+            {
+                actns: [['hover','block',2]],
+                edges: [[0,4]],
+                blcks: [2],
+            },
+            {
+                actns: [['hover','block',2],
+                        ['hover','block',2]],
+                edges: [[0,4]],
+                blcks: [2],
+            },
+            {
+                actns: [['hover','block',0], 
+                        ['hover','block',null]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['hover','block',1], 
+                        ['hover','block',null]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['hover','block',2], 
+                        ['hover','block',null]],
+                edges: [],
+                blcks: [],
+            },
+        ]);
     });
 
-    describe('edge end', () => {
-        describe('hover', () => {
-            it(`doesn't show for null`, () => {
-                bgrapher.hoverEdgeEnd(null);
+    describe('toggle block', () => {
+        testInteractions([
+            {
+                actns: [['toggle','block',null]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','block',0]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0],
+            },
+            {
+                actns: [['toggle','block',1]],
+                edges: [[0,2],[1,2],[0,3],[1,3]],
+                blcks: [1],
+            },
+            {
+                actns: [['toggle','block',2]],
+                edges: [[0,4]],
+                blcks: [2],
+            },
+            {
+                actns: [['toggle','block',2],
+                        ['toggle','block',null]],
+                edges: [[0,4]],
+                blcks: [2],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','block',0]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['toggle','block',1]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','block',2],
+                        ['toggle','block',2]],
+                edges: [],
+                blcks: [],
+            },
+        ]);
+    });
 
-                expect(activeBlockIDs(bgrapher)).to.be.empty;
-                expect(activeEdgeIDs(bgrapher)).to.be.empty;
-            });
+    describe('hover edge end', () => {
+        testInteractions([
+            {
+                actns: [['hover','edgeEnd',null]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['hover','edgeEnd',0]],
+                edges: [[0,2],[0,3],[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['hover','edgeEnd',1]],
+                edges: [[1,2],[1,3]],
+                blcks: [],
+            },
+            {
+                actns: [['hover','edgeEnd',2]],
+                edges: [[0,2],[1,2]],
+                blcks: [],
+            },
+            {
+                actns: [['hover','edgeEnd',3]],
+                edges: [[0,3],[1,3]],
+                blcks: [],
+            },
+            {
+                actns: [['hover','edgeEnd',4]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['hover','edgeEnd',4],
+                        ['hover','edgeEnd',4]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['hover','edgeEnd',0],
+                        ['hover','edgeEnd',null]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['hover','edgeEnd',4],
+                        ['hover','edgeEnd',null]],
+                edges: [],
+                blcks: [],
+            },
+        ]);
+    });
 
-            const validHoverEdgeEndsEdges = [
-                [0,[
-                    [0,2],[0,3],[0,4]
-                ]],
-                [1,[
-                    [1,2],[1,3]
-                ]],
-                [2,[
-                    [0,2],[1,2]
-                ]],
-                [3,[
-                    [0,3],[1,3]
-                ]],
-                [4,[
-                    [0,4]
-                ]],
-            ];
+    describe('toggle edge end', () => {
+        testInteractions([
+            {
+                actns: [['toggle','edgeEnd',null]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0]],
+                edges: [[0,2],[0,3],[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',1]],
+                edges: [[1,2],[1,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',2]],
+                edges: [[0,2],[1,2]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',3]],
+                edges: [[0,3],[1,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','edgeEnd',null]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',0]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','edgeEnd',4]],
+                edges: [],
+                blcks: [],
+            },
+        ]);
+    });
 
-            validHoverEdgeEndsEdges.forEach(([id,edges]) => {
-                it (`shows for edge end ${id}`, () => {
-                    bgrapher.hoverEdgeEnd(id);
+    describe('hover block after toggles', () => {
+        testInteractions([
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['hover','block',0]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1],
+                        ['hover','block',0]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1],
+                        ['hover','block',1]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [1],
+            },
+            {
+                actns: [['toggle','edgeEnd',2],
+                        ['hover','block',0]],
+                edges: [[0,2],[1,2],[0,3],[0,4],[1,3]],
+                blcks: [0],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['hover','block',2]],
+                edges: [[0,2],[0,3],[0,4]],
+                blcks: [2],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['hover','block',2]],
+                edges: [[0,4]],
+                blcks: [2],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['hover','block',1]],
+                edges: [[0,4],[0,2],[0,3],[1,2],[1,3]],
+                blcks: [1],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['hover','block',0],
+                        ['hover','block',null]],
+                edges: [[0,2],[0,3],[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1],
+                        ['hover','block',0],
+                        ['hover','block',null]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1],
+                        ['hover','block',1],
+                        ['hover','block',null]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',2],
+                        ['hover','block',0],
+                        ['hover','block',null]],
+                edges: [[0,2],[1,2]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['hover','block',2],
+                        ['hover','block',null]],
+                edges: [[0,2],[0,3],[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['hover','block',2],
+                        ['hover','block',null]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['hover','block',1],
+                        ['hover','block',null]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['toggle','block',2],
+                        ['hover','block',0]],
+                edges: [[0,2],[1,2],[0,3],[0,4],[1,3]],
+                blcks: [1,2,0],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','block',2],
+                        ['hover','block',1]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0,2,1],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','block',1],
+                        ['hover','block',2]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0,1,2],
+            },
+            {
+                actns: [['toggle','block',2],
+                        ['hover','block',0]],
+                edges: [[0,4],[0,2],[0,3],[1,2],[1,3]],
+                blcks: [2,0],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['toggle','block',2],
+                        ['hover','block',0],
+                        ['hover','block',null]],
+                edges: [[0,2],[1,2],[0,3],[0,4],[1,3]],
+                blcks: [1,2],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','block',2],
+                        ['hover','block',1],
+                        ['hover','block',null]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0,2],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','block',1],
+                        ['hover','block',2],
+                        ['hover','block',null]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0,1],
+            },
+            {
+                actns: [['toggle','block',2],
+                        ['hover','block',0],
+                        ['hover','block',null]],
+                edges: [[0,4]],
+                blcks: [2],
+            },
+        ]);
+    });
 
-                    expect(activeBlockIDs(bgrapher)).to.be.empty;
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
+    describe('toggle block after toggles', () => {
+        testInteractions([
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','block',0]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1],
+                        ['toggle','block',0]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1],
+                        ['toggle','block',1]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [1],
+            },
+            {
+                actns: [['toggle','edgeEnd',2],
+                        ['toggle','block',0]],
+                edges: [[0,2],[1,2],[0,3],[0,4],[1,3]],
+                blcks: [0],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','block',2]],
+                edges: [[0,2],[0,3],[0,4]],
+                blcks: [2],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','block',2]],
+                edges: [[0,4]],
+                blcks: [2],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','block',1]],
+                edges: [[0,4],[0,2],[0,3],[1,2],[1,3]],
+                blcks: [1],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['toggle','block',2],
+                        ['toggle','block',0]],
+                edges: [[0,2],[1,2],[0,3],[0,4],[1,3]],
+                blcks: [1,2,0],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','block',2],
+                        ['toggle','block',1]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0,2,1],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','block',1],
+                        ['toggle','block',2]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0,1,2],
+            },
+            {
+                actns: [['toggle','block',2],
+                        ['toggle','block',0]],
+                edges: [[0,4],[0,2],[0,3],[1,2],[1,3]],
+                blcks: [2,0],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','block',0],
+                        ['toggle','block',0]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1],
+                        ['toggle','block',0],
+                        ['toggle','block',0]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1],
+                        ['toggle','block',1],
+                        ['toggle','block',1]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','block',2],
+                        ['toggle','block',2]],
+                edges: [[0,2],[0,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','block',2],
+                        ['toggle','block',2]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','block',1],
+                        ['toggle','block',1]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','block',2],
+                        ['toggle','block',0],
+                        ['toggle','block',0]],
+                edges: [],
+                blcks: [2],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['toggle','block',2],
+                        ['toggle','block',0],
+                        ['toggle','block',0]],
+                edges: [],
+                blcks: [1,2],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','block',1],
+                        ['toggle','block',1]],
+                edges: [[0,4]],
+                blcks: [0],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','block',2],
+                        ['toggle','block',1],
+                        ['toggle','block',1]],
+                edges: [[0,4]],
+                blcks: [0,2],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','block',1],
+                        ['toggle','block',2],
+                        ['toggle','block',2]],
+                edges: [[0,2],[0,3],[1,2],[1,3]],
+                blcks: [0,1],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','block',2],
+                        ['toggle','block',2]],
+                edges: [[0,2],[0,3],[1,2],[1,3]],
+                blcks: [0],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['toggle','block',2],
+                        ['toggle','block',2]],
+                edges: [[0,2],[1,2],[0,3],[1,3]],
+                blcks: [1],
+            },
+        ]);
+    });
 
-            validHoverEdgeEndsEdges.forEach(([id,]) => {
-                it(`stops showing after unhover for edge end ${id}`, () => {
-                    bgrapher.hoverEdgeEnd(id);
-                    bgrapher.hoverEdgeEnd(null);
+    describe('hover edge end after toggles', () => {
+        testInteractions([
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['hover','edgeEnd',0]],
+                edges: [[0,2],[0,3],[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1],
+                        ['hover','edgeEnd',0]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1],
+                        ['hover','edgeEnd',1]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [],
+            },
+            // {
+            //     actns: [['toggle','edgeEnd',0],
+            //             ['hover','edgeEnd',2]],
+            //     edges: [[0,2],[0,3],[0,4],[1,2]],
+            //     blcks: [],
+            // },
+            // {
+            //     actns: [['toggle','edgeEnd',2],
+            //             ['hover','edgeEnd',0]],
+            //     edges: [[0,2],[1,2],[0,3],[0,4]],
+            //     blcks: [],
+            // },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['hover','edgeEnd',2]],
+                edges: [[0,4],[0,2],[1,2]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['hover','edgeEnd',0]],
+                edges: [[0,4],[0,2],[0,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['hover','edgeEnd',0],
+                        ['hover','edgeEnd',null]],
+                edges: [[0,2],[0,3],[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1],
+                        ['hover','edgeEnd',0],
+                        ['hover','edgeEnd',null]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1],
+                        ['hover','edgeEnd',1],
+                        ['hover','edgeEnd',null]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['hover','edgeEnd',2],
+                        ['hover','edgeEnd',null]],
+                edges: [[0,2],[0,3],[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',2],
+                        ['hover','edgeEnd',0],
+                        ['hover','edgeEnd',null]],
+                edges: [[0,2],[1,2]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['hover','edgeEnd',2],
+                        ['hover','edgeEnd',null]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['hover','edgeEnd',0],
+                        ['hover','edgeEnd',null]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['toggle','block',2],
+                        ['hover','edgeEnd',0]],
+                edges: [[0,2],[1,2],[0,3],[0,4],[1,3]],
+                blcks: [1,2],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['hover','edgeEnd',4]],
+                edges: [[0,2],[1,2],[0,3],[0,4],[1,3]],
+                blcks: [1],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['hover','edgeEnd',0]],
+                edges: [[0,2],[1,2],[0,3],[0,4],[1,3]],
+                blcks: [1],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['hover','edgeEnd',2]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','block',1],
+                        ['hover','edgeEnd',4]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0,1],
+            },
+            {
+                actns: [['toggle','block',2],
+                        ['hover','edgeEnd',0]],
+                edges: [[0,4],[0,2],[0,3]],
+                blcks: [2],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['toggle','block',2],
+                        ['hover','edgeEnd',0],
+                        ['hover','edgeEnd',null]],
+                edges: [[0,2],[1,2],[0,3],[0,4],[1,3]],
+                blcks: [1,2],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['hover','edgeEnd',4],
+                        ['hover','edgeEnd',null]],
+                edges: [[0,2],[1,2],[0,3],[1,3]],
+                blcks: [1],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['hover','edgeEnd',0],
+                        ['hover','edgeEnd',null]],
+                edges: [[0,2],[1,2],[0,3],[1,3]],
+                blcks: [1],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['hover','edgeEnd',2],
+                        ['hover','edgeEnd',null]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','block',1],
+                        ['hover','edgeEnd',4],
+                        ['hover','edgeEnd',null]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0,1],
+            },
+            {
+                actns: [['toggle','block',2],
+                        ['hover','edgeEnd',0],
+                        ['hover','edgeEnd',null]],
+                edges: [[0,4]],
+                blcks: [2],
+            },
+        ]);
+    });
 
-                    expect(activeBlockIDs(bgrapher)).to.be.empty;
-                    expect(activeEdgeIDs(bgrapher)).to.be.empty;
-                });
-            });
-
-            const validHoverEdgeEndsWithActiveEdgeEnds = [
-                [0,[0],[
-                    [0,2],[0,3],[0,4]
-                ]],
-                [0,[0,1],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [1,[0,1],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [0,[2],[
-                    [0,2],[1,2],[0,3],[0,4],[1,3]
-                ]],
-                [2,[0],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [2,[4],[
-                    [0,4],[0,2],[1,2]
-                ]],
-                [0,[4],[
-                    [0,4],[0,2],[0,3]
-                ]],
-            ];
-            
-            validHoverEdgeEndsWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,edges]) => {
-                it(`shows for edge end ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
-
-                    bgrapher.hoverEdgeEnd(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.be.empty;
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
-
-            validHoverEdgeEndsWithActiveEdgeEnds.forEach(([id,setEdgeEndIDs,]) => {
-                it(`stops showing for edge end ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
-                    const prevActiveBlocks = activeBlockIDs(bgrapher);
-                    const prevActiveEdges = activeEdgeIDs(bgrapher);
-
-                    bgrapher.hoverEdgeEnd(id);
-                    bgrapher.hoverEdgeEnd(null);
-
-                    expect(activeBlockIDs(bgrapher)).to.eql(prevActiveBlocks);
-                    expect(activeEdgeIDs(bgrapher)).to.eql(prevActiveEdges);
-                });
-            });
-
-            const validHoverEdgeEndsWithActiveBlocks = [
-                [0,[1,2],[
-                    [0,2],[1,2],[0,3],[0,4],[1,3]
-                ]],
-                [2,[0],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [4,[0,1],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [0,[2],[
-                    [0,4],[0,2],[0,3]
-                ]],
-                [4,[1],[
-                    [0,2],[1,2],[0,3],[0,4],[1,3]
-                ]],
-                [0,[1],[
-                    [0,2],[1,2],[0,3],[0,4],[1,3]
-                ]],
-            ]
-            
-            validHoverEdgeEndsWithActiveBlocks.forEach(([id,setBlockIDs,edges]) => {
-                it(`shows for edge end ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
-
-                    bgrapher.hoverEdgeEnd(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs);
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
-            
-            validHoverEdgeEndsWithActiveBlocks.forEach(([id,setBlockIDs]) => {
-                it(`stops showing for edge end ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
-                    const prevActiveBlocks = activeBlockIDs(bgrapher);
-                    const prevActiveEdges = activeEdgeIDs(bgrapher);
-
-                    bgrapher.hoverEdgeEnd(id);
-                    bgrapher.hoverEdgeEnd(null);
-
-                    expect(activeBlockIDs(bgrapher)).to.eql(prevActiveBlocks);
-                    expect(activeEdgeIDs(bgrapher)).to.eql(prevActiveEdges);
-                });
-            });
-        });
-
-        describe('toggle', () => {
-            it(`doesn't show for null`, () => {
-                bgrapher.toggleEdgeEnd(null);
-
-                expect(activeBlockIDs(bgrapher)).to.be.empty;
-                expect(activeEdgeIDs(bgrapher)).to.be.empty;
-            });
-
-            const validActiveEdgeEndsEdges = [
-                [0,[
-                    [0,2],[0,3],[0,4]
-                ]],
-                [1,[
-                    [1,2],[1,3]
-                ]],
-                [2,[
-                    [0,2],[1,2]
-                ]],
-                [3,[
-                    [0,3],[1,3]
-                ]],
-                [4,[
-                    [0,4]
-                ]],
-            ];
-
-            validActiveEdgeEndsEdges.forEach(([id,edges]) => {
-                it (`shows for edge end ${id}`, () => {
-                    bgrapher.toggleEdgeEnd(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.be.empty;
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
-
-            validActiveEdgeEndsEdges.forEach(([id,]) => {
-                it(`stops showing after untoggle for edge end ${id}`, () => {
-                    bgrapher.toggleEdgeEnd(id);
-                    bgrapher.toggleEdgeEnd(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.be.empty;
-                    expect(activeEdgeIDs(bgrapher)).to.be.empty;
-                });
-            });
-
-            [
-                [0,[0],[]],
-                [3,[3],[]],
-                [3,[4,3],[
-                    [0,4]
-                ]],
-                [0,[0,1],[
-                    [1,2],[1,3]
-                ]],
-                [1,[0,1],[
-                    [0,2],[0,3],[0,4]
-                ]],
-                [0,[2],[
-                    [0,2],[1,2],[0,3],[0,4],[1,3]
-                ]],
-                [2,[0],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [2,[4],[
-                    [0,4],[0,2],[1,2]
-                ]],
-                [0,[4],[
-                    [0,4],[0,2],[0,3]
-                ]],
-            ].forEach(([id,setEdgeEndIDs,edges]) => {
-                it(`shows for edge end ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
-
-                    bgrapher.toggleEdgeEnd(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.be.empty;
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
-
-            [
-                [0,[1,2],[
-                    [1,2],[1,3]
-                ]],
-                [2,[0],[
-                    [0,3],[0,4],[1,3]
-                ]],
-                [4,[0,1],[
-                    [0,2],[0,3],[1,2],[1,3]
-                ]],
-                [0,[2],[
-                    [0,4],[0,2],[0,3]
-                ]],
-                [4,[1],[
-                    [0,2],[1,2],[0,3],[0,4],[1,3]
-                ]],
-                [0,[2],[
-                    [0,4],[0,2],[0,3]
-                ]],
-                [0,[1],[
-                    [0,2],[1,2],[0,3],[0,4],[1,3]
-                ]],
-            ].forEach(([id,setBlockIDs,edges]) => {
-                it(`shows for edge end ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
-
-                    bgrapher.toggleEdgeEnd(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs);
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
-
-            [
-                [0,[1],[
-                    [1,2],[1,3]
-                ]],
-                [1,[0],[
-                    [0,2],[0,3],[0,4]
-                ]],
-                [2,[0],[
-                    [0,3],[0,4],[1,3]
-                ]],
-                [2,[4],[
-                    [0,4]
-                ]],
-                [3,[2,4],[
-                    [0,2],[1,2],[0,4]
-                ]],
-                [0,[4],[]],
-            ].forEach(([id,setEdgeEndIDs,edges]) => {
-                it(`stops showing for edge end ${id} when active edge ends ${setEdgeEndIDs}`, () => {
-                    setEdgeEndIDs.forEach(ee => bgrapher.toggleEdgeEnd(ee));
-
-                    bgrapher.toggleEdgeEnd(id);
-                    bgrapher.toggleEdgeEnd(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.be.empty;
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
-
-            [
-                [0,[2],[]],
-                [4,[0],[
-                    [0,2],[0,3],[0,4],[1,2],[1,3]
-                ]],
-                [0,[1],[
-                    [1,2],[1,3]
-                ]],
-            ].forEach(([id,setBlockIDs,edges]) => {
-                it(`stops showing for edge end ${id} when active blocks ${setBlockIDs}`, () => {
-                    setBlockIDs.forEach(b => bgrapher.toggleBlock(b));
-
-                    bgrapher.toggleEdgeEnd(id);
-                    bgrapher.toggleEdgeEnd(id);
-
-                    expect(activeBlockIDs(bgrapher)).to.eql(setBlockIDs);
-                    expect(activeEdgeIDs(bgrapher)).to.eql(edges);
-                });
-            });
-        });
+    describe('toggle edge end after toggles', () => {
+        testInteractions([
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','edgeEnd',3],
+                        ['toggle','edgeEnd',3]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1],
+                        ['toggle','edgeEnd',0]],
+                edges: [[1,2],[1,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',1],
+                        ['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1]],
+                edges: [[0,2],[0,3],[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',2],
+                        ['toggle','edgeEnd',0]],
+                edges: [[0,2],[1,2],[0,3],[0,4],[1,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',2]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','edgeEnd',2]],
+                edges: [[0,4],[0,2],[1,2]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','edgeEnd',0]],
+                edges: [[0,4],[0,2],[0,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['toggle','block',2],
+                        ['toggle','edgeEnd',0]],
+                edges: [[1,2],[1,3]],
+                blcks: [1,2],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','edgeEnd',2]],
+                edges: [[0,3],[0,4],[1,3]],
+                blcks: [0],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','block',1],
+                        ['toggle','edgeEnd',4]],
+                edges: [[0,2],[0,3],[1,2],[1,3]],
+                blcks: [0,1],
+            },
+            {
+                actns: [['toggle','block',2],
+                        ['toggle','edgeEnd',0]],
+                edges: [[0,4],[0,2],[0,3]],
+                blcks: [2],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['toggle','edgeEnd',4]],
+                edges: [[0,2],[1,2],[0,3],[0,4],[1,3]],
+                blcks: [1],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['toggle','edgeEnd',0]],
+                edges: [[0,2],[1,2],[0,3],[0,4],[1,3]],
+                blcks: [1],
+            },
+            {
+                actns: [['toggle','edgeEnd',1],
+                        ['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',0]],
+                edges: [[1,2],[1,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',1],
+                        ['toggle','edgeEnd',1]],
+                edges: [[0,2],[0,3],[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',2],
+                        ['toggle','edgeEnd',2]],
+                edges: [[0,3],[0,4],[1,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','edgeEnd',2],
+                        ['toggle','edgeEnd',2]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',2],
+                        ['toggle','edgeEnd',4],
+                        ['toggle','edgeEnd',3],
+                        ['toggle','edgeEnd',3]],
+                edges: [[0,2],[1,2],[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',0]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','block',2],
+                        ['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',0]],
+                edges: [],
+                blcks: [2],
+            },
+            {
+                actns: [['toggle','block',0],
+                        ['toggle','edgeEnd',4],
+                        ['toggle','edgeEnd',4]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0],
+            },
+            {
+                actns: [['toggle','block',1],
+                        ['toggle','edgeEnd',0],
+                        ['toggle','edgeEnd',0]],
+                edges: [[1,2],[1,3]],
+                blcks: [1],
+            },
+        ]);
     });
 });
 
