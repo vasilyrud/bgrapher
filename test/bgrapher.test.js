@@ -1001,18 +1001,18 @@ describe('interaction', () => {
                 edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
                 blcks: [],
             },
-            // {
-            //     actns: [['toggle','edgeEnd',0],
-            //             ['hover','edgeEnd',2]],
-            //     edges: [[0,2],[0,3],[0,4],[1,2]],
-            //     blcks: [],
-            // },
-            // {
-            //     actns: [['toggle','edgeEnd',2],
-            //             ['hover','edgeEnd',0]],
-            //     edges: [[0,2],[1,2],[0,3],[0,4]],
-            //     blcks: [],
-            // },
+            {
+                actns: [['toggle','edgeEnd',0],
+                        ['hover','edgeEnd',2]],
+                edges: [[0,2],[0,3],[0,4],[1,2]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',2],
+                        ['hover','edgeEnd',0]],
+                edges: [[0,2],[1,2],[0,3],[0,4]],
+                blcks: [],
+            },
             {
                 actns: [['toggle','edgeEnd',4],
                         ['hover','edgeEnd',2]],
