@@ -326,7 +326,7 @@ describe('interaction', () => {
         },
     };
 
-    function testInteractions(interactions, checkOrder=true) {
+    function testInteractions(interactions, checkOrder=false) {
         interactions.forEach(interaction => {
             const description = interaction.actns
                 .map(([a,c,id]) => [a,c,id === null ? 'null' : id])
@@ -342,8 +342,20 @@ describe('interaction', () => {
                     expect( activeEdgeIDs(bgrapher)).to.eql(interaction.edges);
                     expect(activeBlockIDs(bgrapher)).to.eql(interaction.blcks);
                 } else {
-                    expect(new Set( activeEdgeIDs(bgrapher))).to.eql(new Set(interaction.edges));
-                    expect(new Set(activeBlockIDs(bgrapher))).to.eql(new Set(interaction.blcks));
+                    // console.log(new Set(activeEdgeIDs(bgrapher).map(e => e.toString())));
+                    // console.log(new Set(interaction.edges.map(e => e.toString())));
+
+                    expect(new Set(
+                        activeEdgeIDs(bgrapher).map(e => e.toString())
+                    )).to.eql(new Set(
+                        interaction.edges.map(e => e.toString())
+                    ));
+
+                    expect(new Set(
+                        activeBlockIDs(bgrapher).map(b => b.toString())
+                    )).to.eql(new Set(
+                        interaction.blcks.map(b => b.toString())
+                    ));
                 }
             });
         });
@@ -1207,13 +1219,13 @@ describe('interaction', () => {
             {
                 actns: [['toggle','edgeEnd',2],
                         ['toggle','edgeEnd',0]],
-                edges: [[0,2],[1,2],[0,3],[0,4],[1,3]],
+                edges: [[0,2],[1,2],[0,3],[0,4]],
                 blcks: [],
             },
             {
                 actns: [['toggle','edgeEnd',0],
                         ['toggle','edgeEnd',2]],
-                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                edges: [[0,2],[0,3],[0,4],[1,2]],
                 blcks: [],
             },
             {
@@ -1302,7 +1314,7 @@ describe('interaction', () => {
                 actns: [['toggle','edgeEnd',0],
                         ['toggle','edgeEnd',2],
                         ['toggle','edgeEnd',2]],
-                edges: [[0,3],[0,4],[1,3]],
+                edges: [[0,3],[0,4]],
                 blcks: [],
             },
             {
@@ -1347,6 +1359,19 @@ describe('interaction', () => {
                         ['toggle','edgeEnd',0]],
                 edges: [[1,2],[1,3]],
                 blcks: [1],
+            },
+        ]);
+    });
+
+    describe('hover after hover', () => {
+        testInteractions([
+            {
+                actns: [['hover','block',null],
+                        ['hover','edgeEnd',1],
+                        ['hover','edgeEnd',null],
+                        ['hover','block',0]],
+                edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
+                blcks: [0],
             },
         ]);
     });

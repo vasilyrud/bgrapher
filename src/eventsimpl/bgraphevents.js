@@ -143,8 +143,8 @@ function mousemoveHover(bgraphState, eventState, bgrapher) {
         bgrapher.hoverBlock(null);
         bgrapher.hoverEdgeEnd(hoveredEdgeEnd.id);
     } else if (hoveredBlock) {
-        bgrapher.hoverBlock(hoveredBlock.id);
         bgrapher.hoverEdgeEnd(null);
+        bgrapher.hoverBlock(hoveredBlock.id);
     } else {
         bgrapher.hoverBlock(null);
         bgrapher.hoverEdgeEnd(null);

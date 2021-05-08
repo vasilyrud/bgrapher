@@ -32,22 +32,54 @@ function ArrayXY(width, height) {
 }
 
 function EdgeSet() {
-    this.seen = {};
+    this.seen = new Map();
+
     this.chooseOrder = function(from, to) {
         return (from < to) ? [from, to] : [to, from];
     };
+
     this.add = function(from, to) {
         let [usedFrom, usedTo] = this.chooseOrder(from, to);
-        if (!(usedFrom in this.seen)) this.seen[usedFrom] = new Set();
-        this.seen[usedFrom].add(usedTo);
+
+        if (!this.seen.has(usedFrom)) {
+            this.seen.set(usedFrom, new Set());
+        }
+
+        this.seen.get(usedFrom).add(usedTo);
+        return this;
     };
+
     this.has = function(from, to) {
         let [usedFrom, usedTo] = this.chooseOrder(from, to);
+
         return (
-            (usedFrom in this.seen) &&
-            this.seen[usedFrom].has(usedTo)
+            this.seen.has(usedFrom) &&
+            this.seen.get(usedFrom).has(usedTo)
         );
     };
+
+    this.delete = function(from, to) {
+        let [usedFrom, usedTo] = this.chooseOrder(from, to);
+
+        if (!this.seen.has(usedFrom) ||
+            !this.seen.get(usedFrom).has(usedTo)
+        ) return false;
+
+        this.seen.get(usedFrom).delete(usedTo);
+        if (this.seen.get(usedFrom).size === 0) {
+            this.seen.delete(usedFrom);
+        }
+
+        return true;
+    };
 }
+
+EdgeSet.prototype[Symbol.iterator] = function*() {
+    for (const [usedFrom, set] of this.seen) {
+        for (const usedTo of set) {
+            yield [usedFrom, usedTo];
+        }
+    }
+};
 
 export { ArrayXY, EdgeSet }
