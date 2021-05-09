@@ -34,43 +34,26 @@ function ArrayXY(width, height) {
 function EdgeSet() {
     this.set = new Set();
 
-    // Implementation of Szudzik pairing function from:
-    // https://codepen.io/sachmata/post/elegant-pairing
-    this._pair = function(x, y) {
-        return (x >= y) 
-            ? (x * x + x + y) 
-            : (y * y + x);
-    }
-    this._unpair = function(pair) {
-        const sqrtz = Math.floor(Math.sqrt(pair));
-        const sqz = sqrtz * sqrtz;
-        return ((pair - sqz) >= sqrtz) 
-            ? [sqrtz, pair - sqz - sqrtz] 
-            : [pair - sqz, sqrtz];
-    }
-
     this.add = function(from, to) {
-        const pair = this._pair(from, to);
-        this.set.add(pair);
+        this.set.add(JSON.stringify([from,to]));
         return this;
     };
 
     this.has = function(from, to) {
-        return this.set.has(this._pair(from, to));
+        return this.set.has(JSON.stringify([from,to]));
     };
 
     this.delete = function(from, to) {
-        const pair = this._pair(from, to);
-        if (!this.set.has(pair)) return false;
-        this.set.delete(pair);
-        return true;
+        const str = JSON.stringify([from,to]);
+        return this.set.has(str)
+            ? this.set.delete(str)
+            : false;
     };
 }
 
 EdgeSet.prototype[Symbol.iterator] = function*() {
-    for (const pair of this.set) {
-        yield this._unpair(pair);
-    }
+    for (const str of this.set)
+        yield JSON.parse(str);
 };
 
 export { ArrayXY, EdgeSet }

@@ -121,6 +121,21 @@ describe('EdgeSet', () => {
         expect(seen.set.size).to.be.equal(2);
     });
 
+    it('Add large numbers', () => {
+        let seen = new EdgeSet();
+        const largeX = 123456789123456789;
+        const largeY = 987654321987654321;
+
+        seen.add(largeX,largeY);
+        expect(seen.has(largeX,largeY)).to.be.true;
+        expect(seen.set.size).to.be.equal(1);
+
+        for (const [x,y] of seen) {
+            expect(x).to.be.equal(largeX);
+            expect(y).to.be.equal(largeY);
+        }
+    });
+
     it('Delete from edge end', () => {
         let seen = new EdgeSet();
         seen.add(1,2);
