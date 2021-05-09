@@ -38,8 +38,9 @@ const Direction = Object.freeze({
 });
 
 function lookupGet(x, y) {
-    if (y < 0 || y >= this.lookup.height) return null;
-    if (x < 0 || x >= this.lookup.width ) return null;
+    if (y < 0 || y >= this.lookup.height ||
+        x < 0 || x >= this.lookup.width
+    ) return null;
 
     const id = this.lookup.get(x, y);
     return (id === -1) ? null : id;

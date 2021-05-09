@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test mocha 'test/**/*.js' --require @babel/register",
+    "test:cov": "NODE_ENV=test nyc --reporter=text mocha 'test/**/*.js' --require @babel/register",
     "build:dev": "NODE_ENV=development rollup -c rollup.config.dev.js -w"
   },
   "author": "Vasily Rudchenko",
@@ -25,6 +26,7 @@
     "chai": "^4.3.4",
     "jsdom": "^16.5.1",
     "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
     "rollup": "^2.42.0",
     "rollup-plugin-livereload": "^2.0.0",
     "rollup-plugin-postcss": "^4.0.0",
