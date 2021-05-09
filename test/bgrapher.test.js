@@ -49,6 +49,11 @@ describe('initBgraph data', () => {
             it(`Generates the right edgeEnd data ${description}`, () => {
                 expect(bgrapher.edgeEndsData).to.eql({});
             });
+
+            it(`Can lookup cur block ${description}`, () => {
+                const bgraphState = new BgraphState();
+                expect(bgrapher.curBlock(bgraphState, {x:0,y:0}).id).to.be.equal(0);
+            });
         });
     });
 
@@ -81,6 +86,11 @@ describe('initBgraph data', () => {
                 expect(bgrapher.edgeEndsData[id]['edgeEnds']).to.eql(edgeEnds);
                 expect(bgrapher.edgeEndsData[id]['isSource']).to.eql(isSource);
             });
+        });
+
+        it(`Can lookup cur edgeEnd`, () => {
+            const bgraphState = new BgraphState();
+            expect(bgrapher.curEdgeEnd(bgraphState, {x:0,y:0}).id).to.be.equal(0);
         });
     });
 
@@ -296,7 +306,6 @@ describe('initBgraph lookups', () => {
         });
     });
 });
-
 
 describe('interaction', () => {
     let bgrapher;
@@ -1454,7 +1463,7 @@ describe('interaction', () => {
         ]);
     });
 
-    describe('return value', () => {
+    describe('return values', () => {
         it('hover block exists', () => {
             bgrapher.hoverBlock(null);
             expect(bgrapher.hoverBlock(0)).to.be.true;
@@ -1468,6 +1477,9 @@ describe('interaction', () => {
         it('hover block no change', () => {
             bgrapher.hoverBlock(0);
             expect(bgrapher.hoverBlock(0)).to.be.false;
+        });
+
+        it('hover block no change null', () => {
             bgrapher.hoverBlock(null);
             expect(bgrapher.hoverBlock(null)).to.be.false;
         });
@@ -1490,6 +1502,9 @@ describe('interaction', () => {
         it('hover edgeEnd no change', () => {
             bgrapher.hoverEdgeEnd(0);
             expect(bgrapher.hoverEdgeEnd(0)).to.be.false;
+        });
+
+        it('hover edgeEnd no change null', () => {
             bgrapher.hoverEdgeEnd(null);
             expect(bgrapher.hoverEdgeEnd(null)).to.be.false;
         });
@@ -1521,6 +1536,172 @@ describe('interaction', () => {
 
         it('toggle edgeEnd doesn\'t exist', () => {
             expect(bgrapher.toggleEdgeEnd(12345)).to.be.false;
+        });
+    });
+
+    describe('callbacks', () => {
+        it('hover block exists', () => {
+            let block;
+            bgrapher.hoverBlock(null);
+            bgrapher.onHoverBlock(b => block = b);
+            bgrapher.hoverBlock(0)
+            expect(block.id).to.be.equal(0);
+        });
+
+        it('hover block null', () => {
+            let block;
+            bgrapher.hoverBlock(0);
+            bgrapher.onHoverBlock(b => block = b);
+            bgrapher.hoverBlock(null);
+            expect(block).to.be.null;
+        });
+
+        it('hover block no change', () => {
+            let block;
+            bgrapher.hoverBlock(0);
+            bgrapher.onHoverBlock(b => block = b);
+            bgrapher.hoverBlock(0);
+            expect(block).to.be.undefined;
+        });
+
+        it('hover block no change null', () => {
+            let block;
+            bgrapher.hoverBlock(null);
+            bgrapher.onHoverBlock(b => block = b);
+            bgrapher.hoverBlock(null);
+            expect(block).to.be.undefined;
+        });
+
+        it('hover block doesn\'t exist', () => {
+            let block;
+            bgrapher.hoverBlock(0);
+            bgrapher.onHoverBlock(b => block = b);
+            bgrapher.hoverBlock(12345);
+            expect(block).to.be.undefined;
+        });
+
+        it('hover edgeEnd exists', () => {
+            let edgeEnd;
+            bgrapher.hoverEdgeEnd(null);
+            bgrapher.onHoverEdgeEnd(ee => edgeEnd = ee);
+            bgrapher.hoverEdgeEnd(0);
+            expect(edgeEnd.id).to.be.equal(0);
+        });
+
+        it('hover edgeEnd null', () => {
+            let edgeEnd;
+            bgrapher.hoverEdgeEnd(0);
+            bgrapher.onHoverEdgeEnd(ee => edgeEnd = ee);
+            bgrapher.hoverEdgeEnd(null);
+            expect(edgeEnd).to.be.null;
+        });
+
+        it('hover edgeEnd no change', () => {
+            let edgeEnd;
+            bgrapher.hoverEdgeEnd(0);
+            bgrapher.onHoverEdgeEnd(ee => edgeEnd = ee);
+            bgrapher.hoverEdgeEnd(0);
+            expect(edgeEnd).to.be.undefined;
+        });
+
+        it('hover edgeEnd no change null', () => {
+            let edgeEnd;
+            bgrapher.hoverEdgeEnd(null);
+            bgrapher.onHoverEdgeEnd(ee => edgeEnd = ee);
+            bgrapher.hoverEdgeEnd(null);
+            expect(edgeEnd).to.be.undefined;
+        });
+
+        it('hover edgeEnd doesn\'t exist', () => {
+            let edgeEnd;
+            bgrapher.hoverEdgeEnd(0);
+            bgrapher.onHoverEdgeEnd(ee => edgeEnd = ee);
+            bgrapher.hoverEdgeEnd(12345);
+            expect(edgeEnd).to.be.undefined;
+        });
+
+        it('toggle block exists', () => {
+            let block;
+            bgrapher.onToggleBlock(b => block = b);
+            bgrapher.toggleBlock(0);
+            expect(block.id).to.be.equal(0);
+        });
+
+        it('toggle block null', () => {
+            let block;
+            bgrapher.onToggleBlock(b => block = b);
+            bgrapher.toggleBlock(null);
+            expect(block).to.be.undefined;
+        });
+
+        it('toggle block doesn\'t exist', () => {
+            let block;
+            bgrapher.onToggleBlock(b => block = b);
+            bgrapher.toggleBlock(12345);
+            expect(block).to.be.undefined;
+        });
+
+        it('toggle edgeEnd exists', () => {
+            let edgeEnd;
+            bgrapher.onToggleEdgeEnd(ee => edgeEnd = ee);
+            bgrapher.toggleEdgeEnd(0);
+            expect(edgeEnd.id).to.be.equal(0);
+        });
+
+        it('toggle edgeEnd null', () => {
+            let edgeEnd;
+            bgrapher.onToggleEdgeEnd(ee => edgeEnd = ee);
+            bgrapher.toggleEdgeEnd(null);
+            expect(edgeEnd).to.be.undefined;
+        });
+
+        it('toggle edgeEnd doesn\'t exist', () => {
+            let edgeEnd;
+            bgrapher.onToggleEdgeEnd(ee => edgeEnd = ee);
+            bgrapher.toggleEdgeEnd(12345);
+            expect(edgeEnd).to.be.undefined;
+        });
+
+        it('select block exists', () => {
+            let block;
+            bgrapher.onSelectBlock(b => block = b);
+            bgrapher.selectBlock(0);
+            expect(block.id).to.be.equal(0);
+        });
+
+        it('select block null', () => {
+            let block;
+            bgrapher.onSelectBlock(b => block = b);
+            bgrapher.selectBlock(null);
+            expect(block).to.be.undefined;
+        });
+
+        it('select block doesn\'t exist', () => {
+            let block;
+            bgrapher.onSelectBlock(b => block = b);
+            bgrapher.selectBlock(12345);
+            expect(block).to.be.undefined;
+        });
+
+        it('select edgeEnd exists', () => {
+            let edgeEnd;
+            bgrapher.onSelectEdgeEnd(ee => edgeEnd = ee);
+            bgrapher.selectEdgeEnd(0);
+            expect(edgeEnd.id).to.be.equal(0);
+        });
+
+        it('select edgeEnd null', () => {
+            let edgeEnd;
+            bgrapher.onSelectEdgeEnd(ee => edgeEnd = ee);
+            bgrapher.selectEdgeEnd(null);
+            expect(edgeEnd).to.be.undefined;
+        });
+
+        it('select edgeEnd doesn\'t exist', () => {
+            let edgeEnd;
+            bgrapher.onSelectEdgeEnd(ee => edgeEnd = ee);
+            bgrapher.selectEdgeEnd(12345);
+            expect(edgeEnd).to.be.undefined;
         });
     });
 });

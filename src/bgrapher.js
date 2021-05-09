@@ -55,10 +55,13 @@ var BGrapher = function(
     this._eventsImpl  = eventsImpl;
 
     this.doDrawHoverInfo = true;
-    this.selectBlockCallback = ()=>{};
+
+    this.hoverBlockCallback    = ()=>{};
+    this.hoverEdgeEndCallback  = ()=>{};
+    this.toggleBlockCallback   = ()=>{};
+    this.toggleEdgeEndCallback = ()=>{};
+    this.selectBlockCallback   = ()=>{};
     this.selectEdgeEndCallback = ()=>{};
-    this.hoverBlockCallback = ()=>{};
-    this.hoverEdgeEndCallback = ()=>{};
 
     this.initBgraph = function(bgraph) {
         const inputData = ((typeof bgraph === 'string' || bgraph instanceof String)
@@ -101,20 +104,28 @@ var BGrapher = function(
         this.draw(bgraphState);
     }
 
-    this.onBlockSelect = function(cbSelect) {
-        this.selectBlockCallback = cbSelect;
+    this.onHoverBlock = function(cb) {
+        this.hoverBlockCallback = cb;
     }
 
-    this.onEdgeEndSelect = function(cbSelect) {
-        this.selectEdgeEndCallback = cbSelect;
+    this.onHoverEdgeEnd = function(cb) {
+        this.hoverEdgeEndCallback = cb;
     }
 
-    this.onBlockHover = function(cbHover) {
-        this.hoverBlockCallback = cbHover;
+    this.onToggleBlock = function(cb) {
+        this.toggleBlockCallback = cb;
     }
 
-    this.onEdgeEndHover = function(cbHover) {
-        this.hoverEdgeEndCallback = cbHover;
+    this.onToggleEdgeEnd = function(cb) {
+        this.toggleEdgeEndCallback = cb;
+    }
+
+    this.onSelectBlock = function(cb) {
+        this.selectBlockCallback = cb;
+    }
+
+    this.onSelectEdgeEnd = function(cb) {
+        this.selectEdgeEndCallback = cb;
     }
 
     this.bgraphWidth = function() {
@@ -185,6 +196,8 @@ var BGrapher = function(
         } else {
             this._setActiveBlock(blockID);
         }
+
+        this.toggleBlockCallback(this.blocksData[blockID]);
         return true;
     }
 
@@ -246,6 +259,8 @@ var BGrapher = function(
         } else {
             this._unsetEdgeEnd(edgeEndID, '_activeEdgeIDs');
         }
+
+        this.toggleEdgeEndCallback(this.edgeEndsData[edgeEndID]);
         return true;
     }
 
