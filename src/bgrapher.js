@@ -363,13 +363,21 @@ var BGrapher = function(
     }
 
     this.selectBlock = function(blockID) {
-        if (blockID === null || !(blockID in this.blocksData)) return;
+        if (blockID === null || 
+            !(blockID in this.blocksData)
+        ) return false;
+
         this.selectBlockCallback(this.blocksData[blockID]);
+        return true;
     }
 
     this.selectEdgeEnd = function(edgeEndID) {
-        if (edgeEndID === null || !(edgeEndID in this.edgeEndsData)) return;
+        if (edgeEndID === null || 
+            !(edgeEndID in this.edgeEndsData)
+        ) return false;
+
         this.selectEdgeEndCallback(this.edgeEndsData[edgeEndID]);
+        return true;
     }
 
     this.hoveredBlock = function() {
