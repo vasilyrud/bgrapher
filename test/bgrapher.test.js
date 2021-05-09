@@ -371,6 +371,11 @@ describe('interaction', () => {
                 blcks: [],
             },
             {
+                actns: [['hover','block',12345]],
+                edges: [],
+                blcks: [],
+            },
+            {
                 actns: [['hover','block',0]],
                 edges: [[0,2],[0,3],[0,4],[1,2],[1,3]],
                 blcks: [0],
@@ -414,6 +419,12 @@ describe('interaction', () => {
                 edges: [],
                 blcks: [],
             },
+            {
+                actns: [['hover','block',12345], 
+                        ['hover','block',null]],
+                edges: [],
+                blcks: [],
+            },
         ]);
     });
 
@@ -421,6 +432,11 @@ describe('interaction', () => {
         testInteractions([
             {
                 actns: [['toggle','block',null]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','block',12345]],
                 edges: [],
                 blcks: [],
             },
@@ -451,6 +467,12 @@ describe('interaction', () => {
                 blcks: [2],
             },
             {
+                actns: [['toggle','block',2],
+                        ['toggle','block',12345]],
+                edges: [[0,4]],
+                blcks: [2],
+            },
+            {
                 actns: [['toggle','block',0],
                         ['toggle','block',0]],
                 edges: [],
@@ -475,6 +497,11 @@ describe('interaction', () => {
         testInteractions([
             {
                 actns: [['hover','edgeEnd',null]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['hover','edgeEnd',12345]],
                 edges: [],
                 blcks: [],
             },
@@ -526,6 +553,12 @@ describe('interaction', () => {
                 edges: [],
                 blcks: [],
             },
+            {
+                actns: [['hover','edgeEnd',12345],
+                        ['hover','edgeEnd',null]],
+                edges: [],
+                blcks: [],
+            },
         ]);
     });
 
@@ -533,6 +566,11 @@ describe('interaction', () => {
         testInteractions([
             {
                 actns: [['toggle','edgeEnd',null]],
+                edges: [],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',12345]],
                 edges: [],
                 blcks: [],
             },
@@ -569,6 +607,12 @@ describe('interaction', () => {
             {
                 actns: [['toggle','edgeEnd',4],
                         ['toggle','edgeEnd',null]],
+                edges: [[0,4]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','edgeEnd',12345]],
                 edges: [[0,4]],
                 blcks: [],
             },
@@ -644,6 +688,12 @@ describe('interaction', () => {
                         ['hover','block',2]],
                 edges: [[0,4]],
                 blcks: [2],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['hover','block',12345]],
+                edges: [[0,4]],
+                blcks: [],
             },
             {
                 actns: [['toggle','edgeEnd',4],
@@ -734,6 +784,12 @@ describe('interaction', () => {
                         ['hover','block',0]],
                 edges: [[0,4],[0,2],[0,3],[1,2],[1,3]],
                 blcks: [2,0],
+            },
+            {
+                actns: [['toggle','block',2],
+                        ['hover','block',12345]],
+                edges: [[0,4]],
+                blcks: [2],
             },
             {
                 actns: [['toggle','block',1],
@@ -888,6 +944,12 @@ describe('interaction', () => {
                         ['toggle','block',2],
                         ['toggle','block',2]],
                 edges: [[0,2],[0,3]],
+                blcks: [],
+            },
+            {
+                actns: [['toggle','edgeEnd',4],
+                        ['toggle','block',12345]],
+                edges: [[0,4]],
                 blcks: [],
             },
             {
@@ -1255,6 +1317,12 @@ describe('interaction', () => {
                 blcks: [2],
             },
             {
+                actns: [['toggle','block',2],
+                        ['toggle','edgeEnd',12345]],
+                edges: [[0,4]],
+                blcks: [2],
+            },
+            {
                 actns: [['toggle','block',1],
                         ['toggle','block',2],
                         ['toggle','edgeEnd',0]],
@@ -1384,6 +1452,76 @@ describe('interaction', () => {
                 blcks: [],
             },
         ]);
+    });
+
+    describe('return value', () => {
+        it('hover block exists', () => {
+            bgrapher.hoverBlock(null);
+            expect(bgrapher.hoverBlock(0)).to.be.true;
+        });
+
+        it('hover block null', () => {
+            bgrapher.hoverBlock(0);
+            expect(bgrapher.hoverBlock(null)).to.be.true;
+        });
+
+        it('hover block no change', () => {
+            bgrapher.hoverBlock(0);
+            expect(bgrapher.hoverBlock(0)).to.be.false;
+            bgrapher.hoverBlock(null);
+            expect(bgrapher.hoverBlock(null)).to.be.false;
+        });
+
+        it('hover block doesn\'t exist', () => {
+            bgrapher.hoverBlock(0);
+            expect(bgrapher.hoverBlock(12345)).to.be.false;
+        });
+
+        it('hover edgeEnd exists', () => {
+            bgrapher.hoverEdgeEnd(null);
+            expect(bgrapher.hoverEdgeEnd(0)).to.be.true;
+        });
+
+        it('hover edgeEnd null', () => {
+            bgrapher.hoverEdgeEnd(0);
+            expect(bgrapher.hoverEdgeEnd(null)).to.be.true;
+        });
+
+        it('hover edgeEnd no change', () => {
+            bgrapher.hoverEdgeEnd(0);
+            expect(bgrapher.hoverEdgeEnd(0)).to.be.false;
+            bgrapher.hoverEdgeEnd(null);
+            expect(bgrapher.hoverEdgeEnd(null)).to.be.false;
+        });
+
+        it('hover edgeEnd doesn\'t exist', () => {
+            bgrapher.hoverEdgeEnd(0);
+            expect(bgrapher.hoverEdgeEnd(12345)).to.be.false;
+        });
+
+        it('toggle block exists', () => {
+            expect(bgrapher.toggleBlock(0)).to.be.true;
+        });
+
+        it('toggle block null', () => {
+            expect(bgrapher.toggleBlock(null)).to.be.false;
+        });
+
+        it('toggle block doesn\'t exist', () => {
+            expect(bgrapher.toggleBlock(12345)).to.be.false;
+        });
+
+        it('toggle edgeEnd exists', () => {
+            expect(bgrapher.toggleEdgeEnd(0)).to.be.true;
+        });
+
+        it('toggle edgeEnd null', () => {
+            expect(bgrapher.toggleEdgeEnd(null)).to.be.false;
+        });
+
+        it('toggle edgeEnd doesn\'t exist', () => {
+            expect(bgrapher.toggleEdgeEnd(12345)).to.be.false;
+        });
     });
 });
 
