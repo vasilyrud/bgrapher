@@ -32,53 +32,44 @@ function ArrayXY(width, height) {
 }
 
 function EdgeSet() {
-    this.seen = new Map();
+    this.set = new Set();
 
-    this.chooseOrder = function(from, to) {
-        return (from < to) ? [from, to] : [to, from];
-    };
+    // Implementation of Szudzik pairing function from:
+    // https://codepen.io/sachmata/post/elegant-pairing
+    this._pair = function(x, y) {
+        return (x >= y) 
+            ? (x * x + x + y) 
+            : (y * y + x);
+    }
+    this._unpair = function(pair) {
+        const sqrtz = Math.floor(Math.sqrt(pair));
+        const sqz = sqrtz * sqrtz;
+        return ((pair - sqz) >= sqrtz) 
+            ? [sqrtz, pair - sqz - sqrtz] 
+            : [pair - sqz, sqrtz];
+    }
 
     this.add = function(from, to) {
-        let [usedFrom, usedTo] = this.chooseOrder(from, to);
-
-        if (!this.seen.has(usedFrom)) {
-            this.seen.set(usedFrom, new Set());
-        }
-
-        this.seen.get(usedFrom).add(usedTo);
+        const pair = this._pair(from, to);
+        this.set.add(pair);
         return this;
     };
 
     this.has = function(from, to) {
-        let [usedFrom, usedTo] = this.chooseOrder(from, to);
-
-        return (
-            this.seen.has(usedFrom) &&
-            this.seen.get(usedFrom).has(usedTo)
-        );
+        return this.set.has(this._pair(from, to));
     };
 
     this.delete = function(from, to) {
-        let [usedFrom, usedTo] = this.chooseOrder(from, to);
-
-        if (!this.seen.has(usedFrom) ||
-            !this.seen.get(usedFrom).has(usedTo)
-        ) return false;
-
-        this.seen.get(usedFrom).delete(usedTo);
-        if (this.seen.get(usedFrom).size === 0) {
-            this.seen.delete(usedFrom);
-        }
-
+        const pair = this._pair(from, to);
+        if (!this.set.has(pair)) return false;
+        this.set.delete(pair);
         return true;
     };
 }
 
 EdgeSet.prototype[Symbol.iterator] = function*() {
-    for (const [usedFrom, set] of this.seen) {
-        for (const usedTo of set) {
-            yield [usedFrom, usedTo];
-        }
+    for (const pair of this.set) {
+        yield this._unpair(pair);
     }
 };
 

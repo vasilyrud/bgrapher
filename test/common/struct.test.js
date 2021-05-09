@@ -97,8 +97,7 @@ describe('EdgeSet', () => {
         seen.add(1,2);
         seen.add(1,2);
         expect(seen.has(1,2)).to.be.true;
-        expect(seen.seen.size).to.be.equal(1);
-        expect(seen.seen.get(1).size).to.be.equal(1);
+        expect(seen.set.size).to.be.equal(1);
     });
 
     it('Add and has in reverse', () => {
@@ -107,8 +106,10 @@ describe('EdgeSet', () => {
         seen.add(1,2);
         seen.add(4,3);
         expect(seen.has(0,0)).to.be.true;
-        expect(seen.has(2,1)).to.be.true;
-        expect(seen.has(3,4)).to.be.true;
+        expect(seen.has(1,2)).to.be.true;
+        expect(seen.has(2,1)).to.be.false;
+        expect(seen.has(4,3)).to.be.true;
+        expect(seen.has(3,4)).to.be.false;
     });
 
     it('Add the same in reverse', () => {
@@ -116,30 +117,28 @@ describe('EdgeSet', () => {
         seen.add(1,2);
         seen.add(2,1);
         expect(seen.has(1,2)).to.be.true;
-        expect(seen.seen.size).to.be.equal(1);
-        expect(seen.seen.get(1).size).to.be.equal(1);
+        expect(seen.has(2,1)).to.be.true;
+        expect(seen.set.size).to.be.equal(2);
     });
 
-    it('Delete from set', () => {
+    it('Delete from edge end', () => {
         let seen = new EdgeSet();
         seen.add(1,2);
         seen.add(1,3);
         seen.delete(1,2);
         expect(seen.has(1,2)).to.be.false;
         expect(seen.has(1,3)).to.be.true;
-        expect(seen.seen.size).to.be.equal(1);
-        expect(seen.seen.get(1).size).to.be.equal(1);
+        expect(seen.set.size).to.be.equal(1);
     });
 
-    it('Delete from object', () => {
+    it('Delete from edge start', () => {
         let seen = new EdgeSet();
         seen.add(1,2);
         seen.add(2,3);
         seen.delete(1,2);
         expect(seen.has(1,2)).to.be.false;
         expect(seen.has(2,3)).to.be.true;
-        expect(seen.seen.size).to.be.equal(1);
-        expect(seen.seen.get(2).size).to.be.equal(1);
+        expect(seen.set.size).to.be.equal(1);
     });
 
     it('Delete and make empty', () => {
@@ -147,7 +146,7 @@ describe('EdgeSet', () => {
         seen.add(1,2);
         seen.delete(1,2);
         expect(seen.has(1,2)).to.be.false;
-        expect(seen.seen.size).to.be.equal(0);
+        expect(seen.set.size).to.be.equal(0);
     });
 
     it('Iterates in insertion order', () => {
@@ -155,6 +154,7 @@ describe('EdgeSet', () => {
         const edges = [
             [1,2],
             [6,7],
+            [1,0],
             [6,9],
             [6,8],
             [3,4],

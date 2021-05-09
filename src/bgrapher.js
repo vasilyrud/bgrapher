@@ -192,7 +192,7 @@ var BGrapher = function(
         ];
     }
 
-    this._orderEdgeIDs = function(startID, endID) {
+    this._orderedEdgeIDs = function(startID, endID) {
         const [start,end] = this._edgeData(startID, endID);
         if (!start || !end) return [null, null];
         return start.isSource
@@ -202,10 +202,10 @@ var BGrapher = function(
 
     this._edgeEndEdges = function*(id) {
         const edgeEnd = this.edgeEndsData[id];
-        if (edgeEnd) {
-            for (const otherID of edgeEnd.edgeEnds) {
-                yield this._orderEdgeIDs(id, otherID);
-            }
+        if (!edgeEnd) return;
+
+        for (const otherID of edgeEnd.edgeEnds) {
+            yield this._orderedEdgeIDs(id, otherID);
         }
     }
 
@@ -262,17 +262,29 @@ var BGrapher = function(
     }
 
     this.activeEdges = function*() {
+        let seenEdges = new EdgeSet();
+
         for (const [startID, endID] of this._activeEdgeIDs) {
             const [start, end] = this._edgeData(startID, endID);
-            if (!start || !end) continue;
 
+            if (!start || 
+                !end   || 
+                seenEdges.has(startID, endID)
+            ) continue;
+
+            seenEdges.add(startID, endID);
             yield [start, end];
         }
 
         for (const [startID, endID] of this._hoveredEdgeIDs) {
             const [start, end] = this._edgeData(startID, endID);
-            if (!start || !end) continue;
 
+            if (!start || 
+                !end   || 
+                seenEdges.has(startID, endID)
+            ) continue;
+
+            seenEdges.add(startID, endID);
             yield [start, end];
         }
     }
