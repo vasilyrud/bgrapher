@@ -37,6 +37,7 @@ function BgraphEventState() {
         y: 0,
     };
 
+    this.hover = false;
     this.cur = {
         x: 0,
         y: 0,
@@ -135,7 +136,7 @@ function mousemovePan(bgraphState, eventState, bgrapher, event) {
     eventState.panningPrev.y = getLocal('y', event);
 }
 
-function mousemoveHover(bgraphState, eventState, bgrapher) {
+function hoverBgraph(bgraphState, eventState, bgrapher) {
     const hoveredBlock   = bgrapher.curBlock(bgraphState, eventState.cur);
     const hoveredEdgeEnd = bgrapher.curEdgeEnd(bgraphState, eventState.cur);
 
@@ -149,7 +150,10 @@ function mousemoveHover(bgraphState, eventState, bgrapher) {
         bgrapher.hoverBlock(null);
         bgrapher.hoverEdgeEnd(null);
     }
+}
 
+function mousemoveHover(bgraphState, eventState, bgrapher) {
+    hoverBgraph(bgraphState, eventState, bgrapher);
     bgraphState.update();
 }
 
@@ -160,6 +164,8 @@ function initView(bgraphState, bgrapher) {
 
 let eventHandlers = {
     wheel: function(bgraphState, eventState, bgrapher, event) {
+        eventState.hover = true;
+
         eventState.cur.x = getLocal('x', event);
         eventState.cur.y = getLocal('y', event);
 
@@ -171,6 +177,7 @@ let eventHandlers = {
         bgraphState.offset.x = getZoomOffset('x', bgraphState, eventState, bgrapher, deltaUsed);
         bgraphState.offset.y = getZoomOffset('y', bgraphState, eventState, bgrapher, deltaUsed);
 
+        hoverBgraph(bgraphState, eventState, bgrapher);
         bgraphState.update();
     },
     mousedown: function(bgraphState, eventState, bgrapher, event) {
@@ -209,10 +216,18 @@ let eventHandlers = {
         ) event.preventDefault();
     },
     mouseout: function(bgraphState, eventState, bgrapher, event) {
+        eventState.hover   = false;
         eventState.panning = false;
         eventState.isClick = false;
+
+        bgrapher.hoverBlock(null);
+        bgrapher.hoverEdgeEnd(null);
+
+        bgraphState.update();
     },
     mousemove: function(bgraphState, eventState, bgrapher, event) {
+        eventState.hover = true;
+
         eventState.cur.x = getLocal('x', event);
         eventState.cur.y = getLocal('y', event);
 
@@ -257,6 +272,8 @@ const bgraphEventsImpl = {
     },
 
     cur: function(eventState) {
+        if (!eventState.hover)
+            return { x: null, y: null};
         return eventState.cur;
     },
 };

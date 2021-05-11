@@ -158,8 +158,7 @@ var BGrapher = function(
     this._drawEdges = function(bgraphState) {
         for (const [start, end] of this.activeEdges())
             this._grapherImpl.drawBezierEdge(bgraphState, this._grapherState, 
-                this._edgesImpl.generatePoints(start, end)
-            );
+                this._edgesImpl.generatePoints(start, end));
     }
 
     this._drawHoverInfo = function() {
@@ -174,6 +173,8 @@ var BGrapher = function(
 
     this._printCoords = function(bgraphState) {
         const cur = this._eventsImpl.cur(this._eventState);
+        if (cur.x === null || cur.y === null) return;
+
         return this._grapherImpl.printCoords(this._grapherState,
             curBgraphPixel('x', bgraphState, cur),
             curBgraphPixel('y', bgraphState, cur),
