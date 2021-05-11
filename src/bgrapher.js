@@ -310,37 +310,40 @@ var BGrapher = function(
 
     this._setHoveredEdgeEnd = function(id) {
         if (id === null) return;
-        this._hoveredEdgeEndIDs.add(id);
 
         for (const [startID, endID] of this._edgeEndEdges(id)) {
-            if (id === startID) this._hoveredEdgeEndIDs.add(endID);
-            else this._hoveredEdgeEndIDs.add(startID);
-
             this._hoveredEdgeIDs.add(startID, endID);
+        }
+
+        this._hoveredEdgeEndIDs.add(id);
+        for (const edgeEndID of this.edgeEndsData[id].edgeEnds) {
+            this._hoveredEdgeEndIDs.add(edgeEndID);
         }
     }
 
     this._unsetHoveredEdgeEnd = function(id) {
         if (id === null) return;
-        this._hoveredEdgeEndIDs.delete(id);
 
         for (const [startID, endID] of this._edgeEndEdges(id)) {
-            if (id === startID) this._hoveredEdgeEndIDs.delete(endID);
-            else this._hoveredEdgeEndIDs.delete(startID);
-
             this._hoveredEdgeIDs.delete(startID, endID);
+        }
+
+        this._hoveredEdgeEndIDs.delete(id);
+        for (const edgeEndID of this.edgeEndsData[id].edgeEnds) {
+            this._hoveredEdgeEndIDs.delete(edgeEndID);
         }
     }
 
     this._setActiveEdgeEnd = function(id) {
         if (id === null) return;
-        this._toggledEdgeEndIDs.add(id);
 
         for (const [startID, endID] of this._edgeEndEdges(id)) {
-            if (id === startID) this._toggledEdgeEndIDs.add(endID);
-            else this._toggledEdgeEndIDs.add(startID);
-
             this._toggledEdgeIDs.add(startID, endID);
+        }
+
+        this._toggledEdgeEndIDs.add(id);
+        for (const edgeEndID of this.edgeEndsData[id].edgeEnds) {
+            this._toggledEdgeEndIDs.add(edgeEndID);
         }
     }
 
@@ -354,15 +357,15 @@ var BGrapher = function(
 
     this._unsetActiveEdgeEnd = function(id) {
         if (id === null) return;
-        this._toggledEdgeEndIDs.delete(id);
 
         for (const [startID, endID] of this._edgeEndEdges(id)) {
             this._toggledEdgeIDs.delete(startID, endID);
         }
 
+        this._toggledEdgeEndIDs.delete(id);
         for (const edgeEndID of this.edgeEndsData[id].edgeEnds) {
-            if (!this._doUnsetEdgeEnd(edgeEndID)) continue;
-            this._toggledEdgeEndIDs.delete(edgeEndID);
+            if (this._doUnsetEdgeEnd(edgeEndID))
+                this._toggledEdgeEndIDs.delete(edgeEndID);
         }
     }
 
