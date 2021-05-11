@@ -20,6 +20,11 @@ describe(require('path').basename(__filename), () => {
 const fakeGrapher = {
     initBgraph: () => {},
     initTestBgraphLarge: () => {},
+    getBgraphWidth: (s) => { return s.bw; },
+    getBgraphHeight: (s) => { return s.bh; },
+    getClientWidth: (s) => { return s.cw; },
+    getClientHeight: (s) => { return s.ch; },
+    setClientSize: (s,w,h) => { s.cw = w; s.ch = h; },
 };
 
 describe('initBgraph data', () => {
@@ -304,6 +309,38 @@ describe('initBgraph lookups', () => {
             testLookup(bgrapher._edgeEndsLookup, 0, null);
             testLookup(bgrapher._edgeEndsLookup, 1, 0);
         });
+    });
+});
+
+describe('size functions', () => {
+    it('gets bgraph dimensions', () => {
+        let bgrapher = new BGrapher(fakeGrapher);
+        bgrapher._grapherState = { bw: 12 , bh: 34 };
+
+        expect(bgrapher.bgraphWidth()).to.equal(12);
+        expect(bgrapher.bgraphHeight()).to.equal(34);
+    });
+
+    it('gets client dimensions', () => {
+        let bgrapher = new BGrapher(fakeGrapher);
+        bgrapher._grapherState = { cw: 12 , ch: 34 };
+
+        expect(bgrapher.clientWidth()).to.equal(12);
+        expect(bgrapher.clientHeight()).to.equal(34);
+    });
+
+    it('change client dimensions', () => {
+        let bgrapher = new BGrapher(fakeGrapher);
+        bgrapher._grapherState = { cw: 12 , ch: 34 };
+        bgrapher._bgraphElement = {
+            clientWidth: 56,
+            clientHeight: 78,
+        };
+        expect(bgrapher.clientWidth()).to.equal(12);
+        expect(bgrapher.clientHeight()).to.equal(34);
+        bgrapher.updateClientSize();
+        expect(bgrapher.clientWidth()).to.equal(56);
+        expect(bgrapher.clientHeight()).to.equal(78);
     });
 });
 

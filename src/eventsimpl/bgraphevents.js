@@ -233,7 +233,7 @@ let eventHandlers = {
     resize: function(bgraphState, eventState, bgrapher, event) {
         initView(bgraphState, bgrapher);
 
-        bgrapher.updateBgraphSize();
+        bgrapher.updateClientSize();
         bgraphState.update();
     },
 };

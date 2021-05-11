@@ -106,7 +106,7 @@ var BGrapher = function(
         this._bgraphElement = bgraphElement;
 
         this._grapherImpl.populateElement(this._grapherState, this._bgraphElement);
-        this.updateBgraphSize();
+        this.updateClientSize();
         this._eventState = this._eventsImpl.initEvents(bgraphState, this, this._bgraphElement);
 
         bgraphState.attach(this);
@@ -123,7 +123,7 @@ var BGrapher = function(
     this.clientHeight = function() {
         return this._grapherImpl.getClientHeight(this._grapherState); }
 
-    this.updateBgraphSize = function() {
+    this.updateClientSize = function() {
         this._grapherImpl.setClientSize(this._grapherState, 
             this._bgraphElement.clientWidth, 
             this._bgraphElement.clientHeight
