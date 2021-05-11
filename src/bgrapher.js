@@ -87,19 +87,19 @@ var BGrapher = function(
         this._hoveredBlockID = null;
         this._hoveredEdgeEndID = null;
 
-        this._activeBlockIDs = new Set();
+        this._toggledBlockIDs = new Set();
         this._hoveredEdgeEndIDs = new Set();
-        this._activeEdgeEndIDs = new Set();
+        this._toggledEdgeEndIDs = new Set();
         this._hoveredEdgeIDs = new EdgeSet();
-        this._activeEdgeIDs = new EdgeSet();
+        this._toggledEdgeIDs = new EdgeSet();
     }
 
     this._initTestBgraphLarge = function(numCols, numRows) {
         this._grapherState = this._grapherImpl.initTestBgraphLarge(numCols, numRows);
         this.blocksData   = {};
         this.edgeEndsData = {};
-        this._activeBlockIDs   = new Set();
-        this._activeEdgeEndIDs = new Set();
+        this._toggledBlockIDs   = new Set();
+        this._toggledEdgeEndIDs = new Set();
     }
 
     this.populateElement = function(bgraphState, bgraphElement) {
@@ -183,7 +183,7 @@ var BGrapher = function(
     this.activeBlocks = function*() {
         let seenBlocks = new Set();
 
-        for (const activeBlockID of this._activeBlockIDs) {
+        for (const activeBlockID of this._toggledBlockIDs) {
             const block = this.blocksData[activeBlockID];
             if (!block ||
                 seenBlocks.has(block.id)
@@ -205,7 +205,7 @@ var BGrapher = function(
     this.activeEdgeEnds = function*() {
         let seenEdgeEnds = new Set();
 
-        for (const activeEdgeEndID of this._activeEdgeEndIDs) {
+        for (const activeEdgeEndID of this._toggledEdgeEndIDs) {
             const edgeEnd = this.edgeEndsData[activeEdgeEndID];
             if (!edgeEnd ||
                 seenEdgeEnds.has(edgeEnd.id)
@@ -229,7 +229,7 @@ var BGrapher = function(
     this.activeEdges = function*() {
         let seenEdges = new EdgeSet();
 
-        for (const [startID, endID] of this._activeEdgeIDs) {
+        for (const [startID, endID] of this._toggledEdgeIDs) {
             const [start, end] = this._edgeData(startID, endID);
 
             if (!start || 
@@ -256,7 +256,7 @@ var BGrapher = function(
 
     this._setActiveBlock = function(blockID) {
         if (blockID === null) return;
-        this._activeBlockIDs.add(blockID);
+        this._toggledBlockIDs.add(blockID);
 
         for (const edgeEndID of this.blocksData[blockID].edgeEnds) {
             this._setActiveEdgeEnd(edgeEndID);
@@ -265,7 +265,7 @@ var BGrapher = function(
 
     this._unsetActiveBlock = function(blockID) {
         if (blockID === null) return;
-        this._activeBlockIDs.delete(blockID);
+        this._toggledBlockIDs.delete(blockID);
 
         for (const edgeEndID of this.blocksData[blockID].edgeEnds) {
             this._unsetActiveEdgeEnd(edgeEndID);
@@ -298,11 +298,11 @@ var BGrapher = function(
 
     this._doCreateEdgeEnd = function(id) {
         if (this.edgeEndsData[id].edgeEnds.length === 0 &&
-            !this._activeEdgeEndIDs.has(id)
+            !this._toggledEdgeEndIDs.has(id)
         ) return true;
 
         for (const [startID, endID] of this._edgeEndEdges(id)) {
-            if (!this._activeEdgeIDs.has(startID, endID))
+            if (!this._toggledEdgeIDs.has(startID, endID))
                 return true;
         }
         return false;
@@ -334,19 +334,19 @@ var BGrapher = function(
 
     this._setActiveEdgeEnd = function(id) {
         if (id === null) return;
-        this._activeEdgeEndIDs.add(id);
+        this._toggledEdgeEndIDs.add(id);
 
         for (const [startID, endID] of this._edgeEndEdges(id)) {
-            if (id === startID) this._activeEdgeEndIDs.add(endID);
-            else this._activeEdgeEndIDs.add(startID);
+            if (id === startID) this._toggledEdgeEndIDs.add(endID);
+            else this._toggledEdgeEndIDs.add(startID);
 
-            this._activeEdgeIDs.add(startID, endID);
+            this._toggledEdgeIDs.add(startID, endID);
         }
     }
 
     this._doUnsetEdgeEnd = function(id) {
         for (const edgeEndID of this.edgeEndsData[id].edgeEnds) {
-            if (this._activeEdgeIDs.has(...this._orderedEdgeIDs(id, edgeEndID)))
+            if (this._toggledEdgeIDs.has(...this._orderedEdgeIDs(id, edgeEndID)))
                 return false;
         }
         return true;
@@ -354,15 +354,15 @@ var BGrapher = function(
 
     this._unsetActiveEdgeEnd = function(id) {
         if (id === null) return;
-        this._activeEdgeEndIDs.delete(id);
+        this._toggledEdgeEndIDs.delete(id);
 
         for (const [startID, endID] of this._edgeEndEdges(id)) {
-            this._activeEdgeIDs.delete(startID, endID);
+            this._toggledEdgeIDs.delete(startID, endID);
         }
 
         for (const edgeEndID of this.edgeEndsData[id].edgeEnds) {
             if (!this._doUnsetEdgeEnd(edgeEndID)) continue;
-            this._activeEdgeEndIDs.delete(edgeEndID);
+            this._toggledEdgeEndIDs.delete(edgeEndID);
         }
     }
 
@@ -371,7 +371,7 @@ var BGrapher = function(
             !(blockID in this.blocksData)
         ) return false;
 
-        if (this._activeBlockIDs.has(blockID)) {
+        if (this._toggledBlockIDs.has(blockID)) {
             this._unsetActiveBlock(blockID);
         } else {
             this._setActiveBlock(blockID);
