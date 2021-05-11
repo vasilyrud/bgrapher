@@ -131,19 +131,17 @@ var BGrapher = function(
     }
 
     this.draw = function(bgraphState) {
-        const cur = this._eventsImpl.cur(this._eventState);
-
         this._grapherImpl.drawBgraph(bgraphState, this._grapherState);
         this._drawBlocks(bgraphState);
         this._drawEdgeEnds(bgraphState);
         this._drawEdges(bgraphState);
 
         if (this.doDrawHoverInfo) {
-            this._drawHoverInfo(bgraphState, cur);
+            this._drawHoverInfo(bgraphState);
         }
 
         if (process.env.NODE_ENV === 'development') {
-            this._printCoords(bgraphState, cur);
+            this._printCoords(bgraphState);
         }
     }
 
@@ -380,18 +378,14 @@ var BGrapher = function(
             );
     }
 
-    this._drawHoverInfo = function(bgraphState, cur) {
-        const edgeEndData = this.curEdgeEnd(bgraphState, cur);
-        if (edgeEndData) {
-            this._grapherImpl.drawHoverInfo(this._grapherState, edgeEndData, 'E');
-            return;
-        }
+    this._drawHoverInfo = function() {
+        const hoveredBlock   = this.hoveredBlock();
+        const hoveredEdgeEnd = this.hoveredEdgeEnd();
 
-        const blockData = this.curBlock(bgraphState, cur);
-        if (blockData) {
-            this._grapherImpl.drawHoverInfo(this._grapherState, blockData, 'B');
-            return;
-        }
+        if (hoveredBlock) this._grapherImpl.drawHoverInfo(
+            this._grapherState, hoveredBlock, 'B');
+        if (hoveredEdgeEnd) this._grapherImpl.drawHoverInfo(
+            this._grapherState, hoveredEdgeEnd, 'E');
     }
 
     this.selectBlock = function(blockID) {
@@ -492,7 +486,8 @@ var BGrapher = function(
         return this.edgeEndsData[this._edgeEndsLookup.get(x,y)];
     }
 
-    this._printCoords = function(bgraphState, cur) {
+    this._printCoords = function(bgraphState) {
+        const cur = this._eventsImpl.cur(this._eventState);
         return this._grapherImpl.printCoords(this._grapherState,
             curBgraphPixel('x', bgraphState, cur),
             curBgraphPixel('y', bgraphState, cur),
