@@ -145,6 +145,115 @@ var BGrapher = function(
         }
     }
 
+    this._drawBlocks = function(bgraphState) {
+        for (const block of this.activeBlocks())
+            this._grapherImpl.drawBlock(bgraphState, this._grapherState, block);
+    }
+
+    this._drawEdgeEnds = function(bgraphState) {
+        for (const edgeEnd of this.activeEdgeEnds())
+            this._grapherImpl.drawEdgeEnd(bgraphState, this._grapherState, edgeEnd);
+    }
+
+    this._drawEdges = function(bgraphState) {
+        for (const [start, end] of this.activeEdges())
+            this._grapherImpl.drawBezierEdge(bgraphState, this._grapherState, 
+                this._edgesImpl.generatePoints(start, end)
+            );
+    }
+
+    this._drawHoverInfo = function() {
+        const hoveredBlock   = this.hoveredBlock();
+        const hoveredEdgeEnd = this.hoveredEdgeEnd();
+
+        if (hoveredBlock) this._grapherImpl.drawHoverInfo(
+            this._grapherState, hoveredBlock, 'B');
+        if (hoveredEdgeEnd) this._grapherImpl.drawHoverInfo(
+            this._grapherState, hoveredEdgeEnd, 'E');
+    }
+
+    this._printCoords = function(bgraphState) {
+        const cur = this._eventsImpl.cur(this._eventState);
+        return this._grapherImpl.printCoords(this._grapherState,
+            curBgraphPixel('x', bgraphState, cur),
+            curBgraphPixel('y', bgraphState, cur),
+        );
+    }
+
+    this.activeBlocks = function*() {
+        let seenBlocks = new Set();
+
+        for (const activeBlockID of this._activeBlockIDs) {
+            const block = this.blocksData[activeBlockID];
+            if (!block ||
+                seenBlocks.has(block.id)
+            ) continue;
+
+            seenBlocks.add(block.id);
+            yield block;
+        }
+
+        const hoveredBlock = this.hoveredBlock();
+        if (!hoveredBlock ||
+            seenBlocks.has(hoveredBlock.id)
+        ) return;
+
+        seenBlocks.add(hoveredBlock.id);
+        yield hoveredBlock;
+    }
+
+    this.activeEdgeEnds = function*() {
+        let seenEdgeEnds = new Set();
+
+        for (const activeEdgeEndID of this._activeEdgeEndIDs) {
+            const edgeEnd = this.edgeEndsData[activeEdgeEndID];
+            if (!edgeEnd ||
+                seenEdgeEnds.has(edgeEnd.id)
+            ) continue;
+
+            seenEdgeEnds.add(edgeEnd.id);
+            yield edgeEnd;
+        }
+
+        for (const hoveredEdgeEndID of this._hoveredEdgeEndIDs) {
+            const edgeEnd = this.edgeEndsData[hoveredEdgeEndID];
+            if (!edgeEnd ||
+                seenEdgeEnds.has(edgeEnd.id)
+            ) continue;
+
+            seenEdgeEnds.add(edgeEnd.id);
+            yield edgeEnd;
+        }
+    }
+
+    this.activeEdges = function*() {
+        let seenEdges = new EdgeSet();
+
+        for (const [startID, endID] of this._activeEdgeIDs) {
+            const [start, end] = this._edgeData(startID, endID);
+
+            if (!start || 
+                !end   || 
+                seenEdges.has(startID, endID)
+            ) continue;
+
+            seenEdges.add(startID, endID);
+            yield [start, end];
+        }
+
+        for (const [startID, endID] of this._hoveredEdgeIDs) {
+            const [start, end] = this._edgeData(startID, endID);
+
+            if (!start || 
+                !end   || 
+                seenEdges.has(startID, endID)
+            ) continue;
+
+            seenEdges.add(startID, endID);
+            yield [start, end];
+        }
+    }
+
     this._setActiveBlock = function(blockID) {
         if (blockID === null) return;
         this._activeBlockIDs.add(blockID);
@@ -161,21 +270,6 @@ var BGrapher = function(
         for (const edgeEndID of this.blocksData[blockID].edgeEnds) {
             this._unsetActiveEdgeEnd(edgeEndID);
         }
-    }
-
-    this.toggleBlock = function(blockID) {
-        if (blockID === null || 
-            !(blockID in this.blocksData)
-        ) return false;
-
-        if (this._activeBlockIDs.has(blockID)) {
-            this._unsetActiveBlock(blockID);
-        } else {
-            this._setActiveBlock(blockID);
-        }
-
-        this.toggleBlockCallback(this.blocksData[blockID]);
-        return true;
     }
 
     this._edgeData = function(startID, endID) {
@@ -272,6 +366,21 @@ var BGrapher = function(
         }
     }
 
+    this.toggleBlock = function(blockID) {
+        if (blockID === null || 
+            !(blockID in this.blocksData)
+        ) return false;
+
+        if (this._activeBlockIDs.has(blockID)) {
+            this._unsetActiveBlock(blockID);
+        } else {
+            this._setActiveBlock(blockID);
+        }
+
+        this.toggleBlockCallback(this.blocksData[blockID]);
+        return true;
+    }
+
     this.toggleEdgeEnd = function(edgeEndID) {
         if (edgeEndID === null ||
             !(edgeEndID in this.edgeEndsData)
@@ -285,107 +394,6 @@ var BGrapher = function(
 
         this.toggleEdgeEndCallback(this.edgeEndsData[edgeEndID]);
         return true;
-    }
-
-    this.activeBlocks = function*() {
-        let seenBlocks = new Set();
-
-        for (const activeBlockID of this._activeBlockIDs) {
-            const block = this.blocksData[activeBlockID];
-            if (!block ||
-                seenBlocks.has(block.id)
-            ) continue;
-
-            seenBlocks.add(block.id);
-            yield block;
-        }
-
-        const hoveredBlock = this.hoveredBlock();
-        if (!hoveredBlock ||
-            seenBlocks.has(hoveredBlock.id)
-        ) return;
-
-        seenBlocks.add(hoveredBlock.id);
-        yield hoveredBlock;
-    }
-
-    this.activeEdgeEnds = function*() {
-        let seenEdgeEnds = new Set();
-
-        for (const activeEdgeEndID of this._activeEdgeEndIDs) {
-            const edgeEnd = this.edgeEndsData[activeEdgeEndID];
-            if (!edgeEnd ||
-                seenEdgeEnds.has(edgeEnd.id)
-            ) continue;
-
-            seenEdgeEnds.add(edgeEnd.id);
-            yield edgeEnd;
-        }
-
-        for (const hoveredEdgeEndID of this._hoveredEdgeEndIDs) {
-            const edgeEnd = this.edgeEndsData[hoveredEdgeEndID];
-            if (!edgeEnd ||
-                seenEdgeEnds.has(edgeEnd.id)
-            ) continue;
-
-            seenEdgeEnds.add(edgeEnd.id);
-            yield edgeEnd;
-        }
-    }
-
-    this.activeEdges = function*() {
-        let seenEdges = new EdgeSet();
-
-        for (const [startID, endID] of this._activeEdgeIDs) {
-            const [start, end] = this._edgeData(startID, endID);
-
-            if (!start || 
-                !end   || 
-                seenEdges.has(startID, endID)
-            ) continue;
-
-            seenEdges.add(startID, endID);
-            yield [start, end];
-        }
-
-        for (const [startID, endID] of this._hoveredEdgeIDs) {
-            const [start, end] = this._edgeData(startID, endID);
-
-            if (!start || 
-                !end   || 
-                seenEdges.has(startID, endID)
-            ) continue;
-
-            seenEdges.add(startID, endID);
-            yield [start, end];
-        }
-    }
-
-    this._drawBlocks = function(bgraphState) {
-        for (const block of this.activeBlocks())
-            this._grapherImpl.drawBlock(bgraphState, this._grapherState, block);
-    }
-
-    this._drawEdgeEnds = function(bgraphState) {
-        for (const edgeEnd of this.activeEdgeEnds())
-            this._grapherImpl.drawEdgeEnd(bgraphState, this._grapherState, edgeEnd);
-    }
-
-    this._drawEdges = function(bgraphState) {
-        for (const [start, end] of this.activeEdges())
-            this._grapherImpl.drawBezierEdge(bgraphState, this._grapherState, 
-                this._edgesImpl.generatePoints(start, end)
-            );
-    }
-
-    this._drawHoverInfo = function() {
-        const hoveredBlock   = this.hoveredBlock();
-        const hoveredEdgeEnd = this.hoveredEdgeEnd();
-
-        if (hoveredBlock) this._grapherImpl.drawHoverInfo(
-            this._grapherState, hoveredBlock, 'B');
-        if (hoveredEdgeEnd) this._grapherImpl.drawHoverInfo(
-            this._grapherState, hoveredEdgeEnd, 'E');
     }
 
     this.selectBlock = function(blockID) {
@@ -484,14 +492,6 @@ var BGrapher = function(
 
         if (!this._edgeEndsLookup) return null;
         return this.edgeEndsData[this._edgeEndsLookup.get(x,y)];
-    }
-
-    this._printCoords = function(bgraphState) {
-        const cur = this._eventsImpl.cur(this._eventState);
-        return this._grapherImpl.printCoords(this._grapherState,
-            curBgraphPixel('x', bgraphState, cur),
-            curBgraphPixel('y', bgraphState, cur),
-        );
     }
 };
 
