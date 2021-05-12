@@ -16,11 +16,6 @@ limitations under the License.
 
 import { Direction } from '../common/lookup.js'
 
-// Whether to disable making small curve 
-// adjustments for visual appeal.
-// Particularly useful for testing.
-const RAW = false;
-
 function makeForwardCurve(x, y) {
     /*
         Assumes y is positive.
@@ -30,8 +25,7 @@ function makeForwardCurve(x, y) {
     // Decreases curve intensity:
     // By   0 at small x
     // By y/2 at large x
-    let diff = (Math.abs(x) * (y/2)) / (Math.abs(x) + 1);
-    if (RAW) diff = 0;
+    const diff = (Math.abs(x) * (y/2)) / (Math.abs(x) + 1);
 
     return [
         0, 0, 0, y-diff, x, 0+diff, 
@@ -45,19 +39,14 @@ function makeBackCurveDirect(x, y) {
         x can be both positive or negative.
     */
 
-    // Shifts curve center slightly away from y-axis
-    let offset = x/11;
-    if (RAW) offset = 0;
-
-    let startDiff = x/2 + offset;
-    let endDiff   = x/2 - offset;
-    let startCurveIntensity = 2 + Math.abs(startDiff)/2;
-    let endCurveIntensity   = 2 + Math.abs(endDiff)  /2;
+    // Increases curve intensity:
+    // By  ~1 at small x
+    // By x/8 at large x
+    const curveIntensity = 1 + Math.abs(x) / 8;
 
     return [
-        0, 0, 0, startCurveIntensity, startDiff, startCurveIntensity, 
-        startDiff, 0, x-endDiff, y, startDiff, 0, 
-        x-endDiff, y, x-endDiff, y-endCurveIntensity, x, y-endCurveIntensity, 
+        0, 0, 0, curveIntensity, x/2, curveIntensity,
+        x/2, y/2, x/2, y-curveIntensity, x, y-curveIntensity,
         x, y
     ];
 }
@@ -69,20 +58,17 @@ function makeBackCurveAround(x, y) {
     */
 
     // Tuned for visual effect
-    let curveDistance = 2.35;
-    if (RAW) curveDistance = 2;
-
-    let small = 2;
-    let big   = 2 + Math.abs(x);
-    let [startCurveIntensity, endCurveIntensity] = (x < 0) ? [big, small] : [small, big]
-    let c = (x < 0) ? x : 0;
+    const curveDistance = 2.35;
+    const small = 2;
+    const big   = 2 + Math.abs(x);
+    const [startCurveIntensity, endCurveIntensity] = (x < 0) ? [big, small] : [small, big]
+    const c = (x < 0) ? x : 0;
 
     return [
-        0, 0, 0, startCurveIntensity, c-curveDistance, startCurveIntensity, 
-        c-curveDistance, 0, c-curveDistance, y, c-curveDistance, 0, 
-        c-curveDistance, y, c-curveDistance, y-endCurveIntensity, x, y-endCurveIntensity, 
+        0, 0, 0, startCurveIntensity, c-curveDistance, startCurveIntensity,
+        c-curveDistance, y/2, c-curveDistance, y-endCurveIntensity, x, y-endCurveIntensity,
         x, y
-    ]
+    ];
 }
 
 function pointsMove(points, x, y) {

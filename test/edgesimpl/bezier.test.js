@@ -1,4 +1,6 @@
-import { expect } from 'chai';
+import { expect, use } from 'chai';
+import chaiAlmost from 'chai-almost';
+use(chaiAlmost(0.1));
 
 import { Direction } from 'common/lookup.js';
 import bezierRewire, { bezierImpl } from 'edgesimpl/bezier.js';
@@ -63,52 +65,48 @@ describe('Points transformation', () => {
 });
 
 describe('makeCurve', () => {
-    it('returns forward curve', () => {
-        expect(makeCurve(1,2,3,4)).to.eql([
-            1, 2, 1, 4, 3, 2, 
+    it('returns forward curve basic', () => {
+        expect(makeCurve(1,2,3,4)).to.almost.eql([
+            1, 2, 1, 3.3, 3, 2.6, 
             3, 4
         ]);
     });
 
     it('returns forward curve flipped X', () => {
-        expect(makeCurve(3,2,1,4)).to.eql([
-            3, 2, 3, 4, 1, 2, 
+        expect(makeCurve(3,2,1,4)).to.almost.eql([
+            3, 2, 3, 3.3, 1, 2.6, 
             1, 4
         ]);
     });
 
-    it('returns direct back curve', () => {
-        expect(makeCurve(10,20,1,2)).to.eql([
-            10, 20, 10, 24.25, 5.5, 24.25, 
-            5.5, 20, 5.5, 2, 5.5, 20, 
-            5.5, 2, 5.5, -2.25, 1, -2.25, 
+    it('returns direct back curve basic', () => {
+        expect(makeCurve(10,20,1,2)).to.almost.eql([
+            10, 20, 10, 22.1, 5.5, 22.1, 
+            5.5, 11, 5.5, -0.1, 1, -0.1, 
             1, 2
         ]);
     });
 
     it('returns direct back curve flipped X', () => {
-        expect(makeCurve(1,20,10,2)).to.eql([
-            1, 20, 1, 24.25, 5.5, 24.25, 
-            5.5, 20, 5.5, 2, 5.5, 20, 
-            5.5, 2, 5.5, -2.25, 10, -2.25, 
+        expect(makeCurve(1,20,10,2)).to.almost.eql([
+            1, 20, 1, 22.1, 5.5, 22.1, 
+            5.5, 11, 5.5, -0.1, 10, -0.1, 
             10, 2
         ]);
     });
 
     it('returns around back curve short bottom', () => {
-        expect(makeCurve(1,20,2,3)).to.eql([
-            1, 20, 1, 22, -1, 22, 
-            -1, 20, -1, 3, -1, 20, 
-            -1, 3, -1, 0, 2, 0, 
+        expect(makeCurve(1,20,2,3)).to.almost.eql([
+            1, 20, 1, 22, -1.3, 22, 
+            -1.3, 11.5, -1.3, 0, 2, 0, 
             2, 3
         ]);
     });
 
     it('returns around back curve short top', () => {
-        expect(makeCurve(2,20,1,3)).to.eql([
-            2, 20, 2, 23, -1, 23, 
-            -1, 20, -1, 3, -1, 20, 
-            -1, 3, -1, 1, 1, 1, 
+        expect(makeCurve(2,20,1,3)).to.almost.eql([
+            2, 20, 2, 23, -1.3, 23, 
+            -1.3, 11.5, -1.3, 1, 1, 1, 
             1, 3
         ]);
     });
@@ -117,7 +115,7 @@ describe('makeCurve', () => {
 describe('generatePoints', () => {
     describe('vertical', () => {
         const expectedDirectPoints = [
-            1.5, 3, 1.5, 4, 3.5, 3, 
+            1.5, 3, 1.5, 3.6, 3.5, 3.3, 
             3.5, 4
         ];
 
@@ -132,7 +130,7 @@ describe('generatePoints', () => {
                 direction: Direction['down'],
                 x: 3,
                 y: 4,
-            })).to.eql(expectedDirectPoints);
+            })).to.almost.eql(expectedDirectPoints);
         });
 
         it ('returns direct from dest', () => {
@@ -146,13 +144,13 @@ describe('generatePoints', () => {
                 direction: Direction['down'],
                 x: 1,
                 y: 2,
-            })).to.eql(expectedDirectPoints);
+            })).to.almost.eql(expectedDirectPoints);
         });
     });
 
     describe('horizontal', () => {
         const expectedDirectPoints = [
-            2, 2.5, 3, 2.5, 2, 4.5, 
+            2, 2.5, 2.6, 2.5, 2.3, 4.5, 
             3, 4.5
         ];
 
@@ -167,7 +165,7 @@ describe('generatePoints', () => {
                 direction: Direction['right'],
                 x: 3,
                 y: 4,
-            })).to.eql(expectedDirectPoints);
+            })).to.almost.eql(expectedDirectPoints);
         });
 
         it ('returns direct from dest', () => {
@@ -181,7 +179,7 @@ describe('generatePoints', () => {
                 direction: Direction['right'],
                 x: 1,
                 y: 2,
-            })).to.eql(expectedDirectPoints);
+            })).to.almost.eql(expectedDirectPoints);
         });
     });
 
