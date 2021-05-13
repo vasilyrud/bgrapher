@@ -16,6 +16,41 @@ limitations under the License.
 
 import { Direction } from '../common/lookup.js'
 
+function pointsMove(points, x, y) {
+    let newPoints = [];
+    for (let i = 0; i < points.length; i+=2) {
+        newPoints.push(points[i]   + x);
+        newPoints.push(points[i+1] + y);
+    }
+    return newPoints;
+}
+
+function pointsFlipXY(points) {
+    /*
+        Changes x and y around, which 
+        causes flip along y=x line.
+    */
+    let newPoints = [];
+    for (let i = 0; i < points.length; i+=2) {
+        newPoints.push(points[i+1]);
+        newPoints.push(points[i]);
+    }
+    return newPoints;
+}
+
+function pointsFlipY(points) {
+    /*
+        Negates y, which causes
+        flip along y=0 line.
+    */
+    let newPoints = [];
+    for (let i = 0; i < points.length; i+=2) {
+        newPoints.push(points[i]);
+        newPoints.push(-points[i+1]);
+    }
+    return newPoints;
+}
+
 function makeForwardCurve(x, y) {
     /*
         Assumes y is positive.
@@ -33,6 +68,36 @@ function makeForwardCurve(x, y) {
     ];
 }
 
+function makeUTurnCurve(x, y, intensity) {
+    /*
+        Assumes intensity is positive.
+        x can be both positive or negative.
+    */
+    const base = Math.max(0, y);
+    return [
+        0, 0, 0, base+intensity, x, base+intensity,
+        x, y
+    ];
+}
+
+function concatCurves(...curves) {
+    let result = [];
+
+    for (let i = 0; i < curves.length - 1; i++) {
+        const curve = curves[i];
+        if (curve[curve.length - 2] !== curves[i+1][0] ||
+            curve[curve.length - 1] !== curves[i+1][1]
+        ) throw new Error('Curve doesn\'t connect');
+
+        curve.pop();
+        curve.pop();
+        result = result.concat(curve);
+    }
+    result = result.concat(curves[curves.length - 1])
+
+    return result;
+}
+
 function makeBackCurveDirect(x, y) {
     /*
         Assumes y is negative.
@@ -44,11 +109,15 @@ function makeBackCurveDirect(x, y) {
     // By x/8 at large x
     const curveIntensity = 1 + Math.abs(x) / 8;
 
-    return [
-        0, 0, 0, curveIntensity, x/2, curveIntensity,
-        x/2, y/2, x/2, y-curveIntensity, x, y-curveIntensity,
-        x, y
-    ];
+    return concatCurves(
+        makeUTurnCurve(x/2, y/2, curveIntensity), 
+        pointsMove(
+            pointsFlipY(
+                makeUTurnCurve(x/2, -y/2, curveIntensity)
+            ), 
+            x/2, y/2
+        ),
+    );
 }
 
 function makeBackCurveAround(x, y) {
@@ -64,29 +133,15 @@ function makeBackCurveAround(x, y) {
     const [startCurveIntensity, endCurveIntensity] = (x < 0) ? [big, small] : [small, big]
     const c = (x < 0) ? x : 0;
 
-    return [
-        0, 0, 0, startCurveIntensity, c-curveDistance, startCurveIntensity,
-        c-curveDistance, y/2, c-curveDistance, y-endCurveIntensity, x, y-endCurveIntensity,
-        x, y
-    ];
-}
-
-function pointsMove(points, x, y) {
-    let newPoints = [];
-    for (let i = 0; i < points.length; i+=2) {
-        newPoints.push(points[i]   + x);
-        newPoints.push(points[i+1] + y);
-    }
-    return newPoints;
-}
-
-function pointsFlipXY(points) {
-    let newPoints = [];
-    for (let i = 0; i < points.length; i+=2) {
-        newPoints.push(points[i+1]);
-        newPoints.push(points[i]);
-    }
-    return newPoints;
+    return concatCurves(
+        makeUTurnCurve(c-curveDistance, y/2, startCurveIntensity), 
+        pointsMove(
+            pointsFlipY(
+                makeUTurnCurve(curveDistance-c+x, -y/2, endCurveIntensity)
+            ), 
+            c-curveDistance, y/2
+        ),
+    );
 }
 
 function makeCurve(startX, startY, endX, endY) {

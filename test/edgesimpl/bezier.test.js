@@ -5,12 +5,11 @@ use(chaiAlmost(0.1));
 import { Direction } from 'common/lookup.js';
 import bezierRewire, { bezierImpl } from 'edgesimpl/bezier.js';
 const pointsFlipXY = bezierRewire.__get__('pointsFlipXY');
+const pointsFlipY = bezierRewire.__get__('pointsFlipY');
 const pointsMove = bezierRewire.__get__('pointsMove');
 const makeCurve = bezierRewire.__get__('makeCurve');
 
 describe(require('path').basename(__filename), () => {
-
-bezierRewire.__Rewire__('RAW', true);
 
 describe('Points transformation', () => {
     const input = [
@@ -35,7 +34,21 @@ describe('Points transformation', () => {
                 10,  9,
             ]);
         });
-    })
+    });
+
+    describe('pointsFlipY', () => {
+        it('negates y', () => {
+            expect(pointsFlipY(input)).to.eql([
+                 0,  -0,
+                 1,  -0,
+                 0,  -2,
+                -3,   4,
+                 5,   6,
+                -7,  -8,
+                 9, -10,
+            ]);
+        });
+    });
 
     describe('pointsMove', () => {
         it('translates points forward', () => {
@@ -61,7 +74,7 @@ describe('Points transformation', () => {
                  4,  8,
             ]);
         });
-    })
+    });
 });
 
 describe('makeCurve', () => {
