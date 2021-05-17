@@ -45,7 +45,7 @@ function anchor(direction,
     }
 }
 
-function halfwayPoint(direction, 
+function halfway(direction, 
     curX, curY, 
     newX, newY,
 ) {
@@ -55,33 +55,102 @@ function halfwayPoint(direction,
     ];
 }
 
-function aroundPoint(direction, 
-    curX, curY, 
+function getBackAroundVal(direction,
+    curX, curY,
     newX, newY,
+    dist,
 ) {
-    const curveDistance = 2.35;
-
     switch (direction) {
     case Direction.up:
-        return [
-            (newX < curX) ? curX+curveDistance : newX+curveDistance,
-            curY + (newY - curY)/2,
-        ];
+        return newX < curX ? curX + dist : newX + dist;
     case Direction.down:
-        return [
-            (newX > curX) ? curX-curveDistance : newX-curveDistance,
-            curY + (newY - curY)/2,
-        ];
+        return newX > curX ? curX - dist : newX - dist;
     case Direction.left:
-        return [
-            curX + (newX - curX)/2,
-            (newY < curY) ? curY+curveDistance : newY+curveDistance,
-        ];
+        return newY < curY ? curY + dist : newY + dist;
     case Direction.right:
-        return [
-            curX + (newX - curX)/2,
-            (newY > curY) ? curY-curveDistance : newY-curveDistance,
-        ];
+        return newY > curY ? curY - dist : newY - dist;
+    }
+}
+
+function aroundBack(direction, 
+    curX, curY, 
+    newX, newY,
+    dist = 2.35,
+) {
+    const around = getBackAroundVal(direction, curX, curY, newX, newY, dist);
+    switch (direction) {
+    case Direction.up:
+    case Direction.down:
+        return [around, curY + (newY - curY)/2];
+    case Direction.left:
+    case Direction.right:
+        return [curX + (newX - curX)/2, around];
+    }
+}
+
+function getAroundAheadVal(direction,
+    curX, curY,
+    newX, newY,
+    dist,
+) {
+    switch (direction) {
+    case Direction.up:
+        return newX < curX ? newX + dist : newX - dist;
+    case Direction.down:
+        return newX > curX ? newX - dist : newX + dist;
+    case Direction.left:
+        return newY < curY ? newY + dist : newY - dist;
+    case Direction.right:
+        return newY > curY ? newY - dist : newY + dist;
+    }
+}
+
+function aroundAhead(direction, 
+    curX, curY, 
+    newX, newY,
+    dist = 2,
+) {
+    const around = getAroundAheadVal(direction, curX, curY, newX, newY, dist);
+    switch (direction) {
+    case Direction.up:
+    case Direction.down:
+        return [around, newY];
+    case Direction.left:
+    case Direction.right:
+        return [newX, around];
+    }
+}
+
+function getAroundBehindVal(direction,
+    curX, curY,
+    newX, newY,
+    dist,
+) {
+    switch (direction) {
+    case Direction.up:
+        return newX < curX ? curX - dist : curX + dist;
+    case Direction.down:
+        return newX > curX ? curX + dist : curX - dist;
+    case Direction.left:
+        return newY < curY ? curY - dist : curY + dist;
+    case Direction.right:
+        return newY > curY ? curY + dist : curY - dist;
+    }
+}
+
+function aroundBehind(direction, 
+    curX, curY, 
+    newX, newY,
+    dist = 2,
+) {
+    const around = getAroundBehindVal(direction, curX, curY, newX, newY, dist);
+    switch (direction) {
+    case Direction.up:
+    case Direction.down:
+        return [around, curY];
+    case Direction.left:
+    case Direction.right:
+        return [curX, around];
     }
 }
 
@@ -121,37 +190,39 @@ function diffMultiplier(direction,
     decreaseRate = 0.5,
 ) {
     const diff = sideDiff(direction, curX, curY, newX, newY);
-    return ((atZero - atInf) / (decreaseRate * diff + 1)) + atInf;
+    return atInf + 
+        (atZero - atInf) / 
+        (decreaseRate * diff + 1);
 }
 
 function endIsAhead(direction, 
-    startX, startY, 
-    endX, endY,
+    curX, curY, 
+    newX, newY,
 ) {
     switch (direction) {
     case Direction.up:
-        return startY > endY;
+        return curY > newY;
     case Direction.down:
-        return startY < endY;
+        return curY < newY;
     case Direction.left:
-        return startX > endX;
+        return curX > newX;
     case Direction.right:
-        return startX < endX;
+        return curX < newX;
     }
 }
 
 function endIsCloseSideways(direction, 
-    startX, startY, 
-    endX, endY, 
-    dist=5,
+    curX, curY, 
+    newX, newY, 
+    dist = 5,
 ) {
     switch (direction) {
     case Direction.up:
     case Direction.down:
-        return Math.abs(endX - startX) < dist;
+        return Math.abs(newX - curX) < dist;
     case Direction.left:
     case Direction.right:
-        return Math.abs(endY - startY) < dist;
+        return Math.abs(newY - curY) < dist;
     }
 }
 
@@ -165,9 +236,9 @@ function Curve(x, y, direction) {
         let intensity = forwardDiff(this.direction, this.curX, this.curY, newX, newY);
         intensity *= diffMultiplier(this.direction, this.curX, this.curY, newX, newY);
 
-        this.points = this.points.concat(anchor(this.direction, this.curX, this.curY, intensity));
-        this.points = this.points.concat(anchor(reverse(this.direction), newX, newY, intensity));
-        this.points = this.points.concat([newX, newY]);
+        this.points.push(...anchor(this.direction, this.curX, this.curY, intensity));
+        this.points.push(...anchor(reverse(this.direction), newX, newY, intensity));
+        this.points.push(...[newX, newY]);
 
         this.curX = newX;
         this.curY = newY;
@@ -183,9 +254,9 @@ function Curve(x, y, direction) {
             ? [big, small]
             : [small, big];
 
-        this.points = this.points.concat(anchor(this.direction, this.curX, this.curY, curI));
-        this.points = this.points.concat(anchor(this.direction, newX, newY, newI));
-        this.points = this.points.concat([newX, newY]);
+        this.points.push(...anchor(this.direction, this.curX, this.curY, curI));
+        this.points.push(...anchor(this.direction, newX, newY, newI));
+        this.points.push(...[newX, newY]);
 
         this.direction = reverse(this.direction);
         this.curX = newX;
@@ -199,28 +270,49 @@ function start(x, y, direction) {
     return new Curve(x, y, direction);
 }
 
-function curveSameDirection(startX, startY, endX, endY, direction) {
+function curveSameDirection(sX, sY, eX, eY, direction) {
+    let curve = start(sX, sY, direction);
 
-    if (!endIsAhead(direction, startX, startY, endX, endY)) {
-        if (endIsCloseSideways(direction, startX, startY, endX, endY)) {
-
-            return start(startX, startY, direction)
-                .back(...aroundPoint(direction, startX, startY, endX, endY))
-                .back(endX, endY)
-                .points;
-
-        } else {
-
-            return start(startX, startY, direction)
-                .back(...halfwayPoint(direction, startX, startY, endX, endY))
-                .back(endX, endY)
-                .points;
-        }
+    if (endIsAhead(direction, sX, sY, eX, eY)) {
+        return curve
+            .forward(eX, eY)
+            .points;
     }
 
-    return start(startX, startY, direction)
-        .forward(endX, endY)
-        .points;
+    if (endIsCloseSideways(direction, sX, sY, eX, eY, 5)) {
+        return curve
+            .back(...aroundBack(direction, sX, sY, eX, eY, 2.35))
+            .back(eX, eY)
+            .points;
+    } else {
+        return curve
+            .back(...halfway(direction, sX, sY, eX, eY))
+            .back(eX, eY)
+            .points;
+    }
+}
+
+function curveOppositeDirection(sX, sY, eX, eY, direction) {
+    const threshold = 2;
+    let curve = start(sX, sY, direction);
+
+    if (!endIsCloseSideways(direction, sX, sY, eX, eY, threshold)) {
+        return curve
+            .back(eX, eY)
+            .points;
+    }
+
+    if (endIsAhead(direction, sX, sY, eX, eY)) {
+        return curve
+            .forward(...aroundAhead(direction, sX, sY, eX, eY, threshold))
+            .back(eX, eY)
+            .points;
+    } else {
+        return curve
+            .back(...aroundBehind(direction, sX, sY, eX, eY, threshold))
+            .forward(eX, eY)
+            .points;
+    }
 }
 
 const startOffset = Object.freeze({
@@ -250,7 +342,15 @@ const bezierImpl = {
         const endY = end.y + endOffset[end.direction][1];
 
         if (start.direction === end.direction) {
-            return curveSameDirection(startX, startY, endX, endY, start.direction);
+            return curveSameDirection(
+                startX, startY, endX, endY, 
+                start.direction);
+
+        } else if (start.direction === reverse(end.direction)) {
+            return curveOppositeDirection(
+                startX, startY, endX, endY, 
+                start.direction);
+
         }
 
         throw new Error(`Unsupported edge directions: from ${start.direction} to ${end.direction}.`);

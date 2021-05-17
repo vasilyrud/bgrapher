@@ -5,6 +5,7 @@ use(chaiAlmost(0.1));
 import { Direction } from 'common/lookup.js';
 import bezierRewire, { bezierImpl } from 'edgesimpl/bezier.js';
 const curveSameDirection = bezierRewire.__get__('curveSameDirection');
+const curveOppositeDirection = bezierRewire.__get__('curveOppositeDirection');
 const start = bezierRewire.__get__('start');
 
 describe(require('path').basename(__filename), () => {
@@ -21,31 +22,57 @@ describe('pipePath helpers', () => {
         ['anchor', 'left' , [5,6, 2], [3,6]],
         ['anchor', 'right', [5,6, 2], [7,6]],
 
-        ['halfwayPoint', 'up'   , [1,2, 5,6], [3,4]],
-        ['halfwayPoint', 'up'   , [5,2, 1,6], [3,4]],
-        ['halfwayPoint', 'down' , [1,2, 5,6], [3,4]],
-        ['halfwayPoint', 'down' , [5,2, 1,6], [3,4]],
-        ['halfwayPoint', 'left' , [1,2, 5,6], [3,4]],
-        ['halfwayPoint', 'left' , [1,6, 5,2], [3,4]],
-        ['halfwayPoint', 'right', [1,2, 5,6], [3,4]],
-        ['halfwayPoint', 'right', [1,6, 5,2], [3,4]],
-        ['halfwayPoint', 'up'   , [1,2, 1,2], [1,2]],
-        ['halfwayPoint', 'left' , [1,2, 1,2], [1,2]],
-        ['halfwayPoint', 'up'   , [-1,-2, -5,-6], [-3,-4]],
-        ['halfwayPoint', 'left' , [-1,-2, -5,-6], [-3,-4]],
+        ['halfway', 'up'   , [1,2, 5,6], [3,4]],
+        ['halfway', 'up'   , [5,2, 1,6], [3,4]],
+        ['halfway', 'down' , [1,2, 5,6], [3,4]],
+        ['halfway', 'down' , [5,2, 1,6], [3,4]],
+        ['halfway', 'left' , [1,2, 5,6], [3,4]],
+        ['halfway', 'left' , [1,6, 5,2], [3,4]],
+        ['halfway', 'right', [1,2, 5,6], [3,4]],
+        ['halfway', 'right', [1,6, 5,2], [3,4]],
+        ['halfway', 'up'   , [1,2, 1,2], [1,2]],
+        ['halfway', 'left' , [1,2, 1,2], [1,2]],
+        ['halfway', 'up'   , [-1,-2, -5,-6], [-3,-4]],
+        ['halfway', 'left' , [-1,-2, -5,-6], [-3,-4]],
 
-        ['aroundPoint', 'up'   , [1,2, 5,6], [7.3,4]],
-        ['aroundPoint', 'up'   , [5,2, 1,6], [7.3,4]],
-        ['aroundPoint', 'up'   , [5,2, 5,6], [7.3,4]],
-        ['aroundPoint', 'down' , [1,2, 5,6], [-1.3,4]],
-        ['aroundPoint', 'down' , [5,2, 1,6], [-1.3,4]],
-        ['aroundPoint', 'down' , [1,2, 1,6], [-1.3,4]],
-        ['aroundPoint', 'left' , [1,2, 5,6], [3,8.3]],
-        ['aroundPoint', 'left' , [1,6, 5,2], [3,8.3]],
-        ['aroundPoint', 'left' , [1,6, 5,6], [3,8.3]],
-        ['aroundPoint', 'right', [1,2, 5,6], [3,-0.3]],
-        ['aroundPoint', 'right', [1,6, 5,2], [3,-0.3]],
-        ['aroundPoint', 'right', [1,2, 5,2], [3,-0.3]],
+        ['aroundBack', 'up'   , [1,2, 5,6, 2], [7,4]],
+        ['aroundBack', 'up'   , [5,2, 1,6, 2], [7,4]],
+        ['aroundBack', 'up'   , [5,2, 5,6, 2], [7,4]],
+        ['aroundBack', 'down' , [1,2, 5,6, 2], [-1,4]],
+        ['aroundBack', 'down' , [5,2, 1,6, 2], [-1,4]],
+        ['aroundBack', 'down' , [1,2, 1,6, 2], [-1,4]],
+        ['aroundBack', 'left' , [1,2, 5,6, 2], [3,8]],
+        ['aroundBack', 'left' , [1,6, 5,2, 2], [3,8]],
+        ['aroundBack', 'left' , [1,6, 5,6, 2], [3,8]],
+        ['aroundBack', 'right', [1,2, 5,6, 2], [3,0]],
+        ['aroundBack', 'right', [1,6, 5,2, 2], [3,0]],
+        ['aroundBack', 'right', [1,2, 5,2, 2], [3,0]],
+
+        ['aroundAhead', 'up'   , [1,2, 5,6, 1], [4,6]],
+        ['aroundAhead', 'up'   , [5,2, 1,6, 1], [2,6]],
+        ['aroundAhead', 'up'   , [5,2, 5,6, 1], [4,6]],
+        ['aroundAhead', 'down' , [1,2, 5,6, 1], [4,6]],
+        ['aroundAhead', 'down' , [5,2, 1,6, 1], [2,6]],
+        ['aroundAhead', 'down' , [5,2, 5,6, 1], [6,6]],
+        ['aroundAhead', 'left' , [1,2, 5,6, 1], [5,5]],
+        ['aroundAhead', 'left' , [1,6, 5,2, 1], [5,3]],
+        ['aroundAhead', 'left' , [1,6, 5,6, 1], [5,5]],
+        ['aroundAhead', 'right', [1,2, 5,6, 1], [5,5]],
+        ['aroundAhead', 'right', [1,6, 5,2, 1], [5,3]],
+        ['aroundAhead', 'right', [1,6, 5,6, 1], [5,7]],
+
+        ['aroundBehind', 'up'   , [1,2, 5,6, 1], [2,2]],
+        ['aroundBehind', 'up'   , [5,2, 1,6, 1], [4,2]],
+        ['aroundBehind', 'up'   , [5,2, 5,6, 1], [6,2]],
+        ['aroundBehind', 'down' , [1,2, 5,6, 1], [2,2]],
+        ['aroundBehind', 'down' , [5,2, 1,6, 1], [4,2]],
+        ['aroundBehind', 'down' , [5,2, 5,6, 1], [4,2]],
+        ['aroundBehind', 'left' , [1,2, 5,6, 1], [1,3]],
+        ['aroundBehind', 'left' , [1,6, 5,2, 1], [1,5]],
+        ['aroundBehind', 'left' , [1,6, 5,6, 1], [1,7]],
+        ['aroundBehind', 'right', [1,2, 5,6, 1], [1,3]],
+        ['aroundBehind', 'right', [1,6, 5,2, 1], [1,5]],
+        ['aroundBehind', 'right', [1,6, 5,6, 1], [1,5]],
 
         ['forwardDiff', 'up'   , [1,2, 5,6], 4],
         ['forwardDiff', 'up'   , [1,6, 5,2], 4],
@@ -193,138 +220,177 @@ describe('pipePath interface', () => {
 });
 
 describe('curveSameDirection', () => {
-    it('returns forward curve basic', () => {
-        expect(curveSameDirection(1,2,3,4,Direction.down)).to.almost.eql([
+    function runTests(cases) {
+        cases.forEach(([direction, input, result]) =>
+            it(`${direction} ${input}`, () =>
+                expect(curveSameDirection(...input, Direction[direction]))
+                    .to.almost.eql(result)));
+    }
+
+    describe('same direction forward curve', () => runTests([
+        ['down', [1,2,3,4], [
             1, 2, 1, 3.4, 3, 2.6, 
             3, 4
-        ]);
-    });
-
-    it('returns forward curve flipped X', () => {
-        expect(curveSameDirection(3,2,1,4,Direction.down)).to.almost.eql([
+        ]],
+        ['down', [3,2,1,4], [
             3, 2, 3, 3.4, 1, 2.6, 
             1, 4
-        ]);
-    });
+        ]],
+    ]));
 
-    it('returns direct back curve basic', () => {
-        expect(curveSameDirection(10,20,1,2,Direction.down)).to.almost.eql([
-            10, 20, 10, 22.1, 5.5, 22.1, 
-            5.5, 11, 5.5, -0.1, 1, -0.1, 
+    describe('same direction direct back curve', () => runTests([
+        ['down', [10,20,1,2], [
+            10,  20, 10,  22.1, 5.5, 22.1, 
+            5.5, 11, 5.5, -0.1, 1,   -0.1, 
+            1,   2
+        ]],
+        ['down', [1,20,10,2], [
+            1,   20, 1,   22.1, 5.5, 22.1, 
+            5.5, 11, 5.5, -0.1, 10,  -0.1, 
+            10,  2
+        ]],
+    ]));
+
+    describe('same direction daround back curve', () => runTests([
+        ['down', [1,20,2,3], [
+            1,    20,   1,    21.5, -1.3, 21.5, 
+            -1.3, 11.5, -1.3, 1.1,  2,    1.1, 
+            2,    3
+        ]],
+        ['down', [2,20,1,3], [
+            2,    20,   2,    21.8, -1.3, 21.8, 
+            -1.3, 11.5, -1.3, 1.4,  1,    1.4, 
+            1,    3
+        ]],
+    ]));
+});
+
+describe('curveOppositeDirection', () => {
+    function runTests(cases) {
+        cases.forEach(([direction, input, result]) =>
+            it(`${direction} ${input}`, () =>
+                expect(curveOppositeDirection(...input, Direction[direction]))
+                    .to.almost.eql(result)));
+    }
+
+    describe('opposite direction back curve', () => runTests([
+        ['down', [1,2,3,1], [
+            1, 2, 1, 3.5, 3, 3.5, 
+            3, 1
+        ]],
+        ['down', [3,2,1,1], [
+            3, 2, 3, 3.5, 1, 3.5, 
+            1, 1
+        ]],
+        ['down', [3,1,1,2], [
+            3, 1, 3, 3.5, 1, 3.5, 
             1, 2
-        ]);
-    });
+        ]],
+    ]));
 
-    it('returns direct back curve flipped X', () => {
-        expect(curveSameDirection(1,20,10,2,Direction.down)).to.almost.eql([
-            1, 20, 1, 22.1, 5.5, 22.1, 
-            5.5, 11, 5.5, -0.1, 10, -0.1, 
-            10, 2
-        ]);
-    });
+    describe('opposite direction ahead', () => runTests([
+        ['up', [1,2,2,0], [
+            1, 2, 1, 0.5,  0, 1.5, 
+            0, 0, 0, -1.5, 2, -1.5, 
+            2, 0
+        ]],
+        ['up', [3,2,2,0], [
+            3, 2, 3, 0.5,  4, 1.5, 
+            4, 0, 4, -1.5, 2, -1.5, 
+            2, 0
+        ]],
+    ]));
 
-    it('returns around back curve short bottom', () => {
-        expect(curveSameDirection(1,20,2,3,Direction.down)).to.almost.eql([
-            1, 20, 1, 21.5, -1.3, 21.5, 
-            -1.3, 11.5, -1.3, 1.1, 2, 1.1, 
-            2, 3
-        ]);
-    });
-
-    it('returns around back curve short top', () => {
-        expect(curveSameDirection(2,20,1,3,Direction.down)).to.almost.eql([
-            2, 20, 2, 21.8, -1.3, 21.8, 
-            -1.3, 11.5, -1.3, 1.4, 1, 1.4, 
-            1, 3
-        ]);
-    });
+    describe('opposite direction behind', () => runTests([
+        ['down', [1,2,2,0], [
+            1, 2, 1, 3.5, 3, 3.5, 
+            3, 2, 3, 0.5, 2, 1.5, 
+            2, 0
+        ]],
+        ['down', [3,2,2,0], [
+            3, 2, 3, 3.5, 1, 3.5, 
+            1, 2, 1, 0.5, 2, 1.5, 
+            2, 0
+        ]],
+    ]));
 });
 
 describe('generatePoints', () => {
-    describe('vertical', () => {
-        const expectedDirectPoints = [
-            1.5, 3, 1.5, 3.7, 3.5, 3.3, 
-            3.5, 4
-        ];
-
-        it ('returns direct from source', () => {
-            expect(bezierImpl.generatePoints({
-                isSource: true,
-                direction: Direction['down'],
-                x: 1,
-                y: 2,
-            },{
-                isSource: false,
-                direction: Direction['down'],
-                x: 3,
-                y: 4,
-            })).to.almost.eql(expectedDirectPoints);
-        });
-
-        it ('returns direct from dest', () => {
-            expect(bezierImpl.generatePoints({
-                isSource: false,
-                direction: Direction['down'],
-                x: 3,
-                y: 4,
-            },{
-                isSource: true,
-                direction: Direction['down'],
-                x: 1,
-                y: 2,
-            })).to.almost.eql(expectedDirectPoints);
-        });
+    const expectedSameDirection = [
+        1.5, 3, 1.5, 3.7, 3.5, 3.3, 
+        3.5, 4
+    ];
+    it ('generate same direction from source', () => {
+        expect(bezierImpl.generatePoints({
+            isSource: true,
+            direction: Direction['down'],
+            x: 1,
+            y: 2,
+        },{
+            isSource: false,
+            direction: Direction['down'],
+            x: 3,
+            y: 4,
+        })).to.almost.eql(expectedSameDirection);
+    });
+    it ('generate same direction from dest', () => {
+        expect(bezierImpl.generatePoints({
+            isSource: false,
+            direction: Direction['down'],
+            x: 3,
+            y: 4,
+        },{
+            isSource: true,
+            direction: Direction['down'],
+            x: 1,
+            y: 2,
+        })).to.almost.eql(expectedSameDirection);
     });
 
-    describe('horizontal', () => {
-        const expectedDirectPoints = [
-            2, 2.5, 2.7, 2.5, 2.3, 4.5, 
-            3, 4.5
-        ];
+    it ('generate opposite direction start up', () => {
+        expect(bezierImpl.generatePoints({
+            isSource: true,
+            direction: Direction['up'],
+            x: 1,
+            y: 2,
+        },{
+            isSource: false,
+            direction: Direction['down'],
+            x: 3,
+            y: 4,
+        })).to.almost.eql([
+            1.5, 2, 1.5, 0.5, 3.5, 0.5, 
+            3.5, 4
+        ]);
+    });
 
-        it ('returns direct from source', () => {
-            expect(bezierImpl.generatePoints({
-                isSource: true,
-                direction: Direction['right'],
-                x: 1,
-                y: 2,
-            },{
-                isSource: false,
-                direction: Direction['right'],
-                x: 3,
-                y: 4,
-            })).to.almost.eql(expectedDirectPoints);
-        });
-
-        it ('returns direct from dest', () => {
-            expect(bezierImpl.generatePoints({
-                isSource: false,
-                direction: Direction['right'],
-                x: 3,
-                y: 4,
-            },{
-                isSource: true,
-                direction: Direction['right'],
-                x: 1,
-                y: 2,
-            })).to.almost.eql(expectedDirectPoints);
-        });
+    it ('generate opposite direction start down', () => {
+        expect(bezierImpl.generatePoints({
+            isSource: true,
+            direction: Direction['down'],
+            x: 1,
+            y: 2,
+        },{
+            isSource: false,
+            direction: Direction['up'],
+            x: 3,
+            y: 4,
+        })).to.almost.eql([
+            1.5, 3, 1.5, 6.5, 3.5, 6.5, 
+            3.5, 5
+        ]);
     });
 
     describe('unsupported', () => {
         const invalidDirections = [
-            ['left' , 'right'],
             ['left' , 'up'   ],
             ['left' , 'down' ],
             ['up'   , 'left' ],
             ['up'   , 'right'],
-            ['up'   , 'down' ],
-            ['right', 'left' ],
             ['right', 'up'   ],
             ['right', 'down' ],
             ['down' , 'left' ],
             ['down' , 'right'],
-            ['down' , 'up'   ],
         ];
 
         invalidDirections.forEach(([from, to]) => {
