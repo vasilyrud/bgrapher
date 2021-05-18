@@ -17,16 +17,15 @@ limitations under the License.
 import { Direction } from '../common/lookup.js'
 
 function reverse(direction) {
-    switch (direction) {
-    case Direction.up:
-        return Direction.down;
-    case Direction.down:
-        return Direction.up;
-    case Direction.left:
-        return Direction.right;
-    case Direction.right:
-        return Direction.left;
-    }
+    return direction > 2 ? direction - 2 : direction + 2;
+}
+
+function left(direction) {
+    return direction > 1 ? direction - 1 : 4;
+}
+
+function right(direction) {
+    return direction < 4 ? direction + 1 : 1;
 }
 
 function anchor(direction, 
@@ -77,7 +76,9 @@ function aroundBack(direction,
     newX, newY,
     dist = 2.35,
 ) {
-    const around = getBackAroundVal(direction, curX, curY, newX, newY, dist);
+    const around = getBackAroundVal(direction, 
+        curX, curY, newX, newY, dist);
+
     switch (direction) {
     case Direction.up:
     case Direction.down:
@@ -110,7 +111,9 @@ function aroundAhead(direction,
     newX, newY,
     dist = 2,
 ) {
-    const around = getAroundAheadVal(direction, curX, curY, newX, newY, dist);
+    const around = getAroundAheadVal(direction, 
+        curX, curY, newX, newY, dist);
+
     switch (direction) {
     case Direction.up:
     case Direction.down:
@@ -143,7 +146,9 @@ function aroundBehind(direction,
     newX, newY,
     dist = 2,
 ) {
-    const around = getAroundBehindVal(direction, curX, curY, newX, newY, dist);
+    const around = getAroundBehindVal(direction, 
+        curX, curY, newX, newY, dist);
+
     switch (direction) {
     case Direction.up:
     case Direction.down:
@@ -264,6 +269,36 @@ function Curve(x, y, direction) {
 
         return this;
     };
+
+    this.left = function(newX, newY) {
+        const curI = forwardDiff(this.direction, this.curX, this.curY, newX, newY);
+        const newI = sideDiff(this.direction, this.curX, this.curY, newX, newY);
+
+        this.points.push(...anchor(this.direction, this.curX, this.curY, curI));
+        this.points.push(...anchor(right(this.direction), newX, newY, newI));
+        this.points.push(...[newX, newY]);
+
+        this.direction = left(this.direction);
+        this.curX = newX;
+        this.curY = newY;
+
+        return this;
+    };
+
+    this.right = function(newX, newY) {
+        const curI = forwardDiff(this.direction, this.curX, this.curY, newX, newY);
+        const newI = sideDiff(this.direction, this.curX, this.curY, newX, newY);
+
+        this.points.push(...anchor(this.direction, this.curX, this.curY, curI));
+        this.points.push(...anchor(left(this.direction), newX, newY, newI));
+        this.points.push(...[newX, newY]);
+
+        this.direction = right(this.direction);
+        this.curX = newX;
+        this.curY = newY;
+
+        return this;
+    };
 }
 
 function start(x, y, direction) {
@@ -315,6 +350,22 @@ function curveOppositeDirection(sX, sY, eX, eY, direction) {
     }
 }
 
+function curveLeftDirection(sX, sY, eX, eY, direction) {
+    let curve = start(sX, sY, direction);
+
+    return curve
+        .left(eX, eY)
+        .points;
+}
+
+function curveRightDirection(sX, sY, eX, eY, direction) {
+    let curve = start(sX, sY, direction);
+
+    return curve
+        .right(eX, eY)
+        .points;
+}
+
 const startOffset = Object.freeze({
     [Direction.up]    : [0.5, 0],
     [Direction.right] : [1, 0.5],
@@ -341,19 +392,26 @@ const bezierImpl = {
         const endX = end.x + endOffset[end.direction][0];
         const endY = end.y + endOffset[end.direction][1];
 
-        if (start.direction === end.direction) {
+        if (end.direction === start.direction) {
             return curveSameDirection(
                 startX, startY, endX, endY, 
                 start.direction);
 
-        } else if (start.direction === reverse(end.direction)) {
+        } else if (end.direction === reverse(start.direction)) {
             return curveOppositeDirection(
                 startX, startY, endX, endY, 
                 start.direction);
 
-        }
+        } else if (end.direction === left(start.direction)) {
+            return curveLeftDirection(
+                startX, startY, endX, endY,
+                start.direction);
 
-        throw new Error(`Unsupported edge directions: from ${start.direction} to ${end.direction}.`);
+        } else if (end.direction === right(start.direction)) {
+            return curveRightDirection(
+                startX, startY, endX, endY,
+                start.direction);
+        }
     },
 };
 
