@@ -347,6 +347,44 @@ describe('Curve offset helpers', () => {
         ['rightBehindLeft', 'right', [15,16, 16, 2], [17.5, 9]],
         ['rightBehindLeft', 'right', [15,16,  1,18], [16.5,14]],
 
+        ['flipEnd', 'up'   , [ 1,2,  1,2], [ 1, 2]],
+        ['flipEnd', 'up'   , [ 1,2,  5,6], [-3, 6]],
+        ['flipEnd', 'up'   , [ 5,2,  1,6], [ 9, 6]],
+        ['flipEnd', 'up'   , [-1,2,  5,6], [-7, 6]],
+        ['flipEnd', 'up'   , [ 1,2, -5,6], [ 7, 6]],
+        ['flipEnd', 'up'   , [-1,2, -5,6], [ 3, 6]],
+        ['flipEnd', 'down' , [ 1,2,  1,2], [ 1, 2]],
+        ['flipEnd', 'down' , [ 1,2,  5,6], [-3, 6]],
+        ['flipEnd', 'down' , [ 5,2,  1,6], [ 9, 6]],
+        ['flipEnd', 'down' , [-1,2,  5,6], [-7, 6]],
+        ['flipEnd', 'down' , [ 1,2, -5,6], [ 7, 6]],
+        ['flipEnd', 'down' , [-1,2, -5,6], [ 3, 6]],
+        ['flipEnd', 'left' , [1, 2, 1, 2], [1,  2]],
+        ['flipEnd', 'left' , [1, 2, 5, 6], [5, -2]],
+        ['flipEnd', 'left' , [1, 6, 5, 2], [5, 10]],
+        ['flipEnd', 'left' , [1,-2, 5, 6], [5,-10]],
+        ['flipEnd', 'left' , [1, 2, 5,-6], [5, 10]],
+        ['flipEnd', 'left' , [1,-2, 5,-6], [5,  2]],
+        ['flipEnd', 'right', [1, 2, 1, 2], [1,  2]],
+        ['flipEnd', 'right', [1, 2, 5, 6], [5, -2]],
+        ['flipEnd', 'right', [1, 6, 5, 2], [5, 10]],
+        ['flipEnd', 'right', [1,-2, 5, 6], [5,-10]],
+        ['flipEnd', 'right', [1, 2, 5,-6], [5, 10]],
+        ['flipEnd', 'right', [1,-2, 5,-6], [5,  2]],
+
+        ['flipPoints', 'up'   , [ 1, 2, [1,2, 5,6, -5,6]], [1,2, -3,6, 7,6]],
+        ['flipPoints', 'up'   , [-1, 2, [5,6, -5,6     ]], [-7,6, 3,6     ]],
+        ['flipPoints', 'up'   , [ 5, 2, [1,6           ]], [9,6           ]],
+        ['flipPoints', 'down' , [ 1, 2, [1,2, 5,6, -5,6]], [1,2, -3,6, 7,6]],
+        ['flipPoints', 'down' , [-1, 2, [5,6, -5,6     ]], [-7,6, 3,6     ]],
+        ['flipPoints', 'down' , [ 5, 2, [1,6           ]], [9,6           ]],
+        ['flipPoints', 'left' , [ 1, 2, [1,2, 5,6, 5,-6]], [1,2, 5,-2, 5,10]],
+        ['flipPoints', 'left' , [ 1,-2, [5,6, 5,-6     ]], [5,-10, 5,2     ]],
+        ['flipPoints', 'left' , [ 1, 6, [5,2           ]], [5,10           ]],
+        ['flipPoints', 'right', [ 1, 2, [1,2, 5,6, 5,-6]], [1,2, 5,-2, 5,10]],
+        ['flipPoints', 'right', [ 1,-2, [5,6, 5,-6     ]], [5,-10, 5,2     ]],
+        ['flipPoints', 'right', [ 1, 6, [5,2           ]], [5,10           ]],
+
     ].forEach(([func, direction, input, result]) => {
         it(`${func} ${direction} ${input}`, () => {
             expect(
@@ -454,9 +492,58 @@ describe('curveOppositeDirection', () => {
 describe('curveLeftDirection', () => {
     describe('left ahead', () => 
     runCurveTests(curveLeftDirection, [
-        ['up', [3,2,1,1], [
-            3, 2, 3, 1.3, 2.3, 1, 
-            1, 1
+        ['up', [5,5,4,4], [
+            5, 5, 5, 4.3, 4.6, 4, 
+            4, 4
+        ]],
+        ['up', [5,5,1,0], [
+            5, 5, 5, 1.1, 4.1, 0, 
+            1, 0
+        ]],
+        ['up', [5,5,4,0], [
+            5, 5, 5, 1.8, 4.7, 0, 
+            4, 0
+        ]],
+        ['up', [5,5,1,4], [
+            5, 5, 5, 4.2, 3.5, 4, 
+            1, 4
+        ]],
+    ]));
+
+    describe('right ahead', () => 
+    runCurveTests(curveLeftDirection, [
+        ['up', [5,5,9,0], [
+            5,   5,   5,   2.2, 9.8, 3.2, 
+            9.8, 0.5, 9.8, 0.2, 9.4, 0, 
+            9,   0
+        ]],
+        ['up', [5,5,9,4], [
+            5, 5,   5,    3.2, 5.5,  2.5, 
+            7, 2.5, 10.3, 2.5, 10.3, 4, 
+            9, 4
+        ]],
+    ]));
+
+    describe('left behind', () => 
+    runCurveTests(curveLeftDirection, [
+        ['up', [5,5,1,9], [
+            5,   5,   5, 3.4, 2.5, 3.4, 
+            2.5, 5, 2.5, 7.7, 2.1, 9, 
+            1,   9
+        ]],
+        ['up', [5,5,4,9], [
+            5,   5, 5,   3.9, 5.6, 3.5, 
+            7, 3.5, 9.3, 3.5, 9.3, 9, 
+            4,   9
+        ]],
+    ]));
+
+    describe('right behind', () => 
+    runCurveTests(curveLeftDirection, [
+        ['up', [5,5,9,9], [
+            5, 5,   5,    3.9, 5.6,  3.5, 
+            7, 3.5, 11.3, 3.5, 11.3, 9, 
+            9, 9
         ]],
     ]));
 });

@@ -424,6 +424,32 @@ function rightBehindLeft(direction,
     }
 }
 
+function flipEnd(direction,
+    curX, curY,
+    newX, newY,
+) {
+    switch (direction) {
+    case Direction.up:
+    case Direction.down:
+        return [curX - (newX - curX), newY];
+    case Direction.left:
+    case Direction.right:
+        return [newX, curY - (newY - curY)];
+    }
+}
+
+function flipPoints(direction,
+    curX, curY,
+    points,
+) {
+    let newPoints = [];
+    for (let i = 0; i < points.length; i+=2)
+        newPoints.push(
+            ...flipEnd(direction, curX, curY, points[i], points[i+1])
+        );
+    return newPoints;
+}
+
 function curveSameDirection(sX, sY, eX, eY, direction) {
     let curve = start(sX, sY, direction);
 
@@ -469,15 +495,6 @@ function curveOppositeDirection(sX, sY, eX, eY, direction) {
     }
 }
 
-function curveLeftDirection(sX, sY, eX, eY, direction) {
-    let curve = start(sX, sY, direction);
-
-    // TODO: curve left
-    return curve
-        .left(eX, eY)
-        .points;
-}
-
 function curveRightDirection(sX, sY, eX, eY, direction) {
     let curve = start(sX, sY, direction);
 
@@ -509,6 +526,11 @@ function curveRightDirection(sX, sY, eX, eY, direction) {
             .left(eX, eY)
             .points;
     }
+}
+
+function curveLeftDirection(sX, sY, eX, eY, direction) {
+    return flipPoints(direction, sX, sY, 
+        curveRightDirection(sX, sY, ...flipEnd(direction, sX, sY, eX, eY), direction));
 }
 
 const startOffset = Object.freeze({
