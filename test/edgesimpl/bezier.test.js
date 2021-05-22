@@ -32,98 +32,6 @@ describe('Curve helpers', () => {
         ['anchor', 'left' , [5,6, 2], [3,6]],
         ['anchor', 'right', [5,6, 2], [7,6]],
 
-        ['halfway', 'up'   , [1,2, 5,6], [3,4]],
-        ['halfway', 'up'   , [5,2, 1,6], [3,4]],
-        ['halfway', 'down' , [1,2, 5,6], [3,4]],
-        ['halfway', 'down' , [5,2, 1,6], [3,4]],
-        ['halfway', 'left' , [1,2, 5,6], [3,4]],
-        ['halfway', 'left' , [1,6, 5,2], [3,4]],
-        ['halfway', 'right', [1,2, 5,6], [3,4]],
-        ['halfway', 'right', [1,6, 5,2], [3,4]],
-        ['halfway', 'up'   , [1,2, 1,2], [1,2]],
-        ['halfway', 'left' , [1,2, 1,2], [1,2]],
-        ['halfway', 'up'   , [-1,-2, -5,-6], [-3,-4]],
-        ['halfway', 'left' , [-1,-2, -5,-6], [-3,-4]],
-
-        ['aroundBack', 'up'   , [1,2, 5,6, 2], [7,4]],
-        ['aroundBack', 'up'   , [5,2, 1,6, 2], [7,4]],
-        ['aroundBack', 'up'   , [5,2, 5,6, 2], [7,4]],
-        ['aroundBack', 'down' , [1,2, 5,6, 2], [-1,4]],
-        ['aroundBack', 'down' , [5,2, 1,6, 2], [-1,4]],
-        ['aroundBack', 'down' , [1,2, 1,6, 2], [-1,4]],
-        ['aroundBack', 'left' , [1,2, 5,6, 2], [3,8]],
-        ['aroundBack', 'left' , [1,6, 5,2, 2], [3,8]],
-        ['aroundBack', 'left' , [1,6, 5,6, 2], [3,8]],
-        ['aroundBack', 'right', [1,2, 5,6, 2], [3,0]],
-        ['aroundBack', 'right', [1,6, 5,2, 2], [3,0]],
-        ['aroundBack', 'right', [1,2, 5,2, 2], [3,0]],
-
-        ['aroundAhead', 'up'   , [1,2, 5,6, 1], [4,6]],
-        ['aroundAhead', 'up'   , [5,2, 1,6, 1], [2,6]],
-        ['aroundAhead', 'up'   , [5,2, 5,6, 1], [4,6]],
-        ['aroundAhead', 'down' , [1,2, 5,6, 1], [4,6]],
-        ['aroundAhead', 'down' , [5,2, 1,6, 1], [2,6]],
-        ['aroundAhead', 'down' , [5,2, 5,6, 1], [6,6]],
-        ['aroundAhead', 'left' , [1,2, 5,6, 1], [5,5]],
-        ['aroundAhead', 'left' , [1,6, 5,2, 1], [5,3]],
-        ['aroundAhead', 'left' , [1,6, 5,6, 1], [5,5]],
-        ['aroundAhead', 'right', [1,2, 5,6, 1], [5,5]],
-        ['aroundAhead', 'right', [1,6, 5,2, 1], [5,3]],
-        ['aroundAhead', 'right', [1,6, 5,6, 1], [5,7]],
-
-        ['aroundBehind', 'up'   , [1,2, 5,6, 1], [2,2]],
-        ['aroundBehind', 'up'   , [5,2, 1,6, 1], [4,2]],
-        ['aroundBehind', 'up'   , [5,2, 5,6, 1], [6,2]],
-        ['aroundBehind', 'down' , [1,2, 5,6, 1], [2,2]],
-        ['aroundBehind', 'down' , [5,2, 1,6, 1], [4,2]],
-        ['aroundBehind', 'down' , [5,2, 5,6, 1], [4,2]],
-        ['aroundBehind', 'left' , [1,2, 5,6, 1], [1,3]],
-        ['aroundBehind', 'left' , [1,6, 5,2, 1], [1,5]],
-        ['aroundBehind', 'left' , [1,6, 5,6, 1], [1,7]],
-        ['aroundBehind', 'right', [1,2, 5,6, 1], [1,3]],
-        ['aroundBehind', 'right', [1,6, 5,2, 1], [1,5]],
-        ['aroundBehind', 'right', [1,6, 5,6, 1], [1,5]],
-
-        ['getAroundVal', 'up'   , [5,6, 5],  0],
-        ['getAroundVal', 'down' , [5,6, 5], 10],
-        ['getAroundVal', 'left' , [5,6, 5], 11],
-        ['getAroundVal', 'right', [5,6, 5],  1],
-
-        ['rightBehindRight', 'up'   , [1,2, 5,6], [ 3.5,2]],
-        ['rightBehindRight', 'up'   , [1,2, 5,2], [ 3.5,0]],
-        ['rightBehindRight', 'up'   , [1,2, 5,8], [ 3.5,3]],
-        ['rightBehindRight', 'down' , [5,6, 1,2], [ 2.5,6]],
-        ['rightBehindRight', 'down' , [5,6, 1,6], [ 2.5,8]],
-        ['rightBehindRight', 'down' , [5,6, 1,0], [ 2.5,5]],
-        ['rightBehindRight', 'left' , [1,6, 5,2], [ 1,3.5]],
-        ['rightBehindRight', 'left' , [1,6, 1,2], [-1,3.5]],
-        ['rightBehindRight', 'left' , [1,6, 7,2], [ 2,3.5]],
-        ['rightBehindRight', 'right', [5,2, 1,6], [ 5,4.5]],
-        ['rightBehindRight', 'right', [5,2, 5,6], [ 7,4.5]],
-        ['rightBehindRight', 'right', [5,2,-1,6], [ 4,4.5]],
-
-        ['rightAheadLeft', 'up'   , [5,6, 1,2], [ 0.2,2.4]],
-        ['rightAheadLeft', 'up'   , [5,6, 1,0], [ 0.1,0.6]],
-        ['rightAheadLeft', 'down' , [1,2, 5,6], [ 5.8,5.6]],
-        ['rightAheadLeft', 'down' , [1,2, 5,8], [ 5.9,7.4]],
-        ['rightAheadLeft', 'left' , [5,2, 1,6], [ 1.4,6.8]],
-        ['rightAheadLeft', 'left' , [5,2,-1,6], [-0.4,6.9]],
-        ['rightAheadLeft', 'right', [1,6, 5,2], [ 4.6,1.2]],
-        ['rightAheadLeft', 'right', [1,6, 7,2], [ 6.4,1.1]],
-
-        ['rightBehindLeft', 'up'   , [15, 2,  1,16], [ 8, 0.5]],
-        ['rightBehindLeft', 'up'   , [15, 2,  1, 1], [ 8,-0.5]],
-        ['rightBehindLeft', 'up'   , [15, 2, 17,16], [13, 0.5]],
-        ['rightBehindLeft', 'down' , [ 1,16, 15, 2], [ 8,17.5]],
-        ['rightBehindLeft', 'down' , [ 1,16, 15,17], [ 8,18.5]],
-        ['rightBehindLeft', 'down' , [ 1,16, -1, 2], [ 3,17.5]],
-        ['rightBehindLeft', 'left' , [ 1, 2, 15,16], [-0.5, 9]],
-        ['rightBehindLeft', 'left' , [ 1, 2,  0,16], [-1.5, 9]],
-        ['rightBehindLeft', 'left' , [ 1, 2, 15, 0], [-0.5, 4]],
-        ['rightBehindLeft', 'right', [15,16,  1, 2], [16.5, 9]],
-        ['rightBehindLeft', 'right', [15,16, 16, 2], [17.5, 9]],
-        ['rightBehindLeft', 'right', [15,16,  1,18], [16.5,14]],
-
         ['forwardDiff', 'up'   , [1,2, 5,6], 4],
         ['forwardDiff', 'up'   , [1,6, 5,2], 4],
         ['forwardDiff', 'down' , [1,2, 5,6], 4],
@@ -307,7 +215,9 @@ describe('Curve interface', () => {
             ).to.almost.eql(result);
         });
     });
+});
 
+describe('Curve state', () => {
     [
         ['forward', 'up'   , 'up'   ],
         ['forward', 'down' , 'down' ],
@@ -339,6 +249,109 @@ describe('Curve interface', () => {
             expect(path.curX).to.equal(endPoint[0]);
             expect(path.curY).to.equal(endPoint[1]);
             expect(path.direction).to.equal(Direction[endDirection]);
+        });
+    });
+});
+
+describe('Curve offset helpers', () => {
+    [
+        ['sameBehindFar', 'up'   , [1,2, 5,6], [3,4]],
+        ['sameBehindFar', 'up'   , [5,2, 1,6], [3,4]],
+        ['sameBehindFar', 'down' , [1,2, 5,6], [3,4]],
+        ['sameBehindFar', 'down' , [5,2, 1,6], [3,4]],
+        ['sameBehindFar', 'left' , [1,2, 5,6], [3,4]],
+        ['sameBehindFar', 'left' , [1,6, 5,2], [3,4]],
+        ['sameBehindFar', 'right', [1,2, 5,6], [3,4]],
+        ['sameBehindFar', 'right', [1,6, 5,2], [3,4]],
+        ['sameBehindFar', 'up'   , [1,2, 1,2], [1,2]],
+        ['sameBehindFar', 'left' , [1,2, 1,2], [1,2]],
+        ['sameBehindFar', 'up'   , [-1,-2, -5,-6], [-3,-4]],
+        ['sameBehindFar', 'left' , [-1,-2, -5,-6], [-3,-4]],
+
+        ['sameBehindClose', 'up'   , [1,2, 5,6, 2], [7,4]],
+        ['sameBehindClose', 'up'   , [5,2, 1,6, 2], [7,4]],
+        ['sameBehindClose', 'up'   , [5,2, 5,6, 2], [7,4]],
+        ['sameBehindClose', 'down' , [1,2, 5,6, 2], [-1,4]],
+        ['sameBehindClose', 'down' , [5,2, 1,6, 2], [-1,4]],
+        ['sameBehindClose', 'down' , [1,2, 1,6, 2], [-1,4]],
+        ['sameBehindClose', 'left' , [1,2, 5,6, 2], [3,8]],
+        ['sameBehindClose', 'left' , [1,6, 5,2, 2], [3,8]],
+        ['sameBehindClose', 'left' , [1,6, 5,6, 2], [3,8]],
+        ['sameBehindClose', 'right', [1,2, 5,6, 2], [3,0]],
+        ['sameBehindClose', 'right', [1,6, 5,2, 2], [3,0]],
+        ['sameBehindClose', 'right', [1,2, 5,2, 2], [3,0]],
+
+        ['oppositeAheadClose', 'up'   , [1,2, 5,6, 1], [4,6]],
+        ['oppositeAheadClose', 'up'   , [5,2, 1,6, 1], [2,6]],
+        ['oppositeAheadClose', 'up'   , [5,2, 5,6, 1], [4,6]],
+        ['oppositeAheadClose', 'down' , [1,2, 5,6, 1], [4,6]],
+        ['oppositeAheadClose', 'down' , [5,2, 1,6, 1], [2,6]],
+        ['oppositeAheadClose', 'down' , [5,2, 5,6, 1], [6,6]],
+        ['oppositeAheadClose', 'left' , [1,2, 5,6, 1], [5,5]],
+        ['oppositeAheadClose', 'left' , [1,6, 5,2, 1], [5,3]],
+        ['oppositeAheadClose', 'left' , [1,6, 5,6, 1], [5,5]],
+        ['oppositeAheadClose', 'right', [1,2, 5,6, 1], [5,5]],
+        ['oppositeAheadClose', 'right', [1,6, 5,2, 1], [5,3]],
+        ['oppositeAheadClose', 'right', [1,6, 5,6, 1], [5,7]],
+
+        ['oppositeBehindClose', 'up'   , [1,2, 5,6, 1], [2,2]],
+        ['oppositeBehindClose', 'up'   , [5,2, 1,6, 1], [4,2]],
+        ['oppositeBehindClose', 'up'   , [5,2, 5,6, 1], [6,2]],
+        ['oppositeBehindClose', 'down' , [1,2, 5,6, 1], [2,2]],
+        ['oppositeBehindClose', 'down' , [5,2, 1,6, 1], [4,2]],
+        ['oppositeBehindClose', 'down' , [5,2, 5,6, 1], [4,2]],
+        ['oppositeBehindClose', 'left' , [1,2, 5,6, 1], [1,3]],
+        ['oppositeBehindClose', 'left' , [1,6, 5,2, 1], [1,5]],
+        ['oppositeBehindClose', 'left' , [1,6, 5,6, 1], [1,7]],
+        ['oppositeBehindClose', 'right', [1,2, 5,6, 1], [1,3]],
+        ['oppositeBehindClose', 'right', [1,6, 5,2, 1], [1,5]],
+        ['oppositeBehindClose', 'right', [1,6, 5,6, 1], [1,5]],
+
+        ['rightVal', 'up'   , [5,6, 5],  0],
+        ['rightVal', 'down' , [5,6, 5], 10],
+        ['rightVal', 'left' , [5,6, 5], 11],
+        ['rightVal', 'right', [5,6, 5],  1],
+
+        ['rightBehindRight', 'up'   , [1,2, 5,6], [ 3.5,2]],
+        ['rightBehindRight', 'up'   , [1,2, 5,2], [ 3.5,0]],
+        ['rightBehindRight', 'up'   , [1,2, 5,8], [ 3.5,3]],
+        ['rightBehindRight', 'down' , [5,6, 1,2], [ 2.5,6]],
+        ['rightBehindRight', 'down' , [5,6, 1,6], [ 2.5,8]],
+        ['rightBehindRight', 'down' , [5,6, 1,0], [ 2.5,5]],
+        ['rightBehindRight', 'left' , [1,6, 5,2], [ 1,3.5]],
+        ['rightBehindRight', 'left' , [1,6, 1,2], [-1,3.5]],
+        ['rightBehindRight', 'left' , [1,6, 7,2], [ 2,3.5]],
+        ['rightBehindRight', 'right', [5,2, 1,6], [ 5,4.5]],
+        ['rightBehindRight', 'right', [5,2, 5,6], [ 7,4.5]],
+        ['rightBehindRight', 'right', [5,2,-1,6], [ 4,4.5]],
+
+        ['rightAheadLeft', 'up'   , [5,6, 1,2], [ 0.2,2.4]],
+        ['rightAheadLeft', 'up'   , [5,6, 1,0], [ 0.1,0.6]],
+        ['rightAheadLeft', 'down' , [1,2, 5,6], [ 5.8,5.6]],
+        ['rightAheadLeft', 'down' , [1,2, 5,8], [ 5.9,7.4]],
+        ['rightAheadLeft', 'left' , [5,2, 1,6], [ 1.4,6.8]],
+        ['rightAheadLeft', 'left' , [5,2,-1,6], [-0.4,6.9]],
+        ['rightAheadLeft', 'right', [1,6, 5,2], [ 4.6,1.2]],
+        ['rightAheadLeft', 'right', [1,6, 7,2], [ 6.4,1.1]],
+
+        ['rightBehindLeft', 'up'   , [15, 2,  1,16], [ 8, 0.5]],
+        ['rightBehindLeft', 'up'   , [15, 2,  1, 1], [ 8,-0.5]],
+        ['rightBehindLeft', 'up'   , [15, 2, 17,16], [13, 0.5]],
+        ['rightBehindLeft', 'down' , [ 1,16, 15, 2], [ 8,17.5]],
+        ['rightBehindLeft', 'down' , [ 1,16, 15,17], [ 8,18.5]],
+        ['rightBehindLeft', 'down' , [ 1,16, -1, 2], [ 3,17.5]],
+        ['rightBehindLeft', 'left' , [ 1, 2, 15,16], [-0.5, 9]],
+        ['rightBehindLeft', 'left' , [ 1, 2,  0,16], [-1.5, 9]],
+        ['rightBehindLeft', 'left' , [ 1, 2, 15, 0], [-0.5, 4]],
+        ['rightBehindLeft', 'right', [15,16,  1, 2], [16.5, 9]],
+        ['rightBehindLeft', 'right', [15,16, 16, 2], [17.5, 9]],
+        ['rightBehindLeft', 'right', [15,16,  1,18], [16.5,14]],
+
+    ].forEach(([func, direction, input, result]) => {
+        it(`${func} ${direction} ${input}`, () => {
+            expect(
+                bezierRewire.__get__(func)(Direction[direction], ...input)
+            ).to.almost.eql(result);
         });
     });
 });
