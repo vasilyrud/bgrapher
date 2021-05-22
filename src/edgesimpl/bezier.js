@@ -147,7 +147,7 @@ function endIsCloseSideways(direction,
     }
 }
 
-function Curve(x, y, direction) {
+function Curve(direction, x, y) {
     this.curX = x;
     this.curY = y;
     this.direction = direction;
@@ -221,8 +221,8 @@ function Curve(x, y, direction) {
     };
 }
 
-function start(x, y, direction) {
-    return new Curve(x, y, direction);
+function start(direction, x, y) {
+    return new Curve(direction, x, y);
 }
 
 function sameBehindFar(direction, 
@@ -450,8 +450,8 @@ function flipPoints(direction,
     return newPoints;
 }
 
-function curveSameDirection(sX, sY, eX, eY, direction) {
-    let curve = start(sX, sY, direction);
+function curveSameDirection(direction, sX, sY, eX, eY) {
+    let curve = start(direction, sX, sY);
 
     if (endIsAhead(direction, sX, sY, eX, eY)) {
         return curve
@@ -472,9 +472,9 @@ function curveSameDirection(sX, sY, eX, eY, direction) {
     }
 }
 
-function curveOppositeDirection(sX, sY, eX, eY, direction) {
+function curveOppositeDirection(direction, sX, sY, eX, eY) {
     const threshold = 2;
-    let curve = start(sX, sY, direction);
+    let curve = start(direction, sX, sY);
 
     if (!endIsCloseSideways(direction, sX, sY, eX, eY, threshold)) {
         return curve
@@ -495,8 +495,8 @@ function curveOppositeDirection(sX, sY, eX, eY, direction) {
     }
 }
 
-function curveRightDirection(sX, sY, eX, eY, direction) {
-    let curve = start(sX, sY, direction);
+function curveRightDirection(direction, sX, sY, eX, eY) {
+    let curve = start(direction, sX, sY);
 
     if (!endIsLeft(direction, sX, sY, eX, eY) &&
         endIsAhead(direction, sX, sY, eX, eY)
@@ -528,9 +528,10 @@ function curveRightDirection(sX, sY, eX, eY, direction) {
     }
 }
 
-function curveLeftDirection(sX, sY, eX, eY, direction) {
+function curveLeftDirection(direction, sX, sY, eX, eY) {
     return flipPoints(direction, sX, sY, 
-        curveRightDirection(sX, sY, ...flipEnd(direction, sX, sY, eX, eY), direction));
+        curveRightDirection(direction, sX, sY, 
+            ...flipEnd(direction, sX, sY, eX, eY)));
 }
 
 const startOffset = Object.freeze({
@@ -561,23 +562,23 @@ const bezierImpl = {
 
         if (end.direction === start.direction) {
             return curveSameDirection(
-                startX, startY, endX, endY, 
-                start.direction);
+                start.direction,
+                startX, startY, endX, endY);
 
         } else if (end.direction === reverse(start.direction)) {
             return curveOppositeDirection(
-                startX, startY, endX, endY, 
-                start.direction);
+                start.direction,
+                startX, startY, endX, endY);
 
         } else if (end.direction === left(start.direction)) {
             return curveLeftDirection(
-                startX, startY, endX, endY,
-                start.direction);
+                start.direction,
+                startX, startY, endX, endY);
 
         } else if (end.direction === right(start.direction)) {
             return curveRightDirection(
-                startX, startY, endX, endY,
-                start.direction);
+                start.direction,
+                startX, startY, endX, endY);
         }
     },
 };

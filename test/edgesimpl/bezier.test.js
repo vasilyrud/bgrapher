@@ -209,7 +209,7 @@ describe('Curve interface', () => {
     ].forEach(([func, direction, startPoint, endPoint, result]) => {
         it(`path points ${func} ${direction} ${startPoint} ${endPoint}`, () => {
             expect(
-                start(...startPoint, Direction[direction])
+                start(Direction[direction], ...startPoint)
                 [func](...endPoint)
                 .points
             ).to.almost.eql(result);
@@ -244,7 +244,7 @@ describe('Curve state', () => {
         const endPoint = [5,6];
 
         it(`path state ${func} ${direction}`, () => {
-            const path = start(...startPoint, Direction[direction])
+            const path = start(Direction[direction], ...startPoint)
                 [func](...endPoint);
             expect(path.curX).to.equal(endPoint[0]);
             expect(path.curY).to.equal(endPoint[1]);
@@ -397,7 +397,7 @@ describe('Curve offset helpers', () => {
 function runCurveTests(func, cases) {
     cases.forEach(([direction, input, result]) =>
         it(`${direction} ${input}`, () =>
-            expect(func(...input, Direction[direction]))
+            expect(func(Direction[direction], ...input))
                 .to.almost.eql(result)));
 }
 
