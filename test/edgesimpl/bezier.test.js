@@ -12,7 +12,7 @@ const start = bezierRewire.__get__('start');
 
 describe(require('path').basename(__filename), () => {
 
-describe('pipePath helpers', () => {
+describe('Curve helpers', () => {
     [
         ['reverse', 'up'   , [], Direction.down ],
         ['reverse', 'down' , [], Direction.up   ],
@@ -84,6 +84,46 @@ describe('pipePath helpers', () => {
         ['aroundBehind', 'right', [1,6, 5,2, 1], [1,5]],
         ['aroundBehind', 'right', [1,6, 5,6, 1], [1,5]],
 
+        ['getAroundVal', 'up'   , [5,6, 5],  0],
+        ['getAroundVal', 'down' , [5,6, 5], 10],
+        ['getAroundVal', 'left' , [5,6, 5], 11],
+        ['getAroundVal', 'right', [5,6, 5],  1],
+
+        ['rightBehindRight', 'up'   , [1,2, 5,6], [ 3.5,2]],
+        ['rightBehindRight', 'up'   , [1,2, 5,2], [ 3.5,0]],
+        ['rightBehindRight', 'up'   , [1,2, 5,8], [ 3.5,3]],
+        ['rightBehindRight', 'down' , [5,6, 1,2], [ 2.5,6]],
+        ['rightBehindRight', 'down' , [5,6, 1,6], [ 2.5,8]],
+        ['rightBehindRight', 'down' , [5,6, 1,0], [ 2.5,5]],
+        ['rightBehindRight', 'left' , [1,6, 5,2], [ 1,3.5]],
+        ['rightBehindRight', 'left' , [1,6, 1,2], [-1,3.5]],
+        ['rightBehindRight', 'left' , [1,6, 7,2], [ 2,3.5]],
+        ['rightBehindRight', 'right', [5,2, 1,6], [ 5,4.5]],
+        ['rightBehindRight', 'right', [5,2, 5,6], [ 7,4.5]],
+        ['rightBehindRight', 'right', [5,2,-1,6], [ 4,4.5]],
+
+        ['rightAheadLeft', 'up'   , [5,6, 1,2], [ 0.2,2.4]],
+        ['rightAheadLeft', 'up'   , [5,6, 1,0], [ 0.1,0.6]],
+        ['rightAheadLeft', 'down' , [1,2, 5,6], [ 5.8,5.6]],
+        ['rightAheadLeft', 'down' , [1,2, 5,8], [ 5.9,7.4]],
+        ['rightAheadLeft', 'left' , [5,2, 1,6], [ 1.4,6.8]],
+        ['rightAheadLeft', 'left' , [5,2,-1,6], [-0.4,6.9]],
+        ['rightAheadLeft', 'right', [1,6, 5,2], [ 4.6,1.2]],
+        ['rightAheadLeft', 'right', [1,6, 7,2], [ 6.4,1.1]],
+
+        ['rightBehindLeft', 'up'   , [15, 2,  1,16], [ 8, 0.5]],
+        ['rightBehindLeft', 'up'   , [15, 2,  1, 1], [ 8,-0.5]],
+        ['rightBehindLeft', 'up'   , [15, 2, 17,16], [13, 0.5]],
+        ['rightBehindLeft', 'down' , [ 1,16, 15, 2], [ 8,17.5]],
+        ['rightBehindLeft', 'down' , [ 1,16, 15,17], [ 8,18.5]],
+        ['rightBehindLeft', 'down' , [ 1,16, -1, 2], [ 3,17.5]],
+        ['rightBehindLeft', 'left' , [ 1, 2, 15,16], [-0.5, 9]],
+        ['rightBehindLeft', 'left' , [ 1, 2,  0,16], [-1.5, 9]],
+        ['rightBehindLeft', 'left' , [ 1, 2, 15, 0], [-0.5, 4]],
+        ['rightBehindLeft', 'right', [15,16,  1, 2], [16.5, 9]],
+        ['rightBehindLeft', 'right', [15,16, 16, 2], [17.5, 9]],
+        ['rightBehindLeft', 'right', [15,16,  1,18], [16.5,14]],
+
         ['forwardDiff', 'up'   , [1,2, 5,6], 4],
         ['forwardDiff', 'up'   , [1,6, 5,2], 4],
         ['forwardDiff', 'down' , [1,2, 5,6], 4],
@@ -106,44 +146,86 @@ describe('pipePath helpers', () => {
         ['sideDiff', 'up'   , [1,2, 1,2], 0],
         ['sideDiff', 'left' , [1,2, 1,2], 0],
 
-        ['diffMultiplier', 'up'   , [1,2, 1,6], 0.9],
-        ['diffMultiplier', 'up'   , [1,2, 5,6], 0.6],
-        ['diffMultiplier', 'up'   , [1,2, 5000000,6], 0.5],
-        ['diffMultiplier', 'down' , [1,2, 1,6], 0.9],
-        ['diffMultiplier', 'down' , [1,2, 5,6], 0.6],
-        ['diffMultiplier', 'down' , [1,2, 5000000,6], 0.5],
-        ['diffMultiplier', 'left' , [1,2, 5,2], 0.9],
-        ['diffMultiplier', 'left' , [1,2, 5,6], 0.6],
-        ['diffMultiplier', 'left' , [1,2, 5,6000000], 0.5],
-        ['diffMultiplier', 'right', [1,2, 5,2], 0.9],
-        ['diffMultiplier', 'right', [1,2, 5,6], 0.6],
-        ['diffMultiplier', 'right', [1,2, 5,6000000], 0.5],
+        ['forwardGradual', 'up'   , [1,2, 5,2], 0.9],
+        ['forwardGradual', 'up'   , [1,2, 5,6], 0.6],
+        ['forwardGradual', 'up'   , [1,2, 5,5000000], 0.5],
+        ['forwardGradual', 'down' , [1,2, 5,2], 0.9],
+        ['forwardGradual', 'down' , [1,2, 5,6], 0.6],
+        ['forwardGradual', 'down' , [1,2, 5,5000000], 0.5],
+        ['forwardGradual', 'left' , [1,2, 1,6], 0.9],
+        ['forwardGradual', 'left' , [1,2, 5,6], 0.6],
+        ['forwardGradual', 'left' , [1,2, 5000000,6], 0.5],
+        ['forwardGradual', 'right', [1,2, 1,6], 0.9],
+        ['forwardGradual', 'right', [1,2, 5,6], 0.6],
+        ['forwardGradual', 'right', [1,2, 5000000,6], 0.5],
+
+        ['sideGradual', 'up'   , [1,2, 1,6], 0.9],
+        ['sideGradual', 'up'   , [1,2, 5,6], 0.6],
+        ['sideGradual', 'up'   , [1,2, 5000000,6], 0.5],
+        ['sideGradual', 'down' , [1,2, 1,6], 0.9],
+        ['sideGradual', 'down' , [1,2, 5,6], 0.6],
+        ['sideGradual', 'down' , [1,2, 5000000,6], 0.5],
+        ['sideGradual', 'left' , [1,2, 5,2], 0.9],
+        ['sideGradual', 'left' , [1,2, 5,6], 0.6],
+        ['sideGradual', 'left' , [1,2, 5,6000000], 0.5],
+        ['sideGradual', 'right', [1,2, 5,2], 0.9],
+        ['sideGradual', 'right', [1,2, 5,6], 0.6],
+        ['sideGradual', 'right', [1,2, 5,6000000], 0.5],
 
         ['endIsAhead', 'up'   , [1,2, 5,6], false],
-        ['endIsAhead', 'up'   , [1,6, 5,2], true],
+        ['endIsAhead', 'up'   , [1,6, 5,2], true ],
         ['endIsAhead', 'up'   , [1,2, 5,2], false],
-        ['endIsAhead', 'down' , [1,2, 5,6], true],
+        ['endIsAhead', 'up'   , [1,2, 5,2, -8], true],
+        ['endIsAhead', 'up'   , [1,6, 5,2, 8], false],
+        ['endIsAhead', 'down' , [1,2, 5,6], true ],
         ['endIsAhead', 'down' , [1,6, 5,2], false],
         ['endIsAhead', 'down' , [1,2, 5,2], false],
+        ['endIsAhead', 'down' , [1,2, 5,2, -8], true],
+        ['endIsAhead', 'down' , [1,2, 5,6, 8], false],
         ['endIsAhead', 'left' , [1,2, 5,6], false],
-        ['endIsAhead', 'left' , [5,2, 1,6], true],
+        ['endIsAhead', 'left' , [5,2, 1,6], true ],
         ['endIsAhead', 'left' , [1,2, 1,6], false],
-        ['endIsAhead', 'right', [1,2, 5,6], true],
+        ['endIsAhead', 'left' , [1,2, 1,6, -8], true],
+        ['endIsAhead', 'left' , [5,2, 1,6, 8], false],
+        ['endIsAhead', 'right', [1,2, 5,6], true ],
         ['endIsAhead', 'right', [5,2, 1,6], false],
         ['endIsAhead', 'right', [1,2, 1,6], false],
+        ['endIsAhead', 'right', [1,2, 1,6, -8], true],
+        ['endIsAhead', 'right', [1,2, 5,6, 8], false],
+
+        ['endIsLeft', 'up'   , [1,2, 5,6], false],
+        ['endIsLeft', 'up'   , [5,2, 1,6], true ],
+        ['endIsLeft', 'up'   , [1,2, 1,6], false],
+        ['endIsLeft', 'up'   , [1,2, 1,6, -8], true],
+        ['endIsLeft', 'up'   , [5,2, 1,6, 8], false],
+        ['endIsLeft', 'down' , [1,2, 5,6], true ],
+        ['endIsLeft', 'down' , [5,2, 1,6], false],
+        ['endIsLeft', 'down' , [1,2, 1,6], false],
+        ['endIsLeft', 'down' , [1,2, 1,6, -8], true],
+        ['endIsLeft', 'down' , [1,2, 5,6, 8], false],
+        ['endIsLeft', 'left' , [1,2, 5,6], true ],
+        ['endIsLeft', 'left' , [1,6, 5,2], false],
+        ['endIsLeft', 'left' , [1,2, 5,2], false],
+        ['endIsLeft', 'left' , [1,2, 5,2, -8], true],
+        ['endIsLeft', 'left' , [1,2, 5,6, 8], false],
+        ['endIsLeft', 'right', [1,2, 5,6], false],
+        ['endIsLeft', 'right', [1,6, 5,2], true ],
+        ['endIsLeft', 'right', [1,2, 5,2], false],
+        ['endIsLeft', 'right', [1,2, 5,2, -8], true],
+        ['endIsLeft', 'right', [1,6, 5,2, 8], false],
 
         ['endIsCloseSideways', 'up'   , [1,2, 5,6, 2], false],
-        ['endIsCloseSideways', 'up'   , [1,2, 2,6, 2], true],
-        ['endIsCloseSideways', 'up'   , [1,2, 0,6, 2], true],
-        ['endIsCloseSideways', 'up'   , [1,2, 1,6, 2], true],
+        ['endIsCloseSideways', 'up'   , [1,2, 2,6, 2], true ],
+        ['endIsCloseSideways', 'up'   , [1,2, 0,6, 2], true ],
+        ['endIsCloseSideways', 'up'   , [1,2, 1,6, 2], true ],
         ['endIsCloseSideways', 'down' , [1,2, 5,6, 2], false],
-        ['endIsCloseSideways', 'down' , [1,2, 0,6, 2], true],
+        ['endIsCloseSideways', 'down' , [1,2, 0,6, 2], true ],
         ['endIsCloseSideways', 'left' , [1,2, 5,6, 2], false],
-        ['endIsCloseSideways', 'left' , [1,2, 5,3, 2], true],
-        ['endIsCloseSideways', 'left' , [1,2, 5,1, 2], true],
-        ['endIsCloseSideways', 'left' , [1,2, 5,2, 2], true],
+        ['endIsCloseSideways', 'left' , [1,2, 5,3, 2], true ],
+        ['endIsCloseSideways', 'left' , [1,2, 5,1, 2], true ],
+        ['endIsCloseSideways', 'left' , [1,2, 5,2, 2], true ],
         ['endIsCloseSideways', 'right', [1,2, 5,6, 2], false],
-        ['endIsCloseSideways', 'right', [1,2, 5,3, 2], true],
+        ['endIsCloseSideways', 'right', [1,2, 5,3, 2], true ],
 
     ].forEach(([func, direction, input, result]) => {
         it(`${func} ${direction} ${input}`, () => {
@@ -154,13 +236,13 @@ describe('pipePath helpers', () => {
     });
 });
 
-describe('pipePath interface', () => {
+describe('Curve interface', () => {
     const f = 2.5;
     const bn = 2.0; // normal side dist
     const be = 2.7; // extra side dist
     const bz = 1.0; // zero side dist
-    const l = 4.0;
-    const r = 4.0;
+    const l = 3.0;
+    const r = 3.0;
     [
         ['forward', 'up'   , [1,2], [5,6], [1,2, 1,2-f, 5,6+f, 5,6]],
         ['forward', 'down' , [1,2], [5,6], [1,2, 1,2+f, 5,6-f, 5,6]],
@@ -295,7 +377,7 @@ describe('curveSameDirection', () => {
         ]],
     ]));
 
-    describe('same direction daround back curve', () => 
+    describe('same direction around back curve', () => 
     runCurveTests(curveSameDirection, [
         ['down', [1,20,2,3], [
             1,    20,   1,    21.5, -1.3, 21.5, 
@@ -357,21 +439,70 @@ describe('curveOppositeDirection', () => {
 });
 
 describe('curveLeftDirection', () => {
-    describe('left direction to the left', () => 
+    describe('left ahead', () => 
     runCurveTests(curveLeftDirection, [
         ['up', [3,2,1,1], [
-            3, 2, 3, 1, 3, 1, 
+            3, 2, 3, 1.3, 2.3, 1, 
             1, 1
         ]],
     ]));
 });
 
 describe('curveRightDirection', () => {
-    describe('left direction to the left', () => 
+    describe('right ahead', () => 
     runCurveTests(curveRightDirection, [
-        ['up', [1,2,3,1], [
-            1, 2, 1, 1, 1, 1, 
-            3, 1
+        ['up', [5,5,6,4], [
+            5, 5, 5, 4.3, 5.3, 4, 
+            6, 4
+        ]],
+        ['up', [5,5,9,0], [
+            5, 5, 5, 1.1, 5.8, 0, 
+            9, 0
+        ]],
+        ['up', [5,5,6,0], [
+            5, 5, 5, 1.8, 5.2, 0, 
+            6, 0
+        ]],
+        ['up', [5,5,9,4], [
+            5, 5, 5, 4.2, 6.4, 4, 
+            9, 4
+        ]],
+    ]));
+
+    describe('left ahead', () => 
+    runCurveTests(curveRightDirection, [
+        ['up', [5,5,1,0], [
+            5,   5,   5,   2.2, 0.2, 3.2, 
+            0.2, 0.5, 0.2, 0.2, 0.5, 0, 
+            1,   0
+        ]],
+        ['up', [5,5,1,4], [
+            5, 5,   5,    3.2, 4.4,  2.5, 
+            3, 2.5, -0.3, 2.5, -0.3, 4, 
+            1, 4
+        ]],
+    ]));
+
+    describe('right behind', () => 
+    runCurveTests(curveRightDirection, [
+        ['up', [5,5,6,9], [
+            5, 5,   5,   4,   4.3, 3.5, 
+            3, 3.5, 0.6, 3.5, 0.6, 9, 
+            6, 9
+        ]],
+        ['up', [5,5,9,9], [
+            5,   5, 5,   3.3, 7.5, 3.3, 
+            7.5, 5, 7.5, 7.6, 7.8, 9, 
+            9,   9
+        ]],
+    ]));
+
+    describe('left behind', () => 
+    runCurveTests(curveRightDirection, [
+        ['up', [5,5,1,9], [
+            5, 5,   5,    4,   4.3,  3.5, 
+            3, 3.5, -1.3, 3.5, -1.3, 9, 
+            1, 9
         ]],
     ]));
 });
@@ -425,20 +556,20 @@ describe('generatePoints', () => {
         ]);
     });
 
-    it ('generate opposite direction start down', () => {
+    it ('generate opposite direction start left', () => {
         expect(bezierImpl.generatePoints({
             isSource: true,
-            direction: Direction['down'],
+            direction: Direction['left'],
             x: 1,
             y: 2,
         },{
             isSource: false,
-            direction: Direction['up'],
+            direction: Direction['right'],
             x: 3,
             y: 4,
         })).to.almost.eql([
-            1.5, 3, 1.5, 6.5, 3.5, 6.5, 
-            3.5, 5
+            1, 2.5, -0.5, 2.5, -0.5, 4.5, 
+            3, 4.5
         ]);
     });
 
@@ -454,7 +585,7 @@ describe('generatePoints', () => {
             x: 3,
             y: 4,
         })).to.almost.eql([
-            2,   2.5, 3.5, 2.5, 3.5, 2.5, 
+            2,   2.5, 3.0, 2.5, 3.5, 3.0, 
             3.5, 4
         ]);
     });
@@ -471,7 +602,7 @@ describe('generatePoints', () => {
             x: 1,
             y: 2,
         })).to.almost.eql([
-            3.5, 4, 3.5, 2.5, 3.5, 2.5, 
+            3.5, 4, 3.5, 3.0, 3.0, 2.5, 
             2,   2.5
         ]);
     });

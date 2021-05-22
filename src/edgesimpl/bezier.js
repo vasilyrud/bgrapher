@@ -159,6 +159,90 @@ function aroundBehind(direction,
     }
 }
 
+function getAroundVal(direction,
+    newX, newY,
+    dist,
+) {
+    switch (direction) {
+    case Direction.up:
+        return newX - dist;
+    case Direction.down:
+        return newX + dist;
+    case Direction.left:
+        return newY + dist;
+    case Direction.right:
+        return newY - dist;
+    }
+}
+
+function rightBehindRight(direction, 
+    curX, curY, 
+    newX, newY,
+    dist = 1.5,
+) {
+    let around = getAroundVal(direction, newX, newY, dist);
+
+    switch (direction) {
+    case Direction.up:
+        return [around, curY - 2 + (newY-curY)/2];
+    case Direction.down:
+        return [around, curY + 2 + (newY-curY)/2];
+    case Direction.left:
+        return [curX - 2 + (newX-curX)/2, around];
+    case Direction.right:
+        return [curX + 2 + (newX-curX)/2, around];
+    }
+}
+
+function rightAheadLeft(direction, 
+    curX, curY, 
+    newX, newY,
+    atZero = 0.2,
+    atInf  = 2,
+) {
+    let around = getAroundVal(direction, newX, newY, 
+        forwardGradual(direction, curX, curY, newX, newY, atZero, atInf, 0.1));
+
+    switch (direction) {
+    case Direction.up:
+    case Direction.down:
+        return [around, curY + 0.9*(newY-curY)];
+    case Direction.left:
+    case Direction.right:
+        return [curX + 0.9*(newX-curX), around];
+    }
+}
+
+function rightBehindLeft(direction,
+    curX, curY,
+    newX, newY,
+    minF = 1.5,
+    minS = 2,
+) {
+    switch (direction) {
+    case Direction.up:
+        return [
+            Math.min(curX - minS, curX + (newX-curX)/2),
+            Math.min(curY - minF, newY - minF)
+        ];
+    case Direction.down:
+        return [
+            Math.max(curX + minS, curX + (newX-curX)/2),
+            Math.max(curY + minF, newY + minF)
+        ];
+    case Direction.left:
+        return [
+            Math.min(curX - minF, newX - minF), 
+            Math.max(curY + minS, curY + (newY-curY)/2)
+        ];
+    case Direction.right:
+        return [
+            Math.max(curX + minF, newX + minF), 
+            Math.min(curY - minS, curY + (newY-curY)/2)
+        ];
+    }
+}
+
 function forwardDiff(direction, 
     curX, curY, 
     newX, newY,
@@ -187,7 +271,20 @@ function sideDiff(direction,
     }
 }
 
-function diffMultiplier(direction, 
+function forwardGradual(direction, 
+    curX, curY, 
+    newX, newY, 
+    atZero = 0.9, 
+    atInf  = 0.5, 
+    decreaseRate = 0.5,
+) {
+    const diff = forwardDiff(direction, curX, curY, newX, newY);
+    return atInf + 
+        (atZero - atInf) / 
+        (decreaseRate * diff + 1);
+}
+
+function sideGradual(direction, 
     curX, curY, 
     newX, newY, 
     atZero = 0.9, 
@@ -203,16 +300,34 @@ function diffMultiplier(direction,
 function endIsAhead(direction, 
     curX, curY, 
     newX, newY,
+    dist = 0,
 ) {
     switch (direction) {
     case Direction.up:
-        return curY > newY;
+        return curY - dist > newY;
     case Direction.down:
-        return curY < newY;
+        return curY + dist < newY;
     case Direction.left:
-        return curX > newX;
+        return curX - dist > newX;
     case Direction.right:
-        return curX < newX;
+        return curX + dist < newX;
+    }
+}
+
+function endIsLeft(direction, 
+    curX, curY, 
+    newX, newY,
+    dist = 0,
+) {
+    switch (direction) {
+    case Direction.up:
+        return curX - dist > newX;
+    case Direction.down:
+        return curX + dist < newX;
+    case Direction.left:
+        return curY + dist < newY;
+    case Direction.right:
+        return curY - dist > newY;
     }
 }
 
@@ -239,7 +354,7 @@ function Curve(x, y, direction) {
 
     this.forward = function(newX, newY) {
         let intensity = forwardDiff(this.direction, this.curX, this.curY, newX, newY);
-        intensity *= diffMultiplier(this.direction, this.curX, this.curY, newX, newY);
+        intensity *= sideGradual(this.direction, this.curX, this.curY, newX, newY);
 
         this.points.push(...anchor(this.direction, this.curX, this.curY, intensity));
         this.points.push(...anchor(reverse(this.direction), newX, newY, intensity));
@@ -271,8 +386,10 @@ function Curve(x, y, direction) {
     };
 
     this.left = function(newX, newY) {
-        const curI = forwardDiff(this.direction, this.curX, this.curY, newX, newY);
-        const newI = sideDiff(this.direction, this.curX, this.curY, newX, newY);
+        let curI = forwardDiff(this.direction, this.curX, this.curY, newX, newY);
+        curI *= sideGradual(this.direction, this.curX, this.curY, newX, newY, 0.5, 0.9);
+        let newI = sideDiff(this.direction, this.curX, this.curY, newX, newY);
+        newI *= forwardGradual(this.direction, this.curX, this.curY, newX, newY, 0.5, 0.9);
 
         this.points.push(...anchor(this.direction, this.curX, this.curY, curI));
         this.points.push(...anchor(right(this.direction), newX, newY, newI));
@@ -286,8 +403,10 @@ function Curve(x, y, direction) {
     };
 
     this.right = function(newX, newY) {
-        const curI = forwardDiff(this.direction, this.curX, this.curY, newX, newY);
-        const newI = sideDiff(this.direction, this.curX, this.curY, newX, newY);
+        let curI = forwardDiff(this.direction, this.curX, this.curY, newX, newY);
+        curI *= sideGradual(this.direction, this.curX, this.curY, newX, newY, 0.5, 0.9);
+        let newI = sideDiff(this.direction, this.curX, this.curY, newX, newY);
+        newI *= forwardGradual(this.direction, this.curX, this.curY, newX, newY, 0.5, 0.9);
 
         this.points.push(...anchor(this.direction, this.curX, this.curY, curI));
         this.points.push(...anchor(left(this.direction), newX, newY, newI));
@@ -353,6 +472,7 @@ function curveOppositeDirection(sX, sY, eX, eY, direction) {
 function curveLeftDirection(sX, sY, eX, eY, direction) {
     let curve = start(sX, sY, direction);
 
+    // TODO: curve left
     return curve
         .left(eX, eY)
         .points;
@@ -361,9 +481,34 @@ function curveLeftDirection(sX, sY, eX, eY, direction) {
 function curveRightDirection(sX, sY, eX, eY, direction) {
     let curve = start(sX, sY, direction);
 
-    return curve
-        .right(eX, eY)
-        .points;
+    if (!endIsLeft(direction, sX, sY, eX, eY) &&
+        endIsAhead(direction, sX, sY, eX, eY)
+    ) {
+        return curve
+            .right(eX, eY)
+            .points;
+    }
+
+    if (endIsLeft(direction, sX, sY, eX, eY, -2) &&
+        !endIsAhead(direction, sX, sY, eX, eY, 2)
+    ) {
+        return curve
+            .left(...rightBehindLeft(direction, sX, sY, eX, eY))
+            .back(eX, eY)
+            .points;
+    }
+
+    if (endIsAhead(direction, sX, sY, eX, eY, 2)) {
+        return curve
+            .forward(...rightAheadLeft(direction, sX, sY, eX, eY))
+            .right(eX, eY)
+            .points;
+    } else {
+        return curve
+            .back(...rightBehindRight(direction, sX, sY, eX, eY))
+            .left(eX, eY)
+            .points;
+    }
 }
 
 const startOffset = Object.freeze({
