@@ -1,7 +1,20 @@
-import { expect } from 'chai';
+import { expect, use } from 'chai';
+import chaiAlmost from 'chai-almost';
+use(chaiAlmost(0.1));
 
 import bgrapheventsRewire, {bgraphEventsImpl} from 'eventsimpl/bgraphevents.js'
 const BgraphEventState = bgrapheventsRewire.__get__('BgraphEventState');
+const getLocal = bgrapheventsRewire.__get__('getLocal');
+const getZoom = bgrapheventsRewire.__get__('getZoom');
+const coordValues = bgrapheventsRewire.__get__('coordValues');
+const getMargin = bgrapheventsRewire.__get__('getMargin');
+const constrainOffset = bgrapheventsRewire.__get__('constrainOffset');
+const getInitOffset = bgrapheventsRewire.__get__('getInitOffset');
+const getPanOffset = bgrapheventsRewire.__get__('getPanOffset');
+const getZoomOffset = bgrapheventsRewire.__get__('getZoomOffset');
+const hoverBgraph = bgrapheventsRewire.__get__('hoverBgraph');
+
+import { BgraphState } from 'bgraphstate.js'
 
 describe(require('path').basename(__filename), () => {
 
@@ -12,18 +25,18 @@ describe('BgraphEventState', () => {
     });
 
     const areClicks = [
-        [0,0,0,0],
-        [0,0,1,1],
-        [0,0,-1,-1],
-        [1,-1,0,0],
-        [-1,0,0,1],
+        [ 0, 0, 0, 0],
+        [ 0, 0, 1, 1],
+        [ 0, 0,-1,-1],
+        [ 1,-1, 0, 0],
+        [-1, 0, 0, 1],
     ];
 
     const areNotClicks = [
-        [0,0,2,2],
-        [-1,-1,1,1],
-        [0,-1,0,1],
-        [-1,0,1,0],
+        [ 0, 0, 2, 2],
+        [-1,-1, 1, 1],
+        [ 0,-1, 0, 1],
+        [-1, 0, 1, 0],
     ];
 
     function makeClickState(sx,sy,ex,ey) {
@@ -46,6 +59,196 @@ describe('BgraphEventState', () => {
         areNotClicks.forEach(([sx,sy,ex,ey]) => {
             const eventState = makeClickState(sx,sy,ex,ey);
             expect(eventState.withinClickRange()).to.be.false;
+        });
+    });
+});
+
+describe('event helpers', () => {
+    describe('getLocal', () => {
+        let event = {
+            clientX: 5, 
+            clientY: 7,
+        };
+
+        it('is client when zero', () => {
+            event.target = {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }};
+            expect(getLocal('x', event)).to.equal(5);
+            expect(getLocal('y', event)).to.equal(7);
+        });
+
+        it('is subtracted when non-zero', () => {
+            event.target = {getBoundingClientRect: () => {
+                return {left: 2, top: 3};
+            }};
+            expect(getLocal('x', event)).to.equal(3);
+            expect(getLocal('y', event)).to.equal(4);
+        });
+    });
+
+    describe('getZoom', () => {
+        function testNewZoom([old, delta, expected]) {
+            let bgraphState = new BgraphState();
+            bgraphState.zoom = old;
+            let event = { deltaY: delta };
+
+            it(`old zoom ${old} and delta ${delta}`, () => {
+                expect(getZoom(bgraphState, event)).to.almost.eql(expected);
+            });
+        }
+
+        describe('zoom no change', () => {
+            [
+                [ 1, 0, [ 1, 0]],
+                [10, 0, [10, 0]],
+            ].forEach(testNewZoom);
+        });
+
+        describe('zoom beyond limits', () => {
+            [
+                [ 1,        100, [  1,      0]],
+                [ 1,  -10000000, [100, -54450]],
+                [ 1, -100000000, [100, -54450]],
+                [10,   10000000, [  1,    495]],
+                [10,  -10000000, [100,  -4950]],
+            ].forEach(testNewZoom);
+        });
+
+        describe('zoom within limits', () => {
+            [
+                [  1, -100, [ 1.2, -100]],
+                [ 10, -100, [11.8, -100]],
+                [ 10,  100, [ 8.2,  100]],
+                [100,  100, [81.8,  100]],
+            ].forEach(testNewZoom);
+        });
+    });
+
+    describe('coordValues', () => {
+        it('returns for coord', () => {
+            const fakeBgrapher = {
+                bgraphWidth: () => 1, bgraphHeight: () => 2,
+                clientWidth: () => 3, clientHeight: () => 4,
+            };
+            expect(coordValues('x', fakeBgrapher)).to.eql([1,3]);
+            expect(coordValues('y', fakeBgrapher)).to.eql([2,4]);
+        });
+    });
+
+    describe('getMargin', () => {
+        it('returns margin without zoom', () => {
+            let bgraphState = new BgraphState();
+            expect(getMargin(bgraphState, 500, 50)).to.eql(100);
+            expect(getMargin(bgraphState, 10, 500)).to.eql(245);
+        });
+
+        it('returns margin with zoom', () => {
+            let bgraphState = new BgraphState();
+            bgraphState.zoom = 10;
+            expect(getMargin(bgraphState, 500, 50)).to.eql(10);
+            expect(getMargin(bgraphState, 10, 500)).to.eql(20);
+        });
+    });
+
+    describe('constrainOffset', () => {
+        function testNewOffset([zoom, offset, bsize, csize, expected]) {
+            let bgraphState = new BgraphState();
+            bgraphState.zoom = zoom;
+
+            it(`zoom ${zoom}, bgraph ${bsize}, client ${csize}, desired offset ${offset}`, () => {
+                expect(constrainOffset(offset, bgraphState, bsize, csize)).to.almost.eql(expected);
+            });
+        }
+
+        describe('without zoom', () => {
+            [
+                [1,  500, 500,  50, 100],
+                [1, -500, 500,  50,-500],
+                [1,-1000, 500,  50,-550],
+                [1,  500,  10, 500, 245],
+                [1, -500,  10, 500, 245],
+            ].forEach(testNewOffset);
+        });
+
+        describe('with zoom', () => {
+            [
+                [10,  500, 500,  50,  10],
+                [10, -500, 500,  50,-500],
+                [10,-1000, 500,  50,-505],
+                [10,  500,  10, 500,  20],
+                [10, -500,  10, 500,  20],
+            ].forEach(testNewOffset);
+        });
+    });
+
+    describe('get offset', () => {
+        const fakeBgrapher = {
+            bgraphWidth: () => 500, bgraphHeight: () => 500,
+            clientWidth: () =>  50, clientHeight: () =>  50,
+        };
+
+        let bgraphState = new BgraphState();
+        bgraphState.zoom = 10;
+        bgraphState.offset.x = 5;
+        bgraphState.offset.y = 6;
+
+        it('getInitOffset returns as-is', () => {
+            expect(getInitOffset('x', bgraphState, fakeBgrapher)).to.equal(bgraphState.offset.x);
+            expect(getInitOffset('y', bgraphState, fakeBgrapher)).to.equal(bgraphState.offset.y);
+        });
+
+        it('getPanOffset returns moved', () => {
+            let eventState = new BgraphEventState();
+            eventState.panningPrev.x = 3;
+            eventState.panningPrev.y = 4;
+            eventState.cur.x = 7;
+            eventState.cur.y = 9;
+
+            expect(getPanOffset('x', bgraphState, eventState, fakeBgrapher)).to.almost.equal(5.4);
+            expect(getPanOffset('y', bgraphState, eventState, fakeBgrapher)).to.almost.equal(6.5);
+        });
+
+        it('getZoomOffset returns zoomed', () => {
+            let eventState = new BgraphEventState();
+            eventState.cur.x = 7;
+            eventState.cur.y = 9;
+
+            expect(getZoomOffset('x', bgraphState, eventState, fakeBgrapher,  50)).to.almost.equal(5.1);
+            expect(getZoomOffset('y', bgraphState, eventState, fakeBgrapher, 150)).to.almost.equal(6.3);
+        });
+    });
+
+    describe('hoverBgraph', () => {
+        function testHover(curBlock, curEdgeEnd, nextBlock, nextEdgeEnd) {
+            let hoveredBlock;
+            let hoveredEdgeEnd;
+
+            const bgraphState = new BgraphState();
+            const fakeEventState = { cur: {} };
+            const fakeBgrapher = {
+                curBlock  : () => curBlock,
+                curEdgeEnd: () => curEdgeEnd,
+                hoverBlock  : (b) => { hoveredBlock   = b; },
+                hoverEdgeEnd: (e) => { hoveredEdgeEnd = e; },
+            };
+
+            hoverBgraph(bgraphState, fakeEventState, fakeBgrapher);
+            expect(hoveredBlock).to.equal(nextBlock);
+            expect(hoveredEdgeEnd).to.equal(nextEdgeEnd);
+        }
+
+        it('hovers only block', () => {
+            testHover({ id: 5 }, null, 5, null);
+        });
+
+        it('hovers only edge end', () => {
+            testHover(null     , { id: 6 }, null, 6);
+            testHover({ id: 5 }, { id: 6 }, null, 6);
+        });
+
+        it('hovers neither', () => {
+            testHover(null, null, null, null);
         });
     });
 });

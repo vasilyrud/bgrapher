@@ -45,10 +45,9 @@ function BgraphEventState() {
 }
 
 function getLocal(coord, event) {
-    return ((coord === 'x')
+    return coord === 'x'
         ? event.clientX - event.target.getBoundingClientRect().left
-        : event.clientY - event.target.getBoundingClientRect().top
-    );
+        : event.clientY - event.target.getBoundingClientRect().top;
 }
 
 function getZoom(bgraphState, event) {
@@ -69,30 +68,30 @@ function getZoom(bgraphState, event) {
 }
 
 function coordValues(coord, bgrapher) {
-    return ((coord === 'x')
+    return coord === 'x'
         ? [bgrapher.bgraphWidth() , bgrapher.clientWidth() ]
-        : [bgrapher.bgraphHeight(), bgrapher.clientHeight()]
-    );
+        : [bgrapher.bgraphHeight(), bgrapher.clientHeight()];
 }
 
 function getMargin(bgraphState, bgraphSize, clientSize) {
     return Math.max(
         MARGIN_PIXELS / bgraphState.zoom,
-        (clientSize - (bgraphSize * bgraphState.zoom)) / (2 * bgraphState.zoom)
+        (clientSize - bgraphSize * bgraphState.zoom) / (2 * bgraphState.zoom)
     );
 }
 
 function constrainOffset(offset, bgraphState, bgraphSize, clientSize) {
     let margin = getMargin(bgraphState, bgraphSize, clientSize)
     let innerLimit = margin;
-    let outerLimit = (clientSize / bgraphState.zoom - bgraphSize) - margin;
+    let outerLimit = clientSize / bgraphState.zoom - bgraphSize - margin;
 
     // Prevent going past left/top
     if (offset > innerLimit) {
         return innerLimit;
 
     // Prevent going past right/bottom
-    } else if (offset < outerLimit) {
+    } else 
+    if (offset < outerLimit) {
         return outerLimit;
     }
 
