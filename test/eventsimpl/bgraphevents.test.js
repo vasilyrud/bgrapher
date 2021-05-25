@@ -16,6 +16,13 @@ const hoverBgraph = bgrapheventsRewire.__get__('hoverBgraph');
 
 import { BgraphState } from 'bgraphstate.js'
 
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+var window = (new JSDOM(`...`)).window;
+var document = window.document;
+global.window = window;
+global.document = document;
+
 describe(require('path').basename(__filename), () => {
 
 describe('BgraphEventState', () => {
@@ -249,6 +256,75 @@ describe('event helpers', () => {
 
         it('hovers neither', () => {
             testHover(null, null, null, null);
+        });
+    });
+});
+
+describe('events', () => {
+    let bgraphState;
+    let fakeBgrapher;
+    let element;
+    let calledUpdate;
+
+    beforeEach(function() {
+        bgraphState = new BgraphState();
+        bgraphState.update = () => { calledUpdate = true; };
+
+        fakeBgrapher = {
+            bgraphWidth: () => 500, bgraphHeight: () => 500,
+            clientWidth: () =>  50, clientHeight: () =>  50,
+            updateClientSize: () => {},
+        };
+
+        element = document.createElement('div');
+        bgraphEventsImpl.initEvents(bgraphState, fakeBgrapher, element);
+
+        calledUpdate = false;
+    });
+
+    afterEach(function() {
+        element.remove();
+    });
+
+    it('init', () => {
+        fakeBgrapher.bgraphWidth  = () =>  10;
+        fakeBgrapher.bgraphHeight = () =>  10;
+        fakeBgrapher.clientWidth  = () => 500;
+        fakeBgrapher.clientHeight = () => 500;
+
+        bgraphEventsImpl.initEvents(bgraphState, fakeBgrapher, element);
+
+        // non-zero due to constrainOffset
+        expect(bgraphState.offset.x).to.equal(245);
+        expect(bgraphState.offset.y).to.equal(245);
+        expect(calledUpdate).to.be.false;
+    });
+
+    it('resize', () => {
+        fakeBgrapher.bgraphWidth  = () =>  10;
+        fakeBgrapher.bgraphHeight = () =>  10;
+        fakeBgrapher.clientWidth  = () => 500;
+        fakeBgrapher.clientHeight = () => 500;
+
+        window.dispatchEvent(new window.Event('resize'));
+
+        // non-zero due to constrainOffset
+        expect(bgraphState.offset.x).to.equal(245);
+        expect(bgraphState.offset.y).to.equal(245);
+        expect(calledUpdate).to.be.true;
+    });
+});
+
+describe('other event functions', () => {
+    describe('cur', () => {
+        const testCur = { x: 5, y: 6 };
+
+        it('cur returns value on hover', () => {
+            expect(bgraphEventsImpl.cur({ hover: true, cur: testCur })).to.eql(testCur);
+        });
+
+        it('cur returns null when not hovered', () => {
+            expect(bgraphEventsImpl.cur({ hover: false, cur: testCur })).to.eql({ x: null, y: null });
         });
     });
 });
