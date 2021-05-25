@@ -262,6 +262,7 @@ describe('event helpers', () => {
 
 describe('events', () => {
     let bgraphState;
+    let eventState;
     let fakeBgrapher;
     let element;
     let calledUpdate;
@@ -274,10 +275,14 @@ describe('events', () => {
             bgraphWidth: () => 500, bgraphHeight: () => 500,
             clientWidth: () =>  50, clientHeight: () =>  50,
             updateClientSize: () => {},
+            curBlock  : () => {},
+            curEdgeEnd: () => {},
+            hoverBlock  : () => {},
+            hoverEdgeEnd: () => {},
         };
 
         element = document.createElement('div');
-        bgraphEventsImpl.initEvents(bgraphState, fakeBgrapher, element);
+        eventState = bgraphEventsImpl.initEvents(bgraphState, fakeBgrapher, element);
 
         calledUpdate = false;
     });
@@ -292,7 +297,7 @@ describe('events', () => {
         fakeBgrapher.clientWidth  = () => 500;
         fakeBgrapher.clientHeight = () => 500;
 
-        bgraphEventsImpl.initEvents(bgraphState, fakeBgrapher, element);
+        eventState = bgraphEventsImpl.initEvents(bgraphState, fakeBgrapher, element);
 
         // non-zero due to constrainOffset
         expect(bgraphState.offset.x).to.equal(245);
@@ -306,11 +311,38 @@ describe('events', () => {
         fakeBgrapher.clientWidth  = () => 500;
         fakeBgrapher.clientHeight = () => 500;
 
-        window.dispatchEvent(new window.Event('resize'));
+        window.dispatchEvent(new window.UIEvent('resize'));
 
         // non-zero due to constrainOffset
         expect(bgraphState.offset.x).to.equal(245);
         expect(bgraphState.offset.y).to.equal(245);
+        expect(calledUpdate).to.be.true;
+    });
+
+    it('wheel', () => {
+        let event = {
+            clientX: 5, 
+            clientY: 7,
+            target: {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }},
+            deltaY: -100,
+        };
+
+        expect(bgraphState.offset.x).to.equal(0);
+        expect(bgraphState.offset.y).to.equal(0);
+        expect(bgraphState.zoom).to.equal(1);
+
+        element.dispatchEvent(new window.WheelEvent('wheel', event));
+
+        expect(bgraphState.offset.x).to.not.equal(0);
+        expect(bgraphState.offset.y).to.not.equal(0);
+        expect(bgraphState.zoom).to.not.equal(1);
+
+        expect(eventState.cur.x).to.equal(5);
+        expect(eventState.cur.y).to.equal(7);
+        expect(eventState.hover).to.be.true;
+
         expect(calledUpdate).to.be.true;
     });
 });
