@@ -15,6 +15,7 @@ const getZoomOffset = bgrapheventsRewire.__get__('getZoomOffset');
 const hoverBgraph = bgrapheventsRewire.__get__('hoverBgraph');
 
 import { BgraphState } from 'bgraphstate.js'
+import { equal } from 'assert';
 
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
@@ -266,6 +267,8 @@ describe('events', () => {
     let fakeBgrapher;
     let element;
     let calledUpdate;
+    let hoveredBlock;
+    let hoveredEdgeEnd;
 
     beforeEach(function() {
         bgraphState = new BgraphState();
@@ -277,14 +280,22 @@ describe('events', () => {
             updateClientSize: () => {},
             curBlock  : () => {},
             curEdgeEnd: () => {},
-            hoverBlock  : () => {},
-            hoverEdgeEnd: () => {},
+            hoveredBlock  : () => {},
+            hoveredEdgeEnd: () => {},
+            hoverBlock  : (b) => { hoveredBlock   = b; },
+            hoverEdgeEnd: (e) => { hoveredEdgeEnd = e; },
         };
 
         element = document.createElement('div');
         eventState = bgraphEventsImpl.initEvents(bgraphState, fakeBgrapher, element);
 
         calledUpdate = false;
+        hoveredBlock   = -2; // some invalid value
+        hoveredEdgeEnd = -2; // some invalid value
+
+        expect(bgraphState.offset.x).to.equal(0);
+        expect(bgraphState.offset.y).to.equal(0);
+        expect(bgraphState.zoom).to.equal(1);
     });
 
     afterEach(function() {
@@ -320,20 +331,13 @@ describe('events', () => {
     });
 
     it('wheel', () => {
-        let event = {
-            clientX: 5, 
-            clientY: 7,
+        element.dispatchEvent(new window.WheelEvent('wheel', {
+            clientX: 5, clientY: 7,
             target: {getBoundingClientRect: () => {
                 return {left: 0, top: 0};
             }},
             deltaY: -100,
-        };
-
-        expect(bgraphState.offset.x).to.equal(0);
-        expect(bgraphState.offset.y).to.equal(0);
-        expect(bgraphState.zoom).to.equal(1);
-
-        element.dispatchEvent(new window.WheelEvent('wheel', event));
+        }));
 
         expect(bgraphState.offset.x).to.not.equal(0);
         expect(bgraphState.offset.y).to.not.equal(0);
@@ -342,6 +346,136 @@ describe('events', () => {
         expect(eventState.cur.x).to.equal(5);
         expect(eventState.cur.y).to.equal(7);
         expect(eventState.hover).to.be.true;
+
+        expect(calledUpdate).to.be.true;
+    });
+
+    it('mouse hover', () => {
+        element.dispatchEvent(new window.MouseEvent('mousemove', {
+            clientX: 5, clientY: 7,
+            target: {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }},
+        }));
+
+        expect(bgraphState.offset.x).to.equal(0);
+        expect(bgraphState.offset.y).to.equal(0);
+        expect(eventState.cur.x).to.not.equal(0);
+        expect(eventState.cur.y).to.not.equal(0);
+        expect(eventState.hover).to.be.true;
+
+        expect(calledUpdate).to.be.true;
+        calledUpdate = false;
+
+        const [prevX, prevY] = [eventState.cur.x, eventState.cur.y];
+
+        element.dispatchEvent(new window.MouseEvent('mousemove', {
+            clientX: 6, clientY: 8,
+            target: {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }},
+        }));
+
+        expect(eventState.cur.x).to.not.equal(prevX);
+        expect(eventState.cur.y).to.not.equal(prevY);
+
+        expect(calledUpdate).to.be.true;
+    });
+
+    it('mouse out hover', () => {
+        element.dispatchEvent(new window.MouseEvent('mousemove', {
+            clientX: 5, clientY: 7,
+            target: {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }},
+        }));
+
+        expect(hoveredBlock).to.be.null;
+        expect(hoveredEdgeEnd).to.be.null;
+
+        hoveredBlock   = -2;
+        hoveredEdgeEnd = -2;
+
+        element.dispatchEvent(new window.MouseEvent('mouseout', {}));
+
+        expect(hoveredBlock).to.be.null;
+        expect(hoveredEdgeEnd).to.be.null;
+    });
+
+    it('mouse pan', () => {
+        element.dispatchEvent(new window.MouseEvent('mousedown', {
+            button: 0,
+            clientX: 15, clientY: 17,
+            target: {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }},
+        }));
+
+        expect(eventState.panning).to.be.true;
+
+        element.dispatchEvent(new window.MouseEvent('mousemove', {
+            clientX: 5, clientY: 7,
+            target: {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }},
+        }));
+
+        expect(bgraphState.offset.x).to.not.equal(0);
+        expect(bgraphState.offset.y).to.not.equal(0);
+        expect(bgraphState.zoom).to.equal(1);
+        expect(eventState.isClick).to.be.false;
+
+        expect(calledUpdate).to.be.true;
+        calledUpdate = false;
+
+        const [prevX, prevY] = [bgraphState.offset.x, bgraphState.offset.y];
+
+        element.dispatchEvent(new window.MouseEvent('mousemove', {
+            clientX: 6, clientY: 8,
+            target: {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }},
+        }));
+
+        expect(bgraphState.offset.x).to.not.equal(prevX);
+        expect(bgraphState.offset.y).to.not.equal(prevY);
+
+        expect(calledUpdate).to.be.true;
+        calledUpdate = false;
+
+        element.dispatchEvent(new window.MouseEvent('mouseup', {
+            button: 0,
+            clientX: 6, clientY: 8,
+            target: {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }},
+        }));
+
+        expect(eventState.panning).to.be.false;
+        expect(calledUpdate).to.be.false;
+    });
+
+    it('mouse out pan', () => {
+        element.dispatchEvent(new window.MouseEvent('mousedown', {
+            button: 0,
+            clientX: 15, clientY: 17,
+            target: {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }},
+        }));
+
+        element.dispatchEvent(new window.MouseEvent('mousemove', {
+            clientX: 5, clientY: 7,
+            target: {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }},
+        }));
+
+        element.dispatchEvent(new window.MouseEvent('mouseout', {}));
+
+        expect(eventState.panning).to.be.false;
+        expect(eventState.hover).to.be.false;
+        expect(eventState.isClick).to.be.false;
 
         expect(calledUpdate).to.be.true;
     });
