@@ -267,8 +267,14 @@ describe('events', () => {
     let fakeBgrapher;
     let element;
     let calledUpdate;
+    let preventedDefault;
+
     let hoveredBlock;
     let hoveredEdgeEnd;
+    let toggledBlock;
+    let toggledEdgeEnd;
+    let selectedBlock;
+    let selectedEdgeEnd;
 
     beforeEach(function() {
         bgraphState = new BgraphState();
@@ -280,18 +286,30 @@ describe('events', () => {
             updateClientSize: () => {},
             curBlock  : () => {},
             curEdgeEnd: () => {},
-            hoveredBlock  : () => {},
-            hoveredEdgeEnd: () => {},
-            hoverBlock  : (b) => { hoveredBlock   = b; },
-            hoverEdgeEnd: (e) => { hoveredEdgeEnd = e; },
+            hoveredBlock  : () => { return {id: 1}; },
+            hoveredEdgeEnd: () => { return {id: 2}; },
+
+            hoverBlock   : (b) => { hoveredBlock    = b; },
+            hoverEdgeEnd : (e) => { hoveredEdgeEnd  = e; },
+            toggleBlock  : (b) => { toggledBlock    = b; },
+            toggleEdgeEnd: (e) => { toggledEdgeEnd  = e; },
+            selectBlock  : (b) => { selectedBlock   = b; },
+            selectEdgeEnd: (e) => { selectedEdgeEnd = e; },
         };
 
         element = document.createElement('div');
         eventState = bgraphEventsImpl.initEvents(bgraphState, fakeBgrapher, element);
 
         calledUpdate = false;
-        hoveredBlock   = -2; // some invalid value
-        hoveredEdgeEnd = -2; // some invalid value
+        preventedDefault = false;
+
+        const INVALID_VAL = -2;
+        hoveredBlock    = INVALID_VAL;
+        hoveredEdgeEnd  = INVALID_VAL;
+        toggledBlock    = INVALID_VAL;
+        toggledEdgeEnd  = INVALID_VAL;
+        selectedBlock   = INVALID_VAL;
+        selectedEdgeEnd = INVALID_VAL;
 
         expect(bgraphState.offset.x).to.equal(0);
         expect(bgraphState.offset.y).to.equal(0);
@@ -330,7 +348,7 @@ describe('events', () => {
         expect(calledUpdate).to.be.true;
     });
 
-    it('wheel', () => {
+    it('mouse wheel', () => {
         element.dispatchEvent(new window.WheelEvent('wheel', {
             clientX: 5, clientY: 7,
             target: {getBoundingClientRect: () => {
@@ -478,6 +496,78 @@ describe('events', () => {
         expect(eventState.isClick).to.be.false;
 
         expect(calledUpdate).to.be.true;
+    });
+
+    it('mouse left click', () => {
+        element.dispatchEvent(new window.MouseEvent('mousedown', {
+            button: 0,
+            clientX: 15, clientY: 17,
+            target: {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }},
+        }));
+
+        expect(toggledBlock).to.equal(-2);
+        expect(toggledEdgeEnd).to.equal(-2);
+
+        expect(calledUpdate).to.be.false;
+
+        element.dispatchEvent(new window.MouseEvent('mouseup', {
+            button: 0,
+            clientX: 15, clientY: 17,
+            target: {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }},
+        }));
+
+        expect(bgraphState.offset.x).to.equal(0);
+        expect(bgraphState.offset.y).to.equal(0);
+        expect(bgraphState.zoom).to.equal(1);
+        expect(eventState.isClick).to.be.false;
+
+        expect(toggledBlock).to.equal(1);
+        expect(toggledEdgeEnd).to.equal(2);
+
+        expect(calledUpdate).to.be.true;
+    });
+
+    it('mouse right click', () => {
+        element.dispatchEvent(new window.MouseEvent('mousedown', {
+            button: 2,
+            clientX: 15, clientY: 17,
+            target: {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }},
+        }));
+
+        expect(selectedBlock).to.equal(-2);
+        expect(selectedEdgeEnd).to.equal(-2);
+
+        expect(calledUpdate).to.be.false;
+        expect(preventedDefault).to.be.false;
+
+        element.dispatchEvent(new window.MouseEvent('mouseup', {
+            button: 2,
+            clientX: 15, clientY: 17,
+            target: {getBoundingClientRect: () => {
+                return {left: 0, top: 0};
+            }},
+        }));
+
+        let contextmenuEvent = new window.MouseEvent('contextmenu', {});
+        contextmenuEvent.preventDefault = () => { preventedDefault = true; };
+        element.dispatchEvent(contextmenuEvent);
+
+        expect(bgraphState.offset.x).to.equal(0);
+        expect(bgraphState.offset.y).to.equal(0);
+        expect(bgraphState.zoom).to.equal(1);
+        expect(eventState.isClick).to.be.false;
+
+        expect(selectedBlock).to.equal(1);
+        expect(selectedEdgeEnd).to.equal(2);
+
+        expect(calledUpdate).to.be.false;
+        expect(preventedDefault).to.be.true;
     });
 });
 
