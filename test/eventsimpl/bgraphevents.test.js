@@ -268,6 +268,7 @@ describe('events', () => {
     let element;
     let calledUpdate;
     let preventedDefault;
+    let printedCoords;
 
     let hoveredBlock;
     let hoveredEdgeEnd;
@@ -284,6 +285,7 @@ describe('events', () => {
             bgraphWidth: () => 500, bgraphHeight: () => 500,
             clientWidth: () =>  50, clientHeight: () =>  50,
             updateClientSize: () => {},
+            _printCoords: () => { printedCoords = true; },
             curBlock  : () => {},
             curEdgeEnd: () => {},
             hoveredBlock  : () => { return {id: 1}; },
@@ -302,6 +304,7 @@ describe('events', () => {
 
         calledUpdate = false;
         preventedDefault = false;
+        printedCoords = false;
 
         const INVALID_VAL = -2;
         hoveredBlock    = INVALID_VAL;
@@ -398,6 +401,7 @@ describe('events', () => {
         expect(eventState.cur.y).to.not.equal(prevY);
 
         expect(calledUpdate).to.be.true;
+        expect(printedCoords).to.be.true;
     });
 
     it('mouse out hover', () => {
@@ -444,6 +448,7 @@ describe('events', () => {
         expect(eventState.isClick).to.be.false;
 
         expect(calledUpdate).to.be.true;
+        expect(printedCoords).to.be.true;
         calledUpdate = false;
 
         const [prevX, prevY] = [bgraphState.offset.x, bgraphState.offset.y];
