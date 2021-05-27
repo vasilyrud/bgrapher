@@ -6,7 +6,7 @@
             "id": 0,
             "x": 0, "y": 0,
             "width": 2, "height": 1,
-            "depth": 0, "color": 0,
+            "depth": 0, "color": 1,
             "edgeEnds": []
         }
     ],

@@ -3,9 +3,12 @@ import { expect } from 'chai';
 import emptyBgraph from 'bgraphs/empty.json';
 import nonZeroSizeBgraph from 'bgraphs/nonzerosize.json';
 import basicBgraph from 'bgraphs/basic.json';
+import oneEdgeBgraph from 'bgraphs/oneedge.json';
 import overlapBgraph from 'bgraphs/overlap.json';
 import sameDepthBgraph from 'bgraphs/samedepth.json';
+import overlapEdgeEndBlockBgraph from 'bgraphs/overlapedgeendblock.json';
 
+import { BgraphState } from 'bgraphstate.js'
 import { Direction } from 'common/lookup.js';
 import testOnlyDots from 'bgraphs/testonlydots.js';
 import imageRewire, { imageImpl } from 'grapherimpl/image.js';
@@ -147,6 +150,109 @@ describe('Generate image', () => {
             [0,1,4].forEach(i => testColor(bgraph, i, test1));
             [5,6,9,10].forEach(i => testColor(bgraph, i, test2));
         });
+
+        it('Generates the right edge image', () => {
+            const bgraph = imageImpl.initBgraph(oneEdgeBgraph);
+
+            [0,1].forEach(i => testColor(bgraph, i, test1));
+            [4,5].forEach(i => testColor(bgraph, i, black));
+            [2,3,6,7,8,9,10,11].forEach(i => testColor(bgraph, i, white));
+        });
+
+        it('Generates the right overlapping edge image', () => {
+            const bgraph = imageImpl.initBgraph(overlapEdgeEndBlockBgraph);
+
+            [0].forEach(i => testColor(bgraph, i, test1));
+            [1].forEach(i => testColor(bgraph, i, black));
+        });
+    });
+});
+
+describe('drawBgraph', () => {
+    let bgraphState;
+    let fakeCanvas;
+    let fakeContext;
+    let calledReset;
+    let calledDrawImage;
+
+    beforeEach(function() {
+        bgraphState = new BgraphState();
+        fakeCanvas = {
+            width : 16,
+            height: 17,
+        };
+        fakeContext = {
+            fillRect :   (x,y,w,h) => { calledReset     = [x,y,w,h]; },
+            drawImage: (b,x,y,w,h) => { calledDrawImage = [x,y,w,h]; },
+            imageSmoothingEnabled: true,
+        };
+        fakeCanvas.getContext = () => fakeContext;
+
+        calledReset = false;
+        calledDrawImage = false;
+
+        expect(bgraphState.offset.x).to.equal(0);
+        expect(bgraphState.offset.y).to.equal(0);
+        expect(bgraphState.zoom).to.equal(1);
+    });
+
+    it('resets bg on draw', () => {
+        let imageState = imageImpl.initBgraph(basicBgraph);
+        imageState.canvas = fakeCanvas;
+
+        imageImpl.drawBgraph(bgraphState, imageState);
+
+        expect(calledReset).to.eql([0,0,16,17]);
+    });
+
+    it('doesn\'t pixelate image on small zoom', () => {
+        let imageState = imageImpl.initBgraph(basicBgraph);
+        imageState.canvas = fakeCanvas;
+
+        imageImpl.drawBgraph(bgraphState, imageState);
+
+        expect(fakeContext.imageSmoothingEnabled).to.be.true;
+    });
+
+    it('pixelates image on large zoom', () => {
+        let imageState = imageImpl.initBgraph(basicBgraph);
+        imageState.canvas = fakeCanvas;
+
+        bgraphState.zoom = 100;
+        imageImpl.drawBgraph(bgraphState, imageState);
+
+        expect(fakeContext.imageSmoothingEnabled).to.be.false;
+    });
+
+
+    it('calls drawImage with correct size', () => {
+        let imageState = imageImpl.initBgraph(basicBgraph);
+        imageState.canvas = fakeCanvas;
+
+        imageImpl.drawBgraph(bgraphState, imageState);
+
+        expect(calledDrawImage).to.eql([0,0,4,4]);
+    });
+
+    it('calls drawImage with correct size with zoom and offset', () => {
+        let imageState = imageImpl.initBgraph(basicBgraph);
+        imageState.canvas = fakeCanvas;
+
+        bgraphState.zoom = 10;
+        bgraphState.offset.x = 2;
+        bgraphState.offset.y = 3;
+        imageImpl.drawBgraph(bgraphState, imageState);
+
+        expect(calledDrawImage).to.eql([20,30,40,40]);
+    });
+
+    it('doesn\'t draw image for zero-sized bgraph', () => {
+        let imageState = imageImpl.initBgraph(emptyBgraph);
+        imageState.canvas = fakeCanvas;
+
+        imageImpl.drawBgraph(bgraphState, imageState);
+
+        expect(calledDrawImage).to.be.false;
     });
 });
 
