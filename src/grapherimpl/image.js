@@ -288,15 +288,14 @@ function drawBlockHighlight(bgraphState, context, block) {
     drawInnerStrokeBox(bgraphState, context, points, fgLineWidth, LINE_COLOR_BG);
 }
 
-function concatText(context, boxW, text) {
+function concatText(context, boxW, text, rightPadding = 15) {
     const dots = '...';
     const dotsLen = context.measureText(dots).width;
-    const rightPadding = 15;
 
     if (context.measureText(text).width > boxW - rightPadding) {
-        let numChars = 8;
+        let numChars = 1;
         while (context.measureText(text.slice(0, numChars)).width + dotsLen 
-            < boxW - rightPadding) numChars++;
+            <= boxW - rightPadding) numChars++;
 
         return text.slice(0, numChars-1) + dots;
     }

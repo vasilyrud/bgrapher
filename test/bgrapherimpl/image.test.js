@@ -12,8 +12,10 @@ import { BgraphState } from 'bgraphstate.js'
 import { Direction } from 'common/lookup.js';
 import testOnlyDots from 'bgraphs/testonlydots.js';
 import imageRewire, { imageImpl } from 'grapherimpl/image.js';
+const toCanvas = imageRewire.__get__('toCanvas');
 const getArrowPoints = imageRewire.__get__('getArrowPoints');
 const getLineWidths = imageRewire.__get__('getLineWidths');
+const concatText = imageRewire.__get__('concatText');
 
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
@@ -21,6 +23,37 @@ var document = (new JSDOM(`...`)).window.document;
 global.document = document;
 
 describe(require('path').basename(__filename), () => {
+
+describe('toCanvas', () => {
+    [
+        [ 1, 0,  0,   0],
+        [ 1, 0,-10, -10],
+        [ 1, 0, 10,  10],
+
+        [10, 0,  0,   0],
+        [10, 0,-10,-100],
+        [10, 0, 10, 100],
+
+        [10,-5,  0, -50],
+        [10,-5,-10,-150],
+        [10,-5, 10,  50],
+
+        [10, 5,  0,  50],
+        [10, 5,-10, -50],
+        [10, 5, 10, 150],
+
+    ].forEach(([zoom, offset, value, result]) => {
+        it(`for zoom ${zoom}, offset ${offset}, value ${value}`, () => {
+            let bgraphState = new BgraphState();
+            bgraphState.zoom = zoom;
+
+            bgraphState.offset.x = offset;
+            expect(toCanvas('x', bgraphState, value)).to.equal(result);
+            bgraphState.offset.y = offset;
+            expect(toCanvas('y', bgraphState, value)).to.equal(result);
+        });
+    });
+});
 
 describe('getArrowPoints', () => {
     [
@@ -52,6 +85,25 @@ describe('getLineWidths', () => {
             expect(fgWidths).to.be.closeTo(fgWidthsExpected, 0.0001);
             expect(bgWidths).to.be.closeTo(bgWidthsExpected, 0.0001);
         });
+    });
+});
+
+describe('concatText', () => {
+    const fakeContext = {
+        measureText: (text) => { return {width: text.length}; },
+    };
+
+    it('when text width is smaller', () => {
+        expect(concatText(fakeContext, 100, 'abcdefghi')).to.equal('abcdefghi');
+        expect(concatText(fakeContext,  12, 'abcdefghi', 0)).to.equal('abcdefghi');
+        expect(concatText(fakeContext,   9, 'abcdefghi', 0)).to.equal('abcdefghi');
+    });
+
+    it('when text width is larger', () => {
+        expect(concatText(fakeContext, 8, 'abcdefghi', 0)).to.equal('abcde...');
+        expect(concatText(fakeContext, 5, 'abcdefghi', 0)).to.equal('ab...');
+        expect(concatText(fakeContext, 3, 'abcdefghi', 0)).to.equal('...');
+        expect(concatText(fakeContext, 1, 'abcdefghi', 0)).to.equal('...');
     });
 });
 
@@ -253,6 +305,36 @@ describe('drawBgraph', () => {
         imageImpl.drawBgraph(bgraphState, imageState);
 
         expect(calledDrawImage).to.be.false;
+    });
+});
+
+describe('dimensions', () => {
+    it('gets bgraph dimensions', () => {
+        let imageState = imageImpl.initBgraph(basicBgraph);
+
+        expect(imageImpl.getBgraphWidth(imageState)).to.equal(4);
+        expect(imageImpl.getBgraphHeight(imageState)).to.equal(4);
+    });
+
+    it('gets client dimensions', () => {
+        let imageState = imageImpl.initBgraph(basicBgraph);
+        imageImpl.setClientSize(imageState, 23, 45);
+
+        expect(imageImpl.getClientWidth(imageState)).to.equal(23);
+        expect(imageImpl.getClientHeight(imageState)).to.equal(45);
+    });
+});
+
+describe('populateElement', () => {
+    it('adds canvas to element', () => {
+        let imageState = imageImpl.initBgraph(basicBgraph);
+        let element = document.createElement('div');
+
+        expect(element.hasChildNodes()).to.be.false;
+        imageImpl.populateElement(imageState, element);
+
+        expect(element.hasChildNodes()).to.be.true;
+        expect(element.firstChild).to.equal(imageState.canvas);
     });
 });
 
