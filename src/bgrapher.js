@@ -140,9 +140,9 @@ var BGrapher = function(
             this._drawHoverInfo(bgraphState);
         }
 
-        if (process.env.NODE_ENV === 'development') {
-            this._printCoords(bgraphState);
-        }
+        if (process.env.NODE_ENV === 'development' ||
+            process.env.NODE_ENV === 'test'
+        ) this._printCoords(bgraphState);
     }
 
     this._drawBlocks = function(bgraphState) {

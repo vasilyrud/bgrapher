@@ -312,35 +312,147 @@ describe('initBgraph lookups', () => {
     });
 });
 
-describe('size functions', () => {
-    it('gets bgraph dimensions', () => {
-        let bgrapher = new BGrapher(fakeGrapher);
-        bgrapher._grapherState = { bw: 12 , bh: 34 };
+describe('bgrapher interfaces', () => {
+    it('populateElement calls the right functions', () => {
+        const bgraphState = new BgraphState();
+        expect(bgraphState.bgraphers.length).to.equal(0);
 
-        expect(bgrapher.bgraphWidth()).to.equal(12);
-        expect(bgrapher.bgraphHeight()).to.equal(34);
-    });
-
-    it('gets client dimensions', () => {
-        let bgrapher = new BGrapher(fakeGrapher);
-        bgrapher._grapherState = { cw: 12 , ch: 34 };
-
-        expect(bgrapher.clientWidth()).to.equal(12);
-        expect(bgrapher.clientHeight()).to.equal(34);
-    });
-
-    it('change client dimensions', () => {
-        let bgrapher = new BGrapher(fakeGrapher);
-        bgrapher._grapherState = { cw: 12 , ch: 34 };
-        bgrapher._bgraphElement = {
-            clientWidth: 56,
-            clientHeight: 78,
+        let calledPopulate;
+        let calledSetSize;
+        const populateGrapher = {
+            populateElement: (u,element) => { calledPopulate = element; },
+            setClientSize: (u,w,h) => { calledSetSize = [w,h]; },
+            drawBgraph: () => {},
         };
-        expect(bgrapher.clientWidth()).to.equal(12);
-        expect(bgrapher.clientHeight()).to.equal(34);
-        bgrapher.updateClientSize();
-        expect(bgrapher.clientWidth()).to.equal(56);
-        expect(bgrapher.clientHeight()).to.equal(78);
+
+        let calledEvents;
+        const populateEvents = {
+            initEvents: (u,v,element) => { calledEvents = element; },
+        };
+
+        let element = {
+            clientWidth:  10,
+            clientHeight: 20,
+        };
+
+        let bgrapher = new BGrapher(populateGrapher, undefined, populateEvents);
+
+        let calledDraw;
+        bgrapher.draw = () => { calledDraw = true; };
+
+        bgrapher.populateElement(bgraphState, element);
+
+        expect(bgraphState.bgraphers.length).to.equal(1);
+        expect(calledPopulate).to.equal(element);
+        expect(calledSetSize).to.eql([10,20]);
+        expect(calledEvents).to.equal(element);
+        expect(calledDraw).to.be.true;
+    });
+
+    describe('draw', () => {
+        let bgraphState;
+        let drawGrapher;
+        let drawBezier;
+        let drawEvents;
+        let calledDraw;
+        let calledInfo;
+        let calledCoord;
+        let calledBlock;
+        let calledEdgeEnd;
+        let calledEdge;
+
+        beforeEach(function() {
+            bgraphState = new BgraphState();
+            drawGrapher = {
+                drawBgraph: () => { calledDraw = true; },
+                drawHoverInfo: () => { calledInfo = true; },
+                printCoords: () => { calledCoord = true; },
+                drawBlock: (u,v,block) => { calledBlock.push(block); },
+                drawEdgeEnd: (u,v,edgeEnd) => { calledEdgeEnd.push(edgeEnd); },
+                drawBezierEdge: (u,v,edge) => { calledEdge.push(edge); },
+            };
+            drawBezier = {
+                generatePoints: (s,e) => { return [s,e]; }
+            };
+            drawEvents = {
+                cur: () => { return {x:1,y:2}; }
+            };
+
+            calledDraw = false;
+            calledInfo = false;
+            calledCoord = false;
+            calledBlock = [];
+            calledEdgeEnd = [];
+            calledEdge = [];
+        });
+
+        it('when empty', () => {
+            let bgrapher = new BGrapher(drawGrapher, drawBezier, drawEvents);
+            bgrapher.activeBlocks = () => [];
+            bgrapher.activeEdgeEnds = () => [];
+            bgrapher.activeEdges = () => [];
+            bgrapher.hoveredBlock = () => null;
+            bgrapher.hoveredEdgeEnd = () => null;
+
+            bgrapher.draw(bgraphState);
+
+            expect(calledDraw).to.be.true;
+            expect(calledInfo).to.be.false;
+            expect(calledCoord).to.be.true;
+            expect(calledBlock).to.eql([]);
+            expect(calledEdgeEnd).to.eql([]);
+            expect(calledEdge).to.eql([]);
+        });
+
+        it('when non-empty', () => {
+            let bgrapher = new BGrapher(drawGrapher, drawBezier, drawEvents);
+            bgrapher.activeBlocks = () => [{id:1}, {id:2}];
+            bgrapher.activeEdgeEnds = () => [{id:3}, {id:4}];
+            bgrapher.activeEdges = () => [[{id:5},{id:6}], [{id:7},{id:8}]];
+            bgrapher.hoveredBlock = () => { return {id:1}; };
+            bgrapher.hoveredEdgeEnd = () => { return {id:3}; };
+
+            bgrapher.draw(bgraphState);
+
+            expect(calledDraw).to.be.true;
+            expect(calledInfo).to.be.true;
+            expect(calledCoord).to.be.true;
+            expect(calledBlock).to.eql([{id:1}, {id:2}]);
+            expect(calledEdgeEnd).to.eql([{id:3}, {id:4}]);
+            expect(calledEdge).to.eql([[{id:5},{id:6}], [{id:7},{id:8}]]);
+        });
+    });
+
+    describe('size functions', () => {
+        it('gets bgraph dimensions', () => {
+            let bgrapher = new BGrapher(fakeGrapher);
+            bgrapher._grapherState = { bw: 12 , bh: 34 };
+
+            expect(bgrapher.bgraphWidth()).to.equal(12);
+            expect(bgrapher.bgraphHeight()).to.equal(34);
+        });
+ 
+        it('gets client dimensions', () => {
+            let bgrapher = new BGrapher(fakeGrapher);
+            bgrapher._grapherState = { cw: 12 , ch: 34 };
+
+            expect(bgrapher.clientWidth()).to.equal(12);
+            expect(bgrapher.clientHeight()).to.equal(34);
+        });
+
+        it('change client dimensions', () => {
+            let bgrapher = new BGrapher(fakeGrapher);
+            bgrapher._grapherState = { cw: 12 , ch: 34 };
+            bgrapher._bgraphElement = {
+                clientWidth: 56,
+                clientHeight: 78,
+            };
+            expect(bgrapher.clientWidth()).to.equal(12);
+            expect(bgrapher.clientHeight()).to.equal(34);
+            bgrapher.updateClientSize();
+            expect(bgrapher.clientWidth()).to.equal(56);
+            expect(bgrapher.clientHeight()).to.equal(78);
+        });
     });
 });
 
@@ -1836,6 +1948,11 @@ describe('interaction', () => {
             expect(ret).to.be.false;
             expect(cb).to.be.undefined;
         });
+    });
+
+    it('default select callbacks', () => {
+        expect(bgrapher.selectBlock(0)).to.be.true;
+        expect(bgrapher.selectEdgeEnd(0)).to.be.true;
     });
 });
 
