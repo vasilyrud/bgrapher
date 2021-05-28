@@ -226,94 +226,6 @@ describe('Generate image', () => {
     });
 });
 
-describe('drawBgraph', () => {
-    let bgraphState;
-    let fakeCanvas;
-    let fakeContext;
-    let calledReset;
-    let calledDrawImage;
-
-    beforeEach(function() {
-        bgraphState = new BgraphState();
-        fakeCanvas = {
-            width : 16,
-            height: 17,
-        };
-        fakeContext = {
-            fillRect :   (x,y,w,h) => { calledReset     = [x,y,w,h]; },
-            drawImage: (b,x,y,w,h) => { calledDrawImage = [x,y,w,h]; },
-            imageSmoothingEnabled: true,
-        };
-        fakeCanvas.getContext = () => fakeContext;
-
-        calledReset = false;
-        calledDrawImage = false;
-
-        expect(bgraphState.offset.x).to.equal(0);
-        expect(bgraphState.offset.y).to.equal(0);
-        expect(bgraphState.zoom).to.equal(1);
-    });
-
-    it('resets bg on draw', () => {
-        let imageState = imageImpl.initBgraph(basicBgraph);
-        imageState.canvas = fakeCanvas;
-
-        imageImpl.drawBgraph(bgraphState, imageState);
-
-        expect(calledReset).to.eql([0,0,16,17]);
-    });
-
-    it('doesn\'t pixelate image on small zoom', () => {
-        let imageState = imageImpl.initBgraph(basicBgraph);
-        imageState.canvas = fakeCanvas;
-
-        imageImpl.drawBgraph(bgraphState, imageState);
-
-        expect(fakeContext.imageSmoothingEnabled).to.be.true;
-    });
-
-    it('pixelates image on large zoom', () => {
-        let imageState = imageImpl.initBgraph(basicBgraph);
-        imageState.canvas = fakeCanvas;
-
-        bgraphState.zoom = 100;
-        imageImpl.drawBgraph(bgraphState, imageState);
-
-        expect(fakeContext.imageSmoothingEnabled).to.be.false;
-    });
-
-
-    it('calls drawImage with correct size', () => {
-        let imageState = imageImpl.initBgraph(basicBgraph);
-        imageState.canvas = fakeCanvas;
-
-        imageImpl.drawBgraph(bgraphState, imageState);
-
-        expect(calledDrawImage).to.eql([0,0,4,4]);
-    });
-
-    it('calls drawImage with correct size with zoom and offset', () => {
-        let imageState = imageImpl.initBgraph(basicBgraph);
-        imageState.canvas = fakeCanvas;
-
-        bgraphState.zoom = 10;
-        bgraphState.offset.x = 2;
-        bgraphState.offset.y = 3;
-        imageImpl.drawBgraph(bgraphState, imageState);
-
-        expect(calledDrawImage).to.eql([20,30,40,40]);
-    });
-
-    it('doesn\'t draw image for zero-sized bgraph', () => {
-        let imageState = imageImpl.initBgraph(emptyBgraph);
-        imageState.canvas = fakeCanvas;
-
-        imageImpl.drawBgraph(bgraphState, imageState);
-
-        expect(calledDrawImage).to.be.false;
-    });
-});
-
 describe('dimensions', () => {
     it('gets bgraph dimensions', () => {
         let imageState = imageImpl.initBgraph(basicBgraph);
@@ -349,12 +261,18 @@ describe('canvas drawing', () => {
     let fakeContext;
     let imageState;
     let bgraphState;
+    let calledFill;
     let calledRect;
     let calledLine;
+    let calledText;
+    let calledDrawImage;
 
     beforeEach(function() {
         bgraphState = new BgraphState();
         fakeContext = {
+            imageSmoothingEnabled: true,
+            fillRect :   (x,y,w,h) => { calledFill      = [x,y,w,h]; },
+            drawImage: (b,x,y,w,h) => { calledDrawImage = [x,y,w,h]; },
             beginPath: () => {},
             stroke: () => {},
             rect: (x,y,w,h) => { calledRect = [x,y,w,h]; },
@@ -365,16 +283,86 @@ describe('canvas drawing', () => {
                 calledLine.push(a); calledLine.push(b);
                 calledLine.push(c); calledLine.push(d);
             },
+            fillText: (text) => { calledText.push(text); },
+            measureText: (text) => { return {width: text.length}; },
         };
-        fakeCanvas = { getContext: () => fakeContext };
+        fakeCanvas = {
+            width : 16,
+            height: 17,
+            getContext: () => fakeContext
+        };
         imageState = { canvas: fakeCanvas };
 
-        calledRect = false;
+        calledFill = [];
+        calledRect = [];
         calledLine = [];
+        calledText = [];
+        calledDrawImage = [];
 
         expect(bgraphState.offset.x).to.equal(0);
         expect(bgraphState.offset.y).to.equal(0);
         expect(bgraphState.zoom).to.equal(1);
+    });
+
+    describe('drawBgraph', () => {
+        it('resets bg on draw', () => {
+            let imageState = imageImpl.initBgraph(basicBgraph);
+            imageState.canvas = fakeCanvas;
+
+            imageImpl.drawBgraph(bgraphState, imageState);
+
+            expect(calledFill).to.eql([0,0,16,17]);
+        });
+
+        it('doesn\'t pixelate image on small zoom', () => {
+            let imageState = imageImpl.initBgraph(basicBgraph);
+            imageState.canvas = fakeCanvas;
+
+            imageImpl.drawBgraph(bgraphState, imageState);
+
+            expect(fakeContext.imageSmoothingEnabled).to.be.true;
+        });
+
+        it('pixelates image on large zoom', () => {
+            let imageState = imageImpl.initBgraph(basicBgraph);
+            imageState.canvas = fakeCanvas;
+
+            bgraphState.zoom = 100;
+            imageImpl.drawBgraph(bgraphState, imageState);
+
+            expect(fakeContext.imageSmoothingEnabled).to.be.false;
+        });
+
+
+        it('calls drawImage with correct size', () => {
+            let imageState = imageImpl.initBgraph(basicBgraph);
+            imageState.canvas = fakeCanvas;
+
+            imageImpl.drawBgraph(bgraphState, imageState);
+
+            expect(calledDrawImage).to.eql([0,0,4,4]);
+        });
+
+        it('calls drawImage with correct size with zoom and offset', () => {
+            let imageState = imageImpl.initBgraph(basicBgraph);
+            imageState.canvas = fakeCanvas;
+
+            bgraphState.zoom = 10;
+            bgraphState.offset.x = 2;
+            bgraphState.offset.y = 3;
+            imageImpl.drawBgraph(bgraphState, imageState);
+
+            expect(calledDrawImage).to.eql([20,30,40,40]);
+        });
+
+        it('doesn\'t draw image for zero-sized bgraph', () => {
+            let imageState = imageImpl.initBgraph(emptyBgraph);
+            imageState.canvas = fakeCanvas;
+
+            imageImpl.drawBgraph(bgraphState, imageState);
+
+            expect(calledDrawImage).to.eql([]);
+        });
     });
 
     describe('drawInnerStrokeBox', () => {
@@ -405,26 +393,26 @@ describe('canvas drawing', () => {
 
         it('doesn\'t draw when no zoom', () => {
             drawBlockHighlight(bgraphState, fakeContext, testBlock);
-            expect(calledRect).to.be.false;
+            expect(calledRect).to.eql([]);
         });
 
         it('doesn\'t draw reverse zoom', () => {
             bgraphState.zoom = 0.5;
             drawBlockHighlight(bgraphState, fakeContext, testBlock);
-            expect(calledRect).to.be.false;
+            expect(calledRect).to.eql([]);
         });
 
         it('draws with non-zero stroke when zoom', () => {
             bgraphState.zoom = 100;
             drawBlockHighlight(bgraphState, fakeContext, testBlock);
-            expect(calledRect).to.not.be.false;
+            expect(calledRect).to.not.eql([]);
             expect(fakeContext.lineWidth).to.almost.equal(2.4);
         });
 
         it('gets called by drawBlock', () => {
             bgraphState.zoom = 10;
             imageImpl.drawBlock(bgraphState, imageState, testBlock);
-            expect(calledRect).to.not.be.false;
+            expect(calledRect).to.not.eql([]);
         });
     });
 
@@ -544,6 +532,26 @@ describe('canvas drawing', () => {
             bgraphState.zoom = 10;
             imageImpl.drawBezierEdge(bgraphState, imageState, testPoints);
             expect(calledLine).to.not.eql([]);
+        });
+    });
+
+    describe('debug info', () => {
+        it('draws coords', () => {
+            imageImpl.printCoords(imageState, 1, 2);
+            expect(calledFill).to.eql([-112,8,120,18]);
+            expect(calledText).to.eql(['x','y','1','2']);
+        });
+
+        it('draws info with text', () => {
+            imageImpl.drawHoverInfo(imageState, {id:123, text:'my text'}, 'prefix');
+            expect(calledFill).to.eql([8,8,200,35]);
+            expect(calledText).to.eql(['Right click to show more info.','my text']);
+        });
+
+        it('draws info without text', () => {
+            imageImpl.drawHoverInfo(imageState, {id:123}, 'prefix');
+            expect(calledFill).to.eql([8,8,200,35]);
+            expect(calledText).to.eql(['Right click to show more info.','prefix[123]']);
         });
     });
 });
