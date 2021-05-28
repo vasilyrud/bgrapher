@@ -16,6 +16,8 @@ const toCanvas = imageRewire.__get__('toCanvas');
 const getArrowPoints = imageRewire.__get__('getArrowPoints');
 const getLineWidths = imageRewire.__get__('getLineWidths');
 const concatText = imageRewire.__get__('concatText');
+const drawInnerStrokeBox = imageRewire.__get__('drawInnerStrokeBox');
+const drawBlockHighlight = imageRewire.__get__('drawBlockHighlight');
 
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
@@ -335,6 +337,80 @@ describe('populateElement', () => {
 
         expect(element.hasChildNodes()).to.be.true;
         expect(element.firstChild).to.equal(imageState.canvas);
+    });
+});
+
+describe('canvas drawing', () => {
+    let fakeCanvas;
+    let fakeContext;
+    let imageState;
+    let bgraphState;
+    let calledRect;
+
+    beforeEach(function() {
+        bgraphState = new BgraphState();
+        fakeContext = {
+            beginPath: () => {},
+            stroke: () => {},
+            rect: (x,y,w,h) => { calledRect = [x,y,w,h]; },
+        };
+        fakeCanvas = { getContext: () => fakeContext };
+        imageState = { canvas: fakeCanvas };
+
+        calledRect = false;
+
+        expect(bgraphState.offset.x).to.equal(0);
+        expect(bgraphState.offset.y).to.equal(0);
+        expect(bgraphState.zoom).to.equal(1);
+    });
+
+    describe('drawInnerStrokeBox', () => {
+        [
+            [ 1, 0,0, 0, 0,11,12,  0, [  0,  0, 11, 12]],
+            [10, 0,0, 0, 0,11,12,  0, [  0,  0,110,120]],
+            [10,-2,4, 0, 0,11,12,  0, [-20, 40,110,120]],
+            [10,-2,4, 4,-5,11,12,  0, [ 20,-10,110,120]],
+            [10,-2,4, 4,-5,11,12,  2, [ 21, -9,108,118]],
+
+            [10,-2,4, 4,-5, 2, 4,  0, [ 20,-10, 20, 40]],
+            [10,-2,4, 4,-5, 2, 4, 60, [ 25, -5, 10, 30]],
+            [10,-2,4, 4,-5, 4, 2, 60, [ 25, -5, 30, 10]],
+
+        ].forEach(([zoom,ox,oy,x,y,w,h,lineWidth,expected]) => {
+            it(`zoom ${zoom}, offset (${ox},${oy}), [${x},${y},${w},${h}], line ${lineWidth}`, () => {
+                bgraphState.zoom = zoom;
+                bgraphState.offset.x = ox;
+                bgraphState.offset.y = oy;
+                drawInnerStrokeBox(bgraphState, fakeContext, [x,y,w,h], lineWidth);
+                expect(calledRect).to.eql(expected);
+            });
+        });
+    });
+
+    describe('drawBlockHighlight', () => {
+        const testBlock = {x: 2, y: 3, width: 20, height: 30};
+
+        it('doesn\'t draw when no zoom', () => {
+            drawBlockHighlight(bgraphState, fakeContext, testBlock);
+            expect(calledRect).to.be.false;
+
+            bgraphState.zoom = 0.5;
+            drawBlockHighlight(bgraphState, fakeContext, testBlock);
+            expect(calledRect).to.be.false;
+        });
+
+        it('draws with non-zero stroke when zoom', () => {
+            bgraphState.zoom = 10;
+            drawBlockHighlight(bgraphState, fakeContext, testBlock);
+            expect(calledRect).to.not.be.false;
+            expect(fakeContext.lineWidth).to.almost.equal(0.9);
+        });
+
+        it('gets called by drawBlock', () => {
+            bgraphState.zoom = 10;
+            imageImpl.drawBlock(bgraphState, imageState, testBlock);
+            expect(calledRect).to.not.be.false;
+        });
     });
 });
 
