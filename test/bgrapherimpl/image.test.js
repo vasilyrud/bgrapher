@@ -18,6 +18,10 @@ const getLineWidths = imageRewire.__get__('getLineWidths');
 const concatText = imageRewire.__get__('concatText');
 const drawInnerStrokeBox = imageRewire.__get__('drawInnerStrokeBox');
 const drawBlockHighlight = imageRewire.__get__('drawBlockHighlight');
+const drawSingleLine = imageRewire.__get__('drawSingleLine');
+const drawEdgeEndHighlight = imageRewire.__get__('drawEdgeEndHighlight');
+const drawBezierSingleCurve = imageRewire.__get__('drawBezierSingleCurve');
+const drawBezierLine = imageRewire.__get__('drawBezierLine');
 
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
@@ -346,6 +350,7 @@ describe('canvas drawing', () => {
     let imageState;
     let bgraphState;
     let calledRect;
+    let calledLine;
 
     beforeEach(function() {
         bgraphState = new BgraphState();
@@ -353,11 +358,19 @@ describe('canvas drawing', () => {
             beginPath: () => {},
             stroke: () => {},
             rect: (x,y,w,h) => { calledRect = [x,y,w,h]; },
+            moveTo: (x,y) => { calledLine.push(x); calledLine.push(y); },
+            lineTo: (x,y) => { calledLine.push(x); calledLine.push(y); },
+            bezierCurveTo: (x,y,a,b,c,d) => { 
+                calledLine.push(x); calledLine.push(y);
+                calledLine.push(a); calledLine.push(b);
+                calledLine.push(c); calledLine.push(d);
+            },
         };
         fakeCanvas = { getContext: () => fakeContext };
         imageState = { canvas: fakeCanvas };
 
         calledRect = false;
+        calledLine = [];
 
         expect(bgraphState.offset.x).to.equal(0);
         expect(bgraphState.offset.y).to.equal(0);
@@ -393,23 +406,144 @@ describe('canvas drawing', () => {
         it('doesn\'t draw when no zoom', () => {
             drawBlockHighlight(bgraphState, fakeContext, testBlock);
             expect(calledRect).to.be.false;
+        });
 
+        it('doesn\'t draw reverse zoom', () => {
             bgraphState.zoom = 0.5;
             drawBlockHighlight(bgraphState, fakeContext, testBlock);
             expect(calledRect).to.be.false;
         });
 
         it('draws with non-zero stroke when zoom', () => {
-            bgraphState.zoom = 10;
+            bgraphState.zoom = 100;
             drawBlockHighlight(bgraphState, fakeContext, testBlock);
             expect(calledRect).to.not.be.false;
-            expect(fakeContext.lineWidth).to.almost.equal(0.9);
+            expect(fakeContext.lineWidth).to.almost.equal(2.4);
         });
 
         it('gets called by drawBlock', () => {
             bgraphState.zoom = 10;
             imageImpl.drawBlock(bgraphState, imageState, testBlock);
             expect(calledRect).to.not.be.false;
+        });
+    });
+
+    describe('drawSingleLine', () => {
+        [
+            [ 1, 0,0, [0, 0,11,12],  0, [  0,  0, 11, 12]],
+            [10, 0,0, [0, 0,11,12],  0, [  0,  0,110,120]],
+            [10,-2,4, [0, 0,11,12],  0, [-20, 40, 90,160]],
+            [10,-2,4, [4,-5,11,12],  0, [ 20,-10, 90,160]],
+            [10,-2,4, [4,-5,11,12],  2, [ 20,-10, 90,160]],
+
+        ].forEach(([zoom,ox,oy,points,lineWidth,expected]) => {
+            it(`zoom ${zoom}, offset (${ox},${oy}), [${points}], line ${lineWidth}`, () => {
+                bgraphState.zoom = zoom;
+                bgraphState.offset.x = ox;
+                bgraphState.offset.y = oy;
+                drawSingleLine(bgraphState, fakeContext, points, lineWidth);
+                expect(calledLine).to.eql(expected);
+            });
+        });
+    });
+
+    describe('drawEdgeEndHighlight', () => {
+        const testEdgeEnd = {x: 2, y: 3, direction: Direction.up};
+
+        it('doesn\'t draw when no zoom', () => {
+            drawEdgeEndHighlight(bgraphState, fakeContext, testEdgeEnd);
+            expect(calledLine).to.eql([]);
+        });
+
+        it('doesn\'t draw reverse zoom', () => {
+            bgraphState.zoom = 0.5;
+            drawEdgeEndHighlight(bgraphState, fakeContext, testEdgeEnd);
+            expect(calledLine).to.eql([]);
+        });
+
+        it('draws with non-zero stroke when zoom', () => {
+            bgraphState.zoom = 100;
+            drawEdgeEndHighlight(bgraphState, fakeContext, testEdgeEnd);
+            expect(calledLine.length).to.equal(8);
+            expect(fakeContext.lineWidth).to.almost.equal(2.4);
+        });
+
+        it('gets called by drawEdgeEnd', () => {
+            bgraphState.zoom = 10;
+            imageImpl.drawEdgeEnd(bgraphState, imageState, testEdgeEnd);
+            expect(calledLine).to.not.eql([]);
+        });
+    });
+
+    describe('drawBezierSingleCurve', () => {
+        [
+            [1,0,0, [
+                1,2
+            ], 0, [
+            ]],
+
+            [1,0,0, [
+                1,2, 3,4,5,6,7,8
+            ], 0, [
+                1,2, 3,4,5,6,7,8
+            ]],
+
+            [1,0,0, [
+                1,2, 3,4,5,6,7,8, 9,10,11,12,13,14
+            ], 0, [
+                1,2, 3,4,5,6,7,8, 
+                7,8, 9,10,11,12,13,14
+            ]],
+
+            [1,0,0, [
+                1,2, 3,4,5,6,7,8, 9,10,11,12,13,14, 15,16,17,18,19,20
+            ], 0, [
+                1,2, 3,4,5,6,7,8, 
+                7,8, 9,10,11,12,13,14,
+                13,14, 15,16,17,18,19,20
+            ]],
+
+            [ 1, 0,0, [1,2, 3,4,5,6,7,8], 2, [  1, 2,  3, 4, 5,  6, 7,  8]],
+            [10,-2,4, [1,2, 3,4,5,6,7,8], 0, [-10,60, 10,80,30,100,50,120]],
+
+        ].forEach(([zoom,ox,oy,points,lineWidth,expected]) => {
+            it(`zoom ${zoom}, offset (${ox},${oy}), [1:${points.length}], line ${lineWidth}`, () => {
+                bgraphState.zoom = zoom;
+                bgraphState.offset.x = ox;
+                bgraphState.offset.y = oy;
+                drawBezierSingleCurve(bgraphState, fakeContext, points, lineWidth);
+                expect(calledLine).to.eql(expected);
+            });
+        });
+    });
+
+    describe('drawBezierLine', () => {
+        const testPoints = [1,2, 3,4,5,6,7,8];
+
+        it('draws when no zoom', () => {
+            drawBezierLine(bgraphState, fakeContext, testPoints);
+            expect(calledLine.length).to.equal(testPoints.length * 2);
+            expect(fakeContext.lineWidth).to.almost.equal(1);
+        });
+
+        it('draws reverse zoom', () => {
+            bgraphState.zoom = 0.5;
+            drawBezierLine(bgraphState, fakeContext, testPoints);
+            expect(calledLine.length).to.equal(testPoints.length * 2);
+            expect(fakeContext.lineWidth).to.almost.equal(0.5);
+        });
+
+        it('draws with zoom', () => {
+            bgraphState.zoom = 100;
+            drawBezierLine(bgraphState, fakeContext, testPoints);
+            expect(calledLine.length).to.equal(testPoints.length * 2);
+            expect(fakeContext.lineWidth).to.almost.equal(3.2);
+        });
+
+        it('gets called by drawBezierEdge', () => {
+            bgraphState.zoom = 10;
+            imageImpl.drawBezierEdge(bgraphState, imageState, testPoints);
+            expect(calledLine).to.not.eql([]);
         });
     });
 });

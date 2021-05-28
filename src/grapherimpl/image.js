@@ -180,7 +180,7 @@ function toCanvas(coord, bgraphState, value) {
 }
 
 function drawBezierSingleCurve(bgraphState, context, points, lineWidth, lineColor) {
-    for (let i = 0; i < points.length-1; i+=6) {
+    for (let i = 0; i < points.length-2; i+=6) {
         context.beginPath();
         context.moveTo(
             toCanvas('x', bgraphState, points[i+0]), toCanvas('y', bgraphState, points[i+1]),
@@ -216,36 +216,29 @@ function drawSingleLine(bgraphState, context, points, lineWidth, lineColor) {
     context.stroke();
 }
 
-function getArrowPoints(x, y, direction) {
-    const lineDist  = 1/2;
-
+function getArrowPoints(x, y, direction, lineDist = 1/2) {
     switch (direction) {
-        case Direction.up:
+    case Direction.up:
         return [
             [x  , y+1, x+lineDist  , y],
             [x+1, y+1, x+1-lineDist, y],
         ];
-
-        case Direction.right:
-        return [
-            [x, y  , x+1, y+lineDist  ],
-            [x, y+1, x+1, y+1-lineDist],
-        ];
-
-        case Direction.down:
+    case Direction.down:
         return [
             [x  , y, x+lineDist  , y+1],
             [x+1, y, x+1-lineDist, y+1],
         ];
-
-        case Direction.left:
+    case Direction.left:
         return [
             [x+1, y  , x, y+lineDist  ],
             [x+1, y+1, x, y+1-lineDist],
         ];
+    case Direction.right:
+        return [
+            [x, y  , x+1, y+lineDist  ],
+            [x, y+1, x+1, y+1-lineDist],
+        ];
     }
-
-    throw new Error(`Unsupported edge direction: ${direction}.`);
 }
 
 function drawEdgeEndHighlight(bgraphState, context, edgeEnd) {
