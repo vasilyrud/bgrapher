@@ -257,15 +257,8 @@ describe('populateElement', () => {
 });
 
 describe('canvas drawing', () => {
-    let fakeCanvas;
-    let fakeContext;
-    let imageState;
-    let bgraphState;
-    let calledFill;
-    let calledRect;
-    let calledLine;
-    let calledText;
-    let calledDrawImage;
+    let fakeCanvas, fakeContext, imageState, bgraphState;
+    let calledFill, calledRect, calledLine, calledText, calledDrawImage;
 
     beforeEach(function() {
         bgraphState = new BgraphState();

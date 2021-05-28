@@ -350,16 +350,8 @@ describe('bgrapher interfaces', () => {
     });
 
     describe('draw', () => {
-        let bgraphState;
-        let drawGrapher;
-        let drawBezier;
-        let drawEvents;
-        let calledDraw;
-        let calledInfo;
-        let calledCoord;
-        let calledBlock;
-        let calledEdgeEnd;
-        let calledEdge;
+        let bgraphState, drawGrapher, drawBezier, drawEvents;
+        let calledDraw, calledInfo, calledCoord, calledBlock, calledEdgeEnd, calledEdge;
 
         beforeEach(function() {
             bgraphState = new BgraphState();
