@@ -69,8 +69,8 @@ function getZoom(bgraphState, event) {
 
 function coordValues(coord, bgrapher) {
     return coord === 'x'
-        ? [bgrapher.bgraphWidth() , bgrapher.clientWidth() ]
-        : [bgrapher.bgraphHeight(), bgrapher.clientHeight()];
+        ? [bgrapher.width , bgrapher.clientWidth() ]
+        : [bgrapher.height, bgrapher.clientHeight()];
 }
 
 function getMargin(bgraphState, bgraphSize, clientSize) {

@@ -15,7 +15,6 @@ const getZoomOffset = bgrapheventsRewire.__get__('getZoomOffset');
 const hoverBgraph = bgrapheventsRewire.__get__('hoverBgraph');
 
 import { BgraphState } from 'bgraphstate.js'
-import { equal } from 'assert';
 
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
@@ -136,7 +135,7 @@ describe('event helpers', () => {
     describe('coordValues', () => {
         it('returns for coord', () => {
             const fakeBgrapher = {
-                bgraphWidth: () => 1, bgraphHeight: () => 2,
+                width: 1, height: 2,
                 clientWidth: () => 3, clientHeight: () => 4,
             };
             expect(coordValues('x', fakeBgrapher)).to.eql([1,3]);
@@ -192,8 +191,8 @@ describe('event helpers', () => {
 
     describe('get offset', () => {
         const fakeBgrapher = {
-            bgraphWidth: () => 500, bgraphHeight: () => 500,
-            clientWidth: () =>  50, clientHeight: () =>  50,
+            width: 500, height: 500,
+            clientWidth: () => 50, clientHeight: () => 50,
         };
 
         let bgraphState = new BgraphState();
@@ -282,8 +281,8 @@ describe('events', () => {
         bgraphState.update = () => { calledUpdate = true; };
 
         fakeBgrapher = {
-            bgraphWidth: () => 500, bgraphHeight: () => 500,
-            clientWidth: () =>  50, clientHeight: () =>  50,
+            width: 500, height: 500,
+            clientWidth: () => 50, clientHeight: () => 50,
             updateClientSize: () => {},
             _printCoords: () => { printedCoords = true; },
             curBlock  : () => {},
@@ -324,8 +323,8 @@ describe('events', () => {
     });
 
     it('init', () => {
-        fakeBgrapher.bgraphWidth  = () =>  10;
-        fakeBgrapher.bgraphHeight = () =>  10;
+        fakeBgrapher.width  = 10;
+        fakeBgrapher.height = 10;
         fakeBgrapher.clientWidth  = () => 500;
         fakeBgrapher.clientHeight = () => 500;
 
@@ -338,8 +337,8 @@ describe('events', () => {
     });
 
     it('resize', () => {
-        fakeBgrapher.bgraphWidth  = () =>  10;
-        fakeBgrapher.bgraphHeight = () =>  10;
+        fakeBgrapher.width  = 10;
+        fakeBgrapher.height = 10;
         fakeBgrapher.clientWidth  = () => 500;
         fakeBgrapher.clientHeight = () => 500;
 

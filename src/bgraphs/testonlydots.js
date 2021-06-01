@@ -16,6 +16,8 @@ limitations under the License.
 
 const ITEM_WIDTH  = 2;
 const ITEM_HEIGHT = 2;
+const BLACK = 0;
+const WHITE = 16777215;
 
 function testOnlyDots(numCols, numRows) {
     /*
@@ -30,8 +32,9 @@ function testOnlyDots(numCols, numRows) {
     }
 
     let testInput = {
-        width : width, height  : height,
-        blocks:    [], edgeEnds:     [],
+        width : width, height: height,
+        bgColor: WHITE, highlightBgColor: WHITE, highlightFgColor: BLACK,
+        blocks: [], edgeEnds: [],
     };
 
     let i = 0, x = 0, y = 0;

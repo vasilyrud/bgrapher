@@ -1,6 +1,9 @@
 {
     "width":  2,
     "height": 1,
+    "bgColor": 16777215,
+    "highlightBgColor": 16777215,
+    "highlightFgColor": 0,
     "blocks": [
         {
             "id": 0,

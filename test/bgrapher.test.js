@@ -9,6 +9,7 @@ import overlapBgraph from 'bgraphs/overlap.json';
 import sameDepthBgraph from 'bgraphs/samedepth.json';
 import overlapEdgeEndBlockBgraph from 'bgraphs/overlapedgeendblock.json';
 import edgesBgraph from 'bgraphs/edges.json';
+import colorBgraph from 'bgraphs/color.json';
 
 import { BgraphState } from 'bgraphstate.js'
 import testOnlyDots from 'bgraphs/testonlydots.js';
@@ -20,8 +21,6 @@ describe(require('path').basename(__filename), () => {
 const fakeGrapher = {
     initBgraph: () => {},
     initTestBgraphLarge: () => {},
-    getBgraphWidth: (s) => { return s.bw; },
-    getBgraphHeight: (s) => { return s.bh; },
     getClientWidth: (s) => { return s.cw; },
     getClientHeight: (s) => { return s.ch; },
     setClientSize: (s,w,h) => { s.cw = w; s.ch = h; },
@@ -128,6 +127,14 @@ describe('initBgraph data', () => {
             bgrapher.initBgraph(oneEdgeBgraph);
     
             expect(bgrapher.blocksData[0].edgeEnds).to.eql([0,100]);
+        });
+    
+        it('Generates the right color data', () => {
+            bgrapher.initBgraph(colorBgraph);
+    
+            expect(bgrapher.bgColor).to.equal(1);
+            expect(bgrapher.highlightBgColor).to.equal(2);
+            expect(bgrapher.highlightFgColor).to.equal(3);
         });
     });
 });
@@ -416,14 +423,6 @@ describe('bgrapher interfaces', () => {
     });
 
     describe('size functions', () => {
-        it('gets bgraph dimensions', () => {
-            let bgrapher = new BGrapher(fakeGrapher);
-            bgrapher._grapherState = { bw: 12 , bh: 34 };
-
-            expect(bgrapher.bgraphWidth()).to.equal(12);
-            expect(bgrapher.bgraphHeight()).to.equal(34);
-        });
- 
         it('gets client dimensions', () => {
             let bgrapher = new BGrapher(fakeGrapher);
             bgrapher._grapherState = { cw: 12 , ch: 34 };

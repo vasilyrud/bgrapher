@@ -27,6 +27,7 @@ import { BlockInfo } from './BlockInfo.jsx'
 import defaultBgraph from './bgraphs/default.json';
 import outedgesBgraph from './bgraphs/outedges.json';
 import edgesBgraph from './bgraphs/edges.json';
+import emptyBgraph from './bgraphs/empty.json';
 import testOnlyDots from './bgraphs/testonlydots.js';
 import testDotsEdges from './bgraphs/testdotsedges.js';
 
@@ -97,6 +98,7 @@ function BGraphForm(props) {
         default: defaultBgraph,
         outedges: outedgesBgraph,
         edges: edgesBgraph,
+        empty: emptyBgraph,
     };
     const defaultChoice = 'default';
 

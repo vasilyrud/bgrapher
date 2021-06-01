@@ -14,7 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { curBgraphPixel, Direction, BlocksLookup, EdgeEndsLookup } from './common/lookup.js'
+import {
+    curBgraphPixel, 
+    Direction, 
+    BlocksLookup, 
+    EdgeEndsLookup,
+} from './common/lookup.js'
 import { EdgeSet } from './common/struct.js'
 import { imageImpl } from './grapherimpl/image.js'
 import { bezierImpl } from './edgesimpl/bezier.js'
@@ -78,6 +83,11 @@ var BGrapher = function(
 
         this._grapherState = this._grapherImpl.initBgraph(inputData);
 
+        this.width  = inputData.width;
+        this.height = inputData.height;
+        this.bgColor = inputData.bgColor;
+        this.highlightBgColor = inputData.highlightBgColor;
+        this.highlightFgColor = inputData.highlightFgColor;
         this.blocksData   = _initBlocksData(inputData);
         this.edgeEndsData = _initEdgeEndsData(inputData);
 
@@ -113,11 +123,6 @@ var BGrapher = function(
         this.draw(bgraphState);
     }
 
-    this.bgraphWidth = function() {
-        return this._grapherImpl.getBgraphWidth(this._grapherState); }
-    this.bgraphHeight = function() {
-        return this._grapherImpl.getBgraphHeight(this._grapherState); }
-
     this.clientWidth = function() {
         return this._grapherImpl.getClientWidth(this._grapherState); }
     this.clientHeight = function() {
@@ -131,7 +136,9 @@ var BGrapher = function(
     }
 
     this.draw = function(bgraphState) {
-        this._grapherImpl.drawBgraph(bgraphState, this._grapherState);
+        this._grapherImpl.drawBgraph(bgraphState, 
+            this._grapherState, this.width, this.height, this.bgColor);
+
         this._drawBlocks(bgraphState);
         this._drawEdgeEnds(bgraphState);
         this._drawEdges(bgraphState);
@@ -147,18 +154,21 @@ var BGrapher = function(
 
     this._drawBlocks = function(bgraphState) {
         for (const block of this.activeBlocks())
-            this._grapherImpl.drawBlock(bgraphState, this._grapherState, block);
+            this._grapherImpl.drawBlock(bgraphState, this._grapherState,
+                block, this.highlightBgColor, this.highlightFgColor);
     }
 
     this._drawEdgeEnds = function(bgraphState) {
         for (const edgeEnd of this.activeEdgeEnds())
-            this._grapherImpl.drawEdgeEnd(bgraphState, this._grapherState, edgeEnd);
+            this._grapherImpl.drawEdgeEnd(bgraphState, this._grapherState,
+                edgeEnd, this.highlightBgColor, this.highlightFgColor);
     }
 
     this._drawEdges = function(bgraphState) {
         for (const [start, end] of this.activeEdges())
-            this._grapherImpl.drawBezierEdge(bgraphState, this._grapherState, 
-                this._edgesImpl.generatePoints(start, end));
+            this._grapherImpl.drawBezierEdge(bgraphState, this._grapherState,
+                this._edgesImpl.generatePoints(start, end),
+                this.highlightBgColor, this.highlightFgColor);
     }
 
     this._drawHoverInfo = function() {

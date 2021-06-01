@@ -24,6 +24,10 @@ function colorToRGB(c) {
     ];
 }
 
+function colorToHex(c) {
+    return '#' + c.toString(16).padStart(6, '0');
+}
+
 function curBgraphPixel(coord, bgraphState, cur) {
     return Math.floor(
         (cur[coord] / bgraphState.zoom) - bgraphState.offset[coord]
@@ -87,4 +91,4 @@ function EdgeEndsLookup(data) {
     this.get = lookupGet.bind(this);
 }
 
-export { colorToRGB, curBgraphPixel, Direction, BlocksLookup, EdgeEndsLookup }
+export { colorToRGB, colorToHex, curBgraphPixel, Direction, BlocksLookup, EdgeEndsLookup }

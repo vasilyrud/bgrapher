@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 import { BgraphState } from 'bgraphstate.js'
-import lookupRewire, { colorToRGB, curBgraphPixel } from 'common/lookup.js';
+import lookupRewire, { colorToRGB, colorToHex, curBgraphPixel } from 'common/lookup.js';
 
 describe(require('path').basename(__filename), () => {
 
@@ -69,6 +69,21 @@ describe('colorToRGB', () => {
     ].forEach(([color, expectedRGB]) => {
         it(`Correctly converts color ${color}`, () => {
             expect(colorToRGB(color)).to.eql(expectedRGB);
+        });
+    });
+});
+
+describe('colorToHex', () => {
+    [
+        [       0,'#000000'],
+        [       1,'#000001'],
+        [     256,'#000100'],
+        [   65536,'#010000'],
+        [ 1193046,'#123456'],
+        [16777215,'#ffffff'],
+    ].forEach(([color, expectedHex]) => {
+        it(`Correctly converts color ${color}`, () => {
+            expect(colorToHex(color)).to.equal(expectedHex);
         });
     });
 });

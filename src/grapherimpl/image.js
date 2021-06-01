@@ -14,19 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { colorToRGB, Direction } from '../common/lookup.js'
+import { colorToRGB, colorToHex, Direction } from '../common/lookup.js'
 import { ArrayXY } from '../common/struct.js'
 
 const CANVAS_TYPE = '2d';
-const DEFAULT_BG = '#ffffff';
-const LINE_COLOR_FG = '#000000';
-const LINE_COLOR_BG = '#ffffff';
 
-function ImageState(imageWidth, imageHeight, buffer) {
+function ImageState(buffer) {
     this.canvas = document.createElement('canvas');
-
-    this.imageWidth  = imageWidth;
-    this.imageHeight = imageHeight;
     this.buffer = buffer;
 }
 
@@ -37,8 +31,8 @@ function pixelateImage(context) {
     context.imageSmoothingEnabled = false;
 }
 
-function resetBG(context, width, height) {
-    context.fillStyle = DEFAULT_BG;
+function resetBG(context, width, height, bgColor) {
+    context.fillStyle = colorToHex(bgColor);
     context.fillRect(0, 0, width, height);
 }
 
@@ -132,23 +126,21 @@ function generateTestPixels(numBlocks) {
     }
 }
 
-function generateImage(imageWidth, imageHeight, cbPixels) {
+function generateImage(width, height, cbPixels) {
     let buffer = document.createElement('canvas');
     let bufferContext = buffer.getContext(CANVAS_TYPE);
 
-    buffer.width  = imageWidth;
-    buffer.height = imageHeight;
+    buffer.width  = width;
+    buffer.height = height;
 
-    if (imageWidth * imageHeight == 0) {
-        return new ImageState(imageWidth, imageHeight);
-    }
+    if (width * height == 0) return new ImageState(buffer);
 
-    let imagedata = bufferContext.createImageData(imageWidth, imageHeight);
+    let imagedata = bufferContext.createImageData(width, height);
 
     cbPixels(imagedata);
     bufferContext.putImageData(imagedata, 0, 0);
 
-    return new ImageState(imageWidth, imageHeight, buffer);
+    return new ImageState(buffer);
 }
 
 function getLineWidths(zoom) {
@@ -191,16 +183,16 @@ function drawBezierSingleCurve(bgraphState, context, points, lineWidth, lineColo
             toCanvas('x', bgraphState, points[i+6]), toCanvas('y', bgraphState, points[i+7]),
         );
         context.lineWidth = lineWidth;
-        context.strokeStyle = lineColor;
+        context.strokeStyle = colorToHex(lineColor);
         context.stroke();
     }
 }
 
-function drawBezierLine(bgraphState, context, points) {
+function drawBezierLine(bgraphState, context, points, bgColor, fgColor) {
     const [fgWidth, bgWidth] = getLineWidths(bgraphState.zoom);
 
-    drawBezierSingleCurve(bgraphState, context, points, bgWidth, LINE_COLOR_BG);
-    drawBezierSingleCurve(bgraphState, context, points, fgWidth, LINE_COLOR_FG);
+    drawBezierSingleCurve(bgraphState, context, points, bgWidth, bgColor);
+    drawBezierSingleCurve(bgraphState, context, points, fgWidth, fgColor);
 }
 
 function drawSingleLine(bgraphState, context, points, lineWidth, lineColor) {
@@ -212,7 +204,7 @@ function drawSingleLine(bgraphState, context, points, lineWidth, lineColor) {
         toCanvas('x', bgraphState, points[2]), toCanvas('y', bgraphState, points[3])
     );
     context.lineWidth = lineWidth;
-    context.strokeStyle = lineColor;
+    context.strokeStyle = colorToHex(lineColor);
     context.stroke();
 }
 
@@ -241,14 +233,14 @@ function getArrowPoints(x, y, direction, lineDist = 1/2) {
     }
 }
 
-function drawEdgeEndHighlight(bgraphState, context, edgeEnd) {
+function drawEdgeEndHighlight(bgraphState, context, edgeEnd, bgColor, fgColor) {
     const [fgWidth, bgWidth] = getLineWidths(bgraphState.zoom);
     if (bgWidth === 0) return;
 
     const lineWidth = (bgWidth - fgWidth) / 2;
 
     for (const points of getArrowPoints(edgeEnd.x, edgeEnd.y, edgeEnd.direction)) {
-        drawSingleLine(bgraphState, context, points, lineWidth, LINE_COLOR_BG);
+        drawSingleLine(bgraphState, context, points, lineWidth, bgColor);
     }
 }
 
@@ -259,7 +251,7 @@ function drawInnerStrokeBox(bgraphState, context, [x, y, w, h], lineWidthIn, lin
 
     context.beginPath();
     context.lineWidth   = lineWidth;
-    context.strokeStyle = lineColor;
+    context.strokeStyle = colorToHex(lineColor);
     context.rect(
         toCanvas('x', bgraphState, x) + lineWidth/2, 
         toCanvas('y', bgraphState, y) + lineWidth/2,
@@ -269,7 +261,7 @@ function drawInnerStrokeBox(bgraphState, context, [x, y, w, h], lineWidthIn, lin
     context.stroke();
 }
 
-function drawBlockHighlight(bgraphState, context, block) {
+function drawBlockHighlight(bgraphState, context, block, bgColor, fgColor) {
     const [fgWidth, bgWidth] = getLineWidths(bgraphState.zoom);
     if (bgWidth === 0) return;
 
@@ -277,8 +269,8 @@ function drawBlockHighlight(bgraphState, context, block) {
     const fgLineWidth = bgLineWidth / 2;
 
     const points = [block.x, block.y, block.width, block.height];
-    drawInnerStrokeBox(bgraphState, context, points, bgLineWidth, LINE_COLOR_FG);
-    drawInnerStrokeBox(bgraphState, context, points, fgLineWidth, LINE_COLOR_BG);
+    drawInnerStrokeBox(bgraphState, context, points, bgLineWidth, fgColor);
+    drawInnerStrokeBox(bgraphState, context, points, fgLineWidth, bgColor);
 }
 
 function concatText(context, boxW, text, rightPadding = 15) {
@@ -323,40 +315,40 @@ const imageImpl = {
         bgraphElement.appendChild(imageState.canvas);
     },
 
-    drawBgraph: function(bgraphState, imageState) {
+    drawBgraph: function(bgraphState, imageState, width, height, bgColor) {
         let canvas = imageState.canvas;            
         let context = canvas.getContext(CANVAS_TYPE);
-        resetBG(context, canvas.width, canvas.height);
+        resetBG(context, canvas.width, canvas.height, bgColor);
         
         if (bgraphState.zoom > 2.5) {
             pixelateImage(context);
         }
 
-        if (imageState.imageWidth * imageState.imageHeight == 0) {
-            return;
-        }
+        if (imageState.buffer.width * 
+            imageState.buffer.height === 0
+        ) return;
 
         context.drawImage(imageState.buffer,
             bgraphState.zoom * bgraphState.offset.x,
             bgraphState.zoom * bgraphState.offset.y,
-            bgraphState.zoom * imageState.imageWidth ,
-            bgraphState.zoom * imageState.imageHeight,
+            bgraphState.zoom * imageState.buffer.width ,
+            bgraphState.zoom * imageState.buffer.height,
         );
     },
 
-    drawBlock: function(bgraphState, imageState, blockData) {
+    drawBlock: function(bgraphState, imageState, blockData, bgColor, fgColor) {
         let context = imageState.canvas.getContext(CANVAS_TYPE);
-        drawBlockHighlight(bgraphState, context, blockData);
+        drawBlockHighlight(bgraphState, context, blockData, bgColor, fgColor);
     },
 
-    drawEdgeEnd: function(bgraphState, imageState, edgeEndData) {
+    drawEdgeEnd: function(bgraphState, imageState, edgeEndData, bgColor, fgColor) {
         let context = imageState.canvas.getContext(CANVAS_TYPE);
-        drawEdgeEndHighlight(bgraphState, context, edgeEndData);
+        drawEdgeEndHighlight(bgraphState, context, edgeEndData, bgColor, fgColor);
     },
 
-    drawBezierEdge: function(bgraphState, imageState, points) {
+    drawBezierEdge: function(bgraphState, imageState, points, bgColor, fgColor) {
         let context = imageState.canvas.getContext(CANVAS_TYPE);
-        drawBezierLine(bgraphState, context, points);
+        drawBezierLine(bgraphState, context, points, bgColor, fgColor);
     },
 
     drawHoverInfo: function(imageState, data, prefix) {
@@ -412,14 +404,6 @@ const imageImpl = {
         context.font = '12px sans-serif';
         context.fillText(`${x}`, posX+ 55, posY+13);
         context.fillText(`${y}`, posX+115, posY+13);
-    },
-
-    getBgraphWidth: function(imageState) {
-        return imageState.imageWidth;
-    },
-
-    getBgraphHeight: function(imageState) {
-        return imageState.imageHeight;
     },
 
     getClientWidth: function(imageState) {

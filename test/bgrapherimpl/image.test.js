@@ -4,6 +4,7 @@ import emptyBgraph from 'bgraphs/empty.json';
 import nonZeroSizeBgraph from 'bgraphs/nonzerosize.json';
 import basicBgraph from 'bgraphs/basic.json';
 import oneEdgeBgraph from 'bgraphs/oneedge.json';
+import colorBgraph from 'bgraphs/color.json';
 import overlapBgraph from 'bgraphs/overlap.json';
 import sameDepthBgraph from 'bgraphs/samedepth.json';
 import overlapEdgeEndBlockBgraph from 'bgraphs/overlapedgeendblock.json';
@@ -22,6 +23,9 @@ const drawSingleLine = imageRewire.__get__('drawSingleLine');
 const drawEdgeEndHighlight = imageRewire.__get__('drawEdgeEndHighlight');
 const drawBezierSingleCurve = imageRewire.__get__('drawBezierSingleCurve');
 const drawBezierLine = imageRewire.__get__('drawBezierLine');
+
+const BLACK = 0;
+const WHITE = 16777215;
 
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
@@ -118,7 +122,7 @@ describe('Generate image', () => {
         let img = bgraph
             .buffer
             .getContext('2d')
-            .getImageData(0,0,bgraph.imageWidth,bgraph.imageHeight)
+            .getImageData(0,0,bgraph.buffer.width,bgraph.buffer.height)
             .data;
         let p = i * 4;
 
@@ -128,11 +132,12 @@ describe('Generate image', () => {
         expect(img[p+3]).to.equal(color[3]);
     }
 
+    let transparent = [0,0,0,0];
     let black = [0,0,0,255];
-    let white = [0,0,0,  0]; // white because of opacity
     let test1 = [0,0,1,255];
     let test2 = [0,0,2,255];
     let test3 = [0,0,3,255];
+    let test4 = [0,0,4,255];
 
     let testBlackDotLocations = [0,2,8,10];
     let testWhiteDotLocations = [1,3,4,5,6,7,9,11];
@@ -141,13 +146,13 @@ describe('Generate image', () => {
         const bgraph = imageImpl.initTestBgraphLarge(2,2);
 
         it('Generates the right image size', () => {
-            expect(bgraph.imageWidth).to.equal(4);
-            expect(bgraph.imageHeight).to.equal(4);
+            expect(bgraph.buffer.width).to.equal(4);
+            expect(bgraph.buffer.height).to.equal(4);
         });
 
         it('Generates the right image', () => {
             testBlackDotLocations.forEach(i => testColor(bgraph, i, black));
-            testWhiteDotLocations.forEach(i => testColor(bgraph, i, white));
+            testWhiteDotLocations.forEach(i => testColor(bgraph, i, transparent));
         });
     });
 
@@ -155,13 +160,13 @@ describe('Generate image', () => {
         const bgraph = imageImpl.initBgraph(testOnlyDots(2,2));
 
         it('Generates the right image size', () => {
-            expect(bgraph.imageWidth).to.equal(4);
-            expect(bgraph.imageHeight).to.equal(4);
+            expect(bgraph.buffer.width).to.equal(4);
+            expect(bgraph.buffer.height).to.equal(4);
         });
 
         it('Generates the right image', () => {
             testBlackDotLocations.forEach(i => testColor(bgraph, i, black));
-            testWhiteDotLocations.forEach(i => testColor(bgraph, i, white));
+            testWhiteDotLocations.forEach(i => testColor(bgraph, i, transparent));
         });
     });
 
@@ -169,17 +174,17 @@ describe('Generate image', () => {
         it('Generates empty bgraph', () => {
             const bgraph = imageImpl.initBgraph(emptyBgraph);
 
-            expect(bgraph.imageWidth).to.equal(0);
-            expect(bgraph.imageHeight).to.equal(0);
-            expect(bgraph.buffer).to.be.undefined;
+            expect(bgraph.buffer.width).to.equal(0);
+            expect(bgraph.buffer.height).to.equal(0);
+            expect(bgraph.buffer).not.to.be.undefined;
             expect(bgraph.canvas).not.to.be.undefined;
         });
 
         it('Generates the right non-zero size', () => {
             const bgraph = imageImpl.initBgraph(nonZeroSizeBgraph);
 
-            expect(bgraph.imageWidth).to.equal(4);
-            expect(bgraph.imageHeight).to.equal(4);
+            expect(bgraph.buffer.width).to.equal(4);
+            expect(bgraph.buffer.height).to.equal(4);
             expect(bgraph.buffer).not.to.be.undefined;
             expect(bgraph.canvas).not.to.be.undefined;
             expect(bgraph.buffer.width).to.equal(4);
@@ -190,7 +195,7 @@ describe('Generate image', () => {
             const bgraph = imageImpl.initBgraph(basicBgraph);
 
             testBlackDotLocations.forEach(i => testColor(bgraph, i, black));
-            testWhiteDotLocations.forEach(i => testColor(bgraph, i, white));
+            testWhiteDotLocations.forEach(i => testColor(bgraph, i, transparent));
         });
 
         it('Generates the right overlapping image', () => {
@@ -199,7 +204,7 @@ describe('Generate image', () => {
             [0,1,4].forEach(i => testColor(bgraph, i, test1));
             [5,6,9,10].forEach(i => testColor(bgraph, i, test2));
             [11,14,15].forEach(i => testColor(bgraph, i, test3));
-            [2,3,7,8,12,13].forEach(i => testColor(bgraph, i, white));
+            [2,3,7,8,12,13].forEach(i => testColor(bgraph, i, transparent));
         });
 
         it('Generates the right overlapping same depth image', () => {
@@ -214,7 +219,15 @@ describe('Generate image', () => {
 
             [0,1].forEach(i => testColor(bgraph, i, test1));
             [4,5].forEach(i => testColor(bgraph, i, black));
-            [2,3,6,7,8,9,10,11].forEach(i => testColor(bgraph, i, white));
+            [2,3,6,7,8,9,10,11].forEach(i => testColor(bgraph, i, transparent));
+        });
+
+        it('Generates the right color image', () => {
+            const bgraph = imageImpl.initBgraph(colorBgraph);
+
+            [0,1].forEach(i => testColor(bgraph, i, test4));
+            [4,5].forEach(i => testColor(bgraph, i, black));
+            [2,3,6,7,8,9,10,11].forEach(i => testColor(bgraph, i, transparent));
         });
 
         it('Generates the right overlapping edge image', () => {
@@ -227,13 +240,6 @@ describe('Generate image', () => {
 });
 
 describe('dimensions', () => {
-    it('gets bgraph dimensions', () => {
-        let imageState = imageImpl.initBgraph(basicBgraph);
-
-        expect(imageImpl.getBgraphWidth(imageState)).to.equal(4);
-        expect(imageImpl.getBgraphHeight(imageState)).to.equal(4);
-    });
-
     it('gets client dimensions', () => {
         let imageState = imageImpl.initBgraph(basicBgraph);
         imageImpl.setClientSize(imageState, 23, 45);
@@ -258,12 +264,14 @@ describe('populateElement', () => {
 
 describe('canvas drawing', () => {
     let fakeCanvas, fakeContext, imageState, bgraphState;
-    let calledFill, calledRect, calledLine, calledText, calledDrawImage;
+    let calledFill, calledRect, calledLine, calledText, calledDrawImage, calledColor;
 
     beforeEach(function() {
         bgraphState = new BgraphState();
         fakeContext = {
             imageSmoothingEnabled: true,
+            set fillStyle(c)   { calledColor.push(c); }, 
+            set strokeStyle(c) { calledColor.push(c); }, 
             fillRect :   (x,y,w,h) => { calledFill      = [x,y,w,h]; },
             drawImage: (b,x,y,w,h) => { calledDrawImage = [x,y,w,h]; },
             beginPath: () => {},
@@ -290,6 +298,7 @@ describe('canvas drawing', () => {
         calledRect = [];
         calledLine = [];
         calledText = [];
+        calledColor = [];
         calledDrawImage = [];
 
         expect(bgraphState.offset.x).to.equal(0);
@@ -302,7 +311,8 @@ describe('canvas drawing', () => {
             let imageState = imageImpl.initBgraph(basicBgraph);
             imageState.canvas = fakeCanvas;
 
-            imageImpl.drawBgraph(bgraphState, imageState);
+            imageImpl.drawBgraph(bgraphState, imageState, 
+                basicBgraph.width, basicBgraph.height, WHITE);
 
             expect(calledFill).to.eql([0,0,16,17]);
         });
@@ -311,7 +321,8 @@ describe('canvas drawing', () => {
             let imageState = imageImpl.initBgraph(basicBgraph);
             imageState.canvas = fakeCanvas;
 
-            imageImpl.drawBgraph(bgraphState, imageState);
+            imageImpl.drawBgraph(bgraphState, imageState, 
+                basicBgraph.width, basicBgraph.height, WHITE);
 
             expect(fakeContext.imageSmoothingEnabled).to.be.true;
         });
@@ -321,7 +332,8 @@ describe('canvas drawing', () => {
             imageState.canvas = fakeCanvas;
 
             bgraphState.zoom = 100;
-            imageImpl.drawBgraph(bgraphState, imageState);
+            imageImpl.drawBgraph(bgraphState, imageState, 
+                basicBgraph.width, basicBgraph.height, WHITE);
 
             expect(fakeContext.imageSmoothingEnabled).to.be.false;
         });
@@ -331,7 +343,8 @@ describe('canvas drawing', () => {
             let imageState = imageImpl.initBgraph(basicBgraph);
             imageState.canvas = fakeCanvas;
 
-            imageImpl.drawBgraph(bgraphState, imageState);
+            imageImpl.drawBgraph(bgraphState, imageState, 
+                basicBgraph.width, basicBgraph.height, WHITE);
 
             expect(calledDrawImage).to.eql([0,0,4,4]);
         });
@@ -343,7 +356,8 @@ describe('canvas drawing', () => {
             bgraphState.zoom = 10;
             bgraphState.offset.x = 2;
             bgraphState.offset.y = 3;
-            imageImpl.drawBgraph(bgraphState, imageState);
+            imageImpl.drawBgraph(bgraphState, imageState, 
+                basicBgraph.width, basicBgraph.height, WHITE);
 
             expect(calledDrawImage).to.eql([20,30,40,40]);
         });
@@ -352,9 +366,20 @@ describe('canvas drawing', () => {
             let imageState = imageImpl.initBgraph(emptyBgraph);
             imageState.canvas = fakeCanvas;
 
-            imageImpl.drawBgraph(bgraphState, imageState);
+            imageImpl.drawBgraph(bgraphState, imageState, 
+                emptyBgraph.width, emptyBgraph.height, WHITE);
 
             expect(calledDrawImage).to.eql([]);
+        });
+
+        it('uses correct bg color', () => {
+            let imageState = imageImpl.initBgraph(colorBgraph);
+            imageState.canvas = fakeCanvas;
+
+            imageImpl.drawBgraph(bgraphState, imageState, 
+                emptyBgraph.width, emptyBgraph.height, colorBgraph.bgColor);
+
+            expect(calledColor).to.eql(['#000001']);
         });
     });
 
@@ -375,7 +400,7 @@ describe('canvas drawing', () => {
                 bgraphState.zoom = zoom;
                 bgraphState.offset.x = ox;
                 bgraphState.offset.y = oy;
-                drawInnerStrokeBox(bgraphState, fakeContext, [x,y,w,h], lineWidth);
+                drawInnerStrokeBox(bgraphState, fakeContext, [x,y,w,h], lineWidth, BLACK);
                 expect(calledRect).to.eql(expected);
             });
         });
@@ -385,26 +410,32 @@ describe('canvas drawing', () => {
         const testBlock = {x: 2, y: 3, width: 20, height: 30};
 
         it('doesn\'t draw when no zoom', () => {
-            drawBlockHighlight(bgraphState, fakeContext, testBlock);
+            drawBlockHighlight(bgraphState, fakeContext, testBlock, BLACK, WHITE);
             expect(calledRect).to.eql([]);
         });
 
         it('doesn\'t draw reverse zoom', () => {
             bgraphState.zoom = 0.5;
-            drawBlockHighlight(bgraphState, fakeContext, testBlock);
+            drawBlockHighlight(bgraphState, fakeContext, testBlock, BLACK, WHITE);
             expect(calledRect).to.eql([]);
         });
 
         it('draws with non-zero stroke when zoom', () => {
             bgraphState.zoom = 100;
-            drawBlockHighlight(bgraphState, fakeContext, testBlock);
+            drawBlockHighlight(bgraphState, fakeContext, testBlock, BLACK, WHITE);
             expect(calledRect).to.not.eql([]);
             expect(fakeContext.lineWidth).to.almost.equal(2.4);
         });
 
+        it('draws with color', () => {
+            bgraphState.zoom = 10;
+            drawBlockHighlight(bgraphState, fakeContext, testBlock, 1, 2);
+            expect(calledColor).to.eql(['#000002', '#000001']);
+        });
+
         it('gets called by drawBlock', () => {
             bgraphState.zoom = 10;
-            imageImpl.drawBlock(bgraphState, imageState, testBlock);
+            imageImpl.drawBlock(bgraphState, imageState, testBlock, BLACK, WHITE);
             expect(calledRect).to.not.eql([]);
         });
     });
@@ -422,7 +453,7 @@ describe('canvas drawing', () => {
                 bgraphState.zoom = zoom;
                 bgraphState.offset.x = ox;
                 bgraphState.offset.y = oy;
-                drawSingleLine(bgraphState, fakeContext, points, lineWidth);
+                drawSingleLine(bgraphState, fakeContext, points, lineWidth, BLACK);
                 expect(calledLine).to.eql(expected);
             });
         });
@@ -432,26 +463,32 @@ describe('canvas drawing', () => {
         const testEdgeEnd = {x: 2, y: 3, direction: Direction.up};
 
         it('doesn\'t draw when no zoom', () => {
-            drawEdgeEndHighlight(bgraphState, fakeContext, testEdgeEnd);
+            drawEdgeEndHighlight(bgraphState, fakeContext, testEdgeEnd, BLACK, WHITE);
             expect(calledLine).to.eql([]);
         });
 
         it('doesn\'t draw reverse zoom', () => {
             bgraphState.zoom = 0.5;
-            drawEdgeEndHighlight(bgraphState, fakeContext, testEdgeEnd);
+            drawEdgeEndHighlight(bgraphState, fakeContext, testEdgeEnd, BLACK, WHITE);
             expect(calledLine).to.eql([]);
         });
 
         it('draws with non-zero stroke when zoom', () => {
             bgraphState.zoom = 100;
-            drawEdgeEndHighlight(bgraphState, fakeContext, testEdgeEnd);
+            drawEdgeEndHighlight(bgraphState, fakeContext, testEdgeEnd, BLACK, WHITE);
             expect(calledLine.length).to.equal(8);
             expect(fakeContext.lineWidth).to.almost.equal(2.4);
         });
 
+        it('draws with color', () => {
+            bgraphState.zoom = 10;
+            drawEdgeEndHighlight(bgraphState, fakeContext, testEdgeEnd, 1, 2);
+            expect(calledColor).to.eql(['#000001', '#000001']);
+        });
+
         it('gets called by drawEdgeEnd', () => {
             bgraphState.zoom = 10;
-            imageImpl.drawEdgeEnd(bgraphState, imageState, testEdgeEnd);
+            imageImpl.drawEdgeEnd(bgraphState, imageState, testEdgeEnd, BLACK, WHITE);
             expect(calledLine).to.not.eql([]);
         });
     });
@@ -492,7 +529,7 @@ describe('canvas drawing', () => {
                 bgraphState.zoom = zoom;
                 bgraphState.offset.x = ox;
                 bgraphState.offset.y = oy;
-                drawBezierSingleCurve(bgraphState, fakeContext, points, lineWidth);
+                drawBezierSingleCurve(bgraphState, fakeContext, points, lineWidth, BLACK);
                 expect(calledLine).to.eql(expected);
             });
         });
@@ -502,28 +539,34 @@ describe('canvas drawing', () => {
         const testPoints = [1,2, 3,4,5,6,7,8];
 
         it('draws when no zoom', () => {
-            drawBezierLine(bgraphState, fakeContext, testPoints);
+            drawBezierLine(bgraphState, fakeContext, testPoints, BLACK, WHITE);
             expect(calledLine.length).to.equal(testPoints.length * 2);
             expect(fakeContext.lineWidth).to.almost.equal(1);
         });
 
         it('draws reverse zoom', () => {
             bgraphState.zoom = 0.5;
-            drawBezierLine(bgraphState, fakeContext, testPoints);
+            drawBezierLine(bgraphState, fakeContext, testPoints, BLACK, WHITE);
             expect(calledLine.length).to.equal(testPoints.length * 2);
             expect(fakeContext.lineWidth).to.almost.equal(0.5);
         });
 
         it('draws with zoom', () => {
             bgraphState.zoom = 100;
-            drawBezierLine(bgraphState, fakeContext, testPoints);
+            drawBezierLine(bgraphState, fakeContext, testPoints, BLACK, WHITE);
             expect(calledLine.length).to.equal(testPoints.length * 2);
             expect(fakeContext.lineWidth).to.almost.equal(3.2);
         });
 
+        it('draws with color', () => {
+            bgraphState.zoom = 10;
+            drawBezierLine(bgraphState, fakeContext, testPoints, 1, 2);
+            expect(calledColor).to.eql(['#000001', '#000002']);
+        });
+
         it('gets called by drawBezierEdge', () => {
             bgraphState.zoom = 10;
-            imageImpl.drawBezierEdge(bgraphState, imageState, testPoints);
+            imageImpl.drawBezierEdge(bgraphState, imageState, testPoints, BLACK, WHITE);
             expect(calledLine).to.not.eql([]);
         });
     });
