@@ -61,6 +61,7 @@ function testDotsEdges(numCols, numRows) {
         testInput.edgeEnds[e] = {
             id: e,
             x : x, y: y,
+            color : 0,
             direction: 'down',
             isSource : false,
             edgeEnds : [pe0],
@@ -70,6 +71,7 @@ function testDotsEdges(numCols, numRows) {
         testInput.edgeEnds[e] = {
             id: e,
             x : x+1, y: y,
+            color : 0,
             direction: 'down',
             isSource : false,
             edgeEnds : [pe1],
@@ -79,6 +81,7 @@ function testDotsEdges(numCols, numRows) {
         testInput.edgeEnds[e] = {
             id: e,
             x : x, y: y+2,
+            color : 0,
             direction: 'down',
             isSource : true,
             edgeEnds : [e+2],
@@ -89,6 +92,7 @@ function testDotsEdges(numCols, numRows) {
         testInput.edgeEnds[e] = {
             id: e,
             x : x+1, y: y+2,
+            color : 0,
             direction: 'down',
             isSource : true,
             edgeEnds : [e+2],

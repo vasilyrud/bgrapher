@@ -20,6 +20,7 @@
         {
             "id": 0,
             "x": 0, "y": 1,
+			"color": 5,
             "direction": "down",
             "isSource": true,
             "edgeEnds": [
@@ -29,6 +30,7 @@
         {
             "id": 100,
             "x": 1, "y": 1,
+			"color": 6,
             "direction": "up",
             "isSource": false,
             "edgeEnds": [

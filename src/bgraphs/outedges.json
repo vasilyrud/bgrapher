@@ -167,6 +167,7 @@
             "id": 1,
             "x": 0,
             "y": 1,
+            "color": 0,
             "direction": "down",
             "isSource": true,
             "edgeEnds": [
@@ -177,6 +178,7 @@
             "id": 2,
             "x": 20,
             "y": 1,
+            "color": 0,
             "direction": "down",
             "isSource": true,
             "edgeEnds": [
@@ -187,6 +189,7 @@
             "id": 3,
             "x": 0,
             "y": 3,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
@@ -197,6 +200,7 @@
             "id": 4,
             "x": 2,
             "y": 3,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
@@ -207,6 +211,7 @@
             "id": 5,
             "x": 4,
             "y": 3,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
@@ -217,6 +222,7 @@
             "id": 6,
             "x": 6,
             "y": 3,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
@@ -227,6 +233,7 @@
             "id": 7,
             "x": 8,
             "y": 3,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
@@ -237,6 +244,7 @@
             "id": 8,
             "x": 10,
             "y": 3,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
@@ -247,6 +255,7 @@
             "id": 9,
             "x": 12,
             "y": 3,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
@@ -257,6 +266,7 @@
             "id": 10,
             "x": 14,
             "y": 3,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
@@ -267,6 +277,7 @@
             "id": 11,
             "x": 16,
             "y": 3,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
@@ -277,6 +288,7 @@
             "id": 12,
             "x": 18,
             "y": 3,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
@@ -287,6 +299,7 @@
             "id": 13,
             "x": 20,
             "y": 3,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [

@@ -138,6 +138,8 @@ describe('Generate image', () => {
     let test2 = [0,0,2,255];
     let test3 = [0,0,3,255];
     let test4 = [0,0,4,255];
+    let test5 = [0,0,5,255];
+    let test6 = [0,0,6,255];
 
     let testBlackDotLocations = [0,2,8,10];
     let testWhiteDotLocations = [1,3,4,5,6,7,9,11];
@@ -226,7 +228,8 @@ describe('Generate image', () => {
             const bgraph = imageImpl.initBgraph(colorBgraph);
 
             [0,1].forEach(i => testColor(bgraph, i, test4));
-            [4,5].forEach(i => testColor(bgraph, i, black));
+            [4].forEach(i => testColor(bgraph, i, test5));
+            [5].forEach(i => testColor(bgraph, i, test6));
             [2,3,6,7,8,9,10,11].forEach(i => testColor(bgraph, i, transparent));
         });
 

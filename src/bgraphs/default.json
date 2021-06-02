@@ -171,6 +171,7 @@
             "id": 1,
             "x": 2,
             "y": 3,
+            "color": 0,
             "direction": "down",
             "isSource": true,
             "edgeEnds": [
@@ -181,6 +182,7 @@
             "id": 2,
             "x": 7,
             "y": 2,
+            "color": 0,
             "direction": "right",
             "isSource": true,
             "edgeEnds": [
@@ -191,6 +193,7 @@
             "id": 3,
             "x": 5,
             "y": 2,
+            "color": 0,
             "direction": "right",
             "isSource": false,
             "edgeEnds": [
@@ -201,6 +204,7 @@
             "id": 4,
             "x": 9,
             "y": 2,
+            "color": 0,
             "direction": "right",
             "isSource": false,
             "edgeEnds": [
@@ -211,6 +215,7 @@
             "id": 5,
             "x": 9,
             "y": 3,
+            "color": 0,
             "direction": "right",
             "isSource": false,
             "edgeEnds": [
@@ -221,6 +226,7 @@
             "id": 6,
             "x": 15,
             "y": 30,
+            "color": 0,
             "direction": "right",
             "isSource": true,
             "edgeEnds": [
@@ -231,6 +237,7 @@
             "id": 7,
             "x": 14,
             "y": 29,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
@@ -241,6 +248,7 @@
             "id": 8,
             "x": 16,
             "y": 5,
+            "color": 0,
             "direction": "down",
             "isSource": true,
             "edgeEnds": [
@@ -251,6 +259,7 @@
             "id": 9,
             "x": 20,
             "y": 21,
+            "color": 0,
             "direction": "down",
             "isSource": true,
             "edgeEnds": [
@@ -261,6 +270,7 @@
             "id": 10,
             "x": 21,
             "y": 20,
+            "color": 0,
             "direction": "right",
             "isSource": true,
             "edgeEnds": [
@@ -271,6 +281,7 @@
             "id": 11,
             "x": 20,
             "y": 19,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
@@ -281,6 +292,7 @@
             "id": 12,
             "x": 19,
             "y": 20,
+            "color": 0,
             "direction": "right",
             "isSource": false,
             "edgeEnds": [
@@ -291,6 +303,7 @@
             "id": 13,
             "x": 20,
             "y": 23,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
@@ -301,6 +314,7 @@
             "id": 14,
             "x": 19,
             "y": 24,
+            "color": 0,
             "direction": "right",
             "isSource": false,
             "edgeEnds": [
@@ -311,6 +325,7 @@
             "id": 15,
             "x": 22,
             "y": 7,
+            "color": 0,
             "direction": "down",
             "isSource": true,
             "edgeEnds": [
@@ -321,6 +336,7 @@
             "id": 16,
             "x": 23,
             "y": 6,
+            "color": 0,
             "direction": "right",
             "isSource": true,
             "edgeEnds": [
@@ -331,6 +347,7 @@
             "id": 17,
             "x": 22,
             "y": 11,
+            "color": 0,
             "direction": "down",
             "isSource": true,
             "edgeEnds": [
@@ -341,6 +358,7 @@
             "id": 18,
             "x": 23,
             "y": 10,
+            "color": 0,
             "direction": "right",
             "isSource": true,
             "edgeEnds": [
@@ -351,6 +369,7 @@
             "id": 19,
             "x": 22,
             "y": 9,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [
@@ -361,6 +380,7 @@
             "id": 20,
             "x": 22,
             "y": 13,
+            "color": 0,
             "direction": "down",
             "isSource": false,
             "edgeEnds": [

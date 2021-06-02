@@ -69,11 +69,14 @@ function generateBlockPixels(img, imgWidth, blockData, depths) {
 function generateEdgeEndPixels(img, imgWidth, edgeEndData) {
     let y = edgeEndData.y;
     let x = edgeEndData.x;
+    let color = edgeEndData.color;
 
     let p = (y * imgWidth + x) * 4;
-    img.data[p+0] = 0;
-    img.data[p+1] = 0;
-    img.data[p+2] = 0;
+    [
+        img.data[p+0], 
+        img.data[p+1], 
+        img.data[p+2]
+    ] = colorToRGB(color);
     img.data[p+3] = 255;
 }
 
