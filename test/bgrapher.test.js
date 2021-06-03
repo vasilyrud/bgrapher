@@ -30,7 +30,6 @@ describe('initBgraph data', () => {
     describe('onlyDots', () => {
         const inputData = testOnlyDots(2,2);
         const expectedIDs = [0,1,2,3];
-        const expectedXYs = [[0,0],[2,0],[0,2],[2,2]];
 
         let bgraphers = {
             'object': new BGrapher(fakeGrapher),
@@ -43,9 +42,8 @@ describe('initBgraph data', () => {
             it(`Generates the right block data from ${description}`, () => {
                 expect(bgrapher.blocksData).to.have.all.keys(expectedIDs);
                 expectedIDs.forEach((id, i) => {
-                    expect(bgrapher.blocksData[id]['text']).to.have.string('This is block');
-                    expect(bgrapher.blocksData[id]['text']).to.have.string(expectedXYs[i][0]);
-                    expect(bgrapher.blocksData[id]['text']).to.have.string(expectedXYs[i][1]);
+                    expect(bgrapher.blocksData[id]['label']).to.have.string('This is block');
+                    expect(bgrapher.blocksData[id]['label']).to.have.string(expectedIDs[i]);
                     expect(bgrapher.blocksData[id]['edgeEnds']).to.eql([]);
                 });
             });
@@ -89,6 +87,8 @@ describe('initBgraph data', () => {
             expectedEdgeEndsData.forEach(([id, edgeEnds, isSource]) => {
                 expect(bgrapher.edgeEndsData[id]['edgeEnds']).to.eql(edgeEnds);
                 expect(bgrapher.edgeEndsData[id]['isSource']).to.eql(isSource);
+                expect(bgrapher.edgeEndsData[id]['label']).to.have.string('This is edge end');
+                expect(bgrapher.edgeEndsData[id]['label']).to.have.string(id);
             });
         });
 

@@ -581,13 +581,13 @@ describe('canvas drawing', () => {
             expect(calledText).to.eql(['x','y','1','2']);
         });
 
-        it('draws info with text', () => {
-            imageImpl.drawHoverInfo(imageState, {id:123, text:'my text'}, 'prefix');
+        it('draws info with label', () => {
+            imageImpl.drawHoverInfo(imageState, {id:123, label:'my label'}, 'prefix');
             expect(calledFill).to.eql([8,8,200,35]);
-            expect(calledText).to.eql(['Right click to show more info.','my text']);
+            expect(calledText).to.eql(['Right click to show more info.','my label']);
         });
 
-        it('draws info without text', () => {
+        it('draws info without label', () => {
             imageImpl.drawHoverInfo(imageState, {id:123}, 'prefix');
             expect(calledFill).to.eql([8,8,200,35]);
             expect(calledText).to.eql(['Right click to show more info.','prefix[123]']);

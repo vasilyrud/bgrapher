@@ -48,7 +48,7 @@ function testDotsEdges(numCols, numRows) {
             x : x, y: y+1,
             width: 2, height: 1,
             depth: 1, color : 13421772,
-            text: `This is block ${x} ${y}`,
+            label: `This is block ${b}`,
             edgeEnds: [
                 e+0,
                 e+1,
@@ -64,6 +64,7 @@ function testDotsEdges(numCols, numRows) {
             color : 0,
             direction: 'down',
             isSource : false,
+            label: `This is edge end ${e}`,
             edgeEnds : [pe0],
         };
         e += 1;
@@ -74,6 +75,7 @@ function testDotsEdges(numCols, numRows) {
             color : 0,
             direction: 'down',
             isSource : false,
+            label: `This is edge end ${e}`,
             edgeEnds : [pe1],
         };
         e += 1;
@@ -84,6 +86,7 @@ function testDotsEdges(numCols, numRows) {
             color : 0,
             direction: 'down',
             isSource : true,
+            label: `This is edge end ${e}`,
             edgeEnds : [e+2],
         };
         pe0 = e;
@@ -95,6 +98,7 @@ function testDotsEdges(numCols, numRows) {
             color : 0,
             direction: 'down',
             isSource : true,
+            label: `This is edge end ${e}`,
             edgeEnds : [e+2],
         };
         pe1 = e;

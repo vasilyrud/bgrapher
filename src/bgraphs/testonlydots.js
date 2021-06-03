@@ -45,7 +45,7 @@ function testOnlyDots(numCols, numRows) {
             x    : x, y     : y,
             width: 1, height: 1,
             depth: 1, color : 0,
-            text: `This is block ${x} ${y}`,
+            label: `This is block ${i}`,
             edgeEnds: [],
         };
 

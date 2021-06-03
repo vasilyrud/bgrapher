@@ -376,8 +376,8 @@ const imageImpl = {
         context.fillStyle = '#000000';
         context.font = '16px sans-serif';
         const yOffset = 17;
-        if (data.text) {
-            context.fillText(`${concatText(context, boxW, data.text)}`, 
+        if (data.label) {
+            context.fillText(`${concatText(context, boxW, data.label)}`, 
                 posX+xOffset, posY+yOffset);
         } else {
             context.fillText(`${prefix}[${data.id}]`, 
