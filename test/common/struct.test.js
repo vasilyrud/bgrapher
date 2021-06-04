@@ -47,9 +47,9 @@ describe('ArrayXY', () => {
     });
 
     const emptyDimensions = [
-        [0,0],
-        [10,0],
-        [0,10],
+        [ 0, 0],
+        [10, 0],
+        [ 0,10],
     ];
 
     emptyDimensions.forEach(([w, h]) => {

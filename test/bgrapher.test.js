@@ -68,10 +68,10 @@ describe('initBgraph data', () => {
             [3,[12,13,14,15]],
         ];
         const expectedEdgeEndsData = [
-            [ 0,[14],false],[ 1,[15],false],[ 2,[ 4],true],[ 3,[ 5],true],
-            [ 4,[ 2],false],[ 5,[ 3],false],[ 6,[ 8],true],[ 7,[ 9],true],
-            [ 8,[ 6],false],[ 9,[ 7],false],[10,[12],true],[11,[13],true],
-            [12,[10],false],[13,[11],false],[14,[ 0],true],[15,[ 1],true],
+            [ 0,0,[14],false],[ 1,0,[15],false],[ 2,0,[ 4],true],[ 3,0,[ 5],true],
+            [ 4,1,[ 2],false],[ 5,1,[ 3],false],[ 6,1,[ 8],true],[ 7,1,[ 9],true],
+            [ 8,2,[ 6],false],[ 9,2,[ 7],false],[10,2,[12],true],[11,2,[13],true],
+            [12,3,[10],false],[13,3,[11],false],[14,3,[ 0],true],[15,3,[ 1],true],
         ];
 
         let bgrapher = new BGrapher(fakeGrapher);
@@ -84,11 +84,12 @@ describe('initBgraph data', () => {
         });
 
         it(`Generates the right edgeEnds data`, () => {
-            expectedEdgeEndsData.forEach(([id, edgeEnds, isSource]) => {
-                expect(bgrapher.edgeEndsData[id]['edgeEnds']).to.eql(edgeEnds);
-                expect(bgrapher.edgeEndsData[id]['isSource']).to.eql(isSource);
-                expect(bgrapher.edgeEndsData[id]['label']).to.have.string('This is edge end');
-                expect(bgrapher.edgeEndsData[id]['label']).to.have.string(id);
+            expectedEdgeEndsData.forEach(([id, block, edgeEnds, isSource]) => {
+                expect(bgrapher.edgeEndsData[id].block).to.eql(block);
+                expect(bgrapher.edgeEndsData[id].edgeEnds).to.eql(edgeEnds);
+                expect(bgrapher.edgeEndsData[id].isSource).to.eql(isSource);
+                expect(bgrapher.edgeEndsData[id].label).to.have.string('This is edge end');
+                expect(bgrapher.edgeEndsData[id].label).to.have.string(id);
             });
         });
 
@@ -114,12 +115,14 @@ describe('initBgraph data', () => {
         it('Generates the right edgeEnd data', () => {
             bgrapher.initBgraph(basicEdgesBgraph);
     
+            expect(bgrapher.blocksData).to.be.empty;
             expect(bgrapher.edgeEndsData).to.have.all.keys(0,100);
             expect(bgrapher.edgeEndsData[100].id)       .to.eql(100);
             expect(bgrapher.edgeEndsData[100].x)        .to.eql(1);
             expect(bgrapher.edgeEndsData[100].y)        .to.eql(1);
             expect(bgrapher.edgeEndsData[100].direction).to.eql(1);
             expect(bgrapher.edgeEndsData[100].isSource) .to.eql(false);
+            expect(bgrapher.edgeEndsData[100].block)    .to.be.null;
             expect(bgrapher.edgeEndsData[100].edgeEnds) .to.eql([0]);
         });
     

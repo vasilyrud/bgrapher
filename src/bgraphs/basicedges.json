@@ -12,6 +12,7 @@
             "color": 0,
             "direction": "down",
             "isSource": true,
+            "block": null,
             "edgeEnds": [
                 1
             ]
@@ -22,6 +23,7 @@
             "color": 0,
             "direction": "up",
             "isSource": false,
+            "block": null,
             "edgeEnds": [
                 0
             ]

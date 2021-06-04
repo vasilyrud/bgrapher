@@ -56,7 +56,6 @@ function testDotsEdges(numCols, numRows) {
                 e+3,
             ],
         };
-        b += 1;
 
         testInput.edgeEnds[e] = {
             id: e,
@@ -65,6 +64,7 @@ function testDotsEdges(numCols, numRows) {
             direction: 'down',
             isSource : false,
             label: `This is edge end ${e}`,
+            block: b,
             edgeEnds : [pe0],
         };
         e += 1;
@@ -76,6 +76,7 @@ function testDotsEdges(numCols, numRows) {
             direction: 'down',
             isSource : false,
             label: `This is edge end ${e}`,
+            block: b,
             edgeEnds : [pe1],
         };
         e += 1;
@@ -87,6 +88,7 @@ function testDotsEdges(numCols, numRows) {
             direction: 'down',
             isSource : true,
             label: `This is edge end ${e}`,
+            block: b,
             edgeEnds : [e+2],
         };
         pe0 = e;
@@ -99,10 +101,13 @@ function testDotsEdges(numCols, numRows) {
             direction: 'down',
             isSource : true,
             label: `This is edge end ${e}`,
+            block: b,
             edgeEnds : [e+2],
         };
         pe1 = e;
         e += 1;
+
+        b += 1;
 
         x += ITEM_WIDTH;
         if (x >= width) {
