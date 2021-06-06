@@ -1,0 +1,24 @@
+{
+    "width":  4,
+    "height": 4,
+    "bgColor": 16777215,
+    "highlightBgColor": 16777215,
+    "highlightFgColor": 0,
+    "blocks": [
+        {
+            "id": 0,
+            "x": 0, "y": 0,
+            "width": 2, "height": 2,
+            "depth": 0, "color": 1,
+            "edgeEnds": []
+        },
+        {
+            "id": 100,
+            "x": 1, "y": 1,
+            "width": 2, "height": 2,
+            "depth": 0, "color": 2,
+            "edgeEnds": []
+        }
+    ],
+    "edgeEnds": []
+}

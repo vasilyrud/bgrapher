@@ -1,0 +1,38 @@
+{
+    "width":  4,
+    "height": 4,
+    "bgColor": 16777215,
+    "highlightBgColor": 16777215,
+    "highlightFgColor": 0,
+    "blocks": [
+        {
+            "id": 0,
+            "x": 0, "y": 0,
+            "width": 1, "height": 1,
+            "depth": 0, "color": 0,
+            "edgeEnds": []
+        },
+        {
+            "id": 100,
+            "x": 2, "y": 0,
+            "width": 1, "height": 1,
+            "depth": 0, "color": 0,
+            "edgeEnds": []
+        },
+        {
+            "id": 2,
+            "x": 0, "y": 2,
+            "width": 1, "height": 1,
+            "depth": 0, "color": 0,
+            "edgeEnds": []
+        },
+        {
+            "id": 123,
+            "x": 2, "y": 2,
+            "width": 1, "height": 1,
+            "depth": 0, "color": 0,
+            "edgeEnds": []
+        }
+    ],
+    "edgeEnds": []
+}

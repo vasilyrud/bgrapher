@@ -1,0 +1,21 @@
+{
+    "presets": [
+        ["@babel/preset-react"],
+        ["@babel/preset-env", {
+            "modules": "auto",
+            "targets": {
+                "esmodules": true
+            }
+        }]
+    ],
+    "env": {
+        "test": {
+            "plugins": [
+                ["babel-plugin-module-resolver", {
+                    "root": ["./src"]
+                }],
+                ["babel-plugin-rewire"]
+            ]
+        }
+    }
+}

@@ -1,0 +1,55 @@
+html,body,#root {
+    width:  100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
+}
+
+.fullWidth {
+    width:  100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+.bgraphGroup {
+    width:  100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
+    display: flex;
+}
+
+.bgraphColumn {
+    flex: 50%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    position: relative;
+    overflow: hidden;
+}
+
+.bgraphJSONForm {
+    margin: auto;
+    margin-top:100px;
+    width: 50%;
+    height:50%;
+}
+
+textarea[name=bgraphJSON] {
+    box-sizing: border-box;
+    width: 100%;
+    height:100%;
+}
+
+select[name=bgraphOptions] {
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+.bgraphFormSubmit {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
