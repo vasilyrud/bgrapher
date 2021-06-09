@@ -8,7 +8,7 @@ import json from '@rollup/plugin-json';
 import postcss from 'rollup-plugin-postcss';
 
 export default {
-    input: 'src/index.js',
+    input: 'dev/index.js',
     plugins: [
         postcss({
             extensions: ['.css'],
@@ -27,18 +27,18 @@ export default {
         serve({
             open: false,
             verbose: true,
-            contentBase: ['', 'dist'],
+            contentBase: ['', 'dev'],
             historyApiFallback: true,
             host: 'localhost',
             port: 3000
         }),
         livereload({
-            watch: 'dist'
+            watch: 'dev'
         }),
         json({}),
     ],
     output: {
-        file: 'dist/app.js',
+        file: 'dev/app.js',
         format: 'es',
         sourcemap: true
     }

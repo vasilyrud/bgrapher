@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import '../styles/blockInfo.css';
+import './styles/blockInfo.css';
 
 import React from 'react';
 
