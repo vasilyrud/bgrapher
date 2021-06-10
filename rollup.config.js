@@ -6,7 +6,7 @@ import pkg from './package.json';
 const prodFile = 'src/index.js';
 
 export default [
-	{ // For npm install
+	{ // For ESM and CommonJS imports
 		input: prodFile,
 		plugins: [nodeResolve()],
 		output: [
@@ -24,7 +24,7 @@ export default [
 			},
 		],
 	},
-	{ // For <script> tag
+	{ // For <script> tag and RequireJS
 		input: prodFile,
 		plugins: [nodeResolve(), babel({babelHelpers: 'bundled'}), terser()],
 		output: {
