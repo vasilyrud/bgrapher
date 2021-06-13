@@ -104,14 +104,6 @@ var BGrapher = function(
         this._toggledEdgeIDs = new EdgeSet();
     }
 
-    this._initTestBgraphLarge = function(numCols, numRows) {
-        this._grapherState = this._grapherImpl.initTestBgraphLarge(numCols, numRows);
-        this.blocksData   = {};
-        this.edgeEndsData = {};
-        this._toggledBlockIDs   = new Set();
-        this._toggledEdgeEndIDs = new Set();
-    }
-
     this.populateElement = function(bgraphState, bgraphElement) {
         this._bgraphElement = bgraphElement;
 

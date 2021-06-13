@@ -80,70 +80,22 @@ function generateEdgeEndPixels(img, imgWidth, edgeEndData) {
     img.data[p+3] = 255;
 }
 
-function generatePixels(inputData) {
-    return (img) => {
-        let imgWidth  = inputData.width;
-        let imgHeight = inputData.height;
-        let numBlocks = inputData.blocks.length;
-        let numEdgeEnds = inputData.edgeEnds.length;
+function generatePixels(inputData, img) {
+    let imgWidth  = inputData.width;
+    let imgHeight = inputData.height;
+    let numBlocks = inputData.blocks.length;
+    let numEdgeEnds = inputData.edgeEnds.length;
 
-        let depths = new ArrayXY(imgWidth, imgHeight);
-        for (let i = 0; i < numBlocks; i++) {
-            let block = inputData.blocks[i];
-            generateBlockPixels(img, imgWidth, block, depths);
-        }
-
-        for (let i = 0; i < numEdgeEnds; i++) {
-            let edgeEnd = inputData.edgeEnds[i];
-            generateEdgeEndPixels(img, imgWidth, edgeEnd);
-        }
+    let depths = new ArrayXY(imgWidth, imgHeight);
+    for (let i = 0; i < numBlocks; i++) {
+        let block = inputData.blocks[i];
+        generateBlockPixels(img, imgWidth, block, depths);
     }
-}
 
-function generateTestPixels(numBlocks) {
-    return (img) => {
-        let width  = img.width;
-        let height = img.height;
-        let id = 0, x = 0, y = 0, i = 0, p = 0;
-
-        while (id < numBlocks) {
-            i = y * width + x;
-            p = i * 4;
-
-            img.data[p+0] = 0;
-            img.data[p+1] = 0;
-            img.data[p+2] = 0;
-            img.data[p+3] = 255;
-
-            id += 1;
-            x += 2;
-            if (x >= width) {
-                x = 0;
-                y += 2;
-            }
-        }
-
-        if (x != 0 || y < height) {
-            throw 'Image dimensions don\'t match number of rows and columns.';
-        }
+    for (let i = 0; i < numEdgeEnds; i++) {
+        let edgeEnd = inputData.edgeEnds[i];
+        generateEdgeEndPixels(img, imgWidth, edgeEnd);
     }
-}
-
-function generateImage(width, height, cbPixels) {
-    let buffer = document.createElement('canvas');
-    let bufferContext = buffer.getContext(CANVAS_TYPE);
-
-    buffer.width  = width;
-    buffer.height = height;
-
-    if (width * height == 0) return new ImageState(buffer);
-
-    let imagedata = bufferContext.createImageData(width, height);
-
-    cbPixels(imagedata);
-    bufferContext.putImageData(imagedata, 0, 0);
-
-    return new ImageState(buffer);
 }
 
 function getLineWidths(zoom) {
@@ -292,26 +244,24 @@ function concatText(context, boxW, text, rightPadding = 15) {
 }
 
 const imageImpl = {
-
     initBgraph: function(inputData) {
-        return generateImage(
-            inputData.width, inputData.height, 
-            generatePixels(inputData)
-        );
-    },
+        let buffer = document.createElement('canvas');
+        let bufferContext = buffer.getContext(CANVAS_TYPE);
 
-    initTestBgraphLarge: function(numCols, numRows) {
-        let width  = numCols * 2;
-        let height = numRows * 2;
-        let numBlocks = numCols * numRows;
-        if (process.env.NODE_ENV !== 'test') {
-            console.log('Making ' + numBlocks + ' test blocks.');
+        buffer.width  = inputData.width;
+        buffer.height = inputData.height;
+
+        let imageState = new ImageState(buffer);
+
+        if (inputData.width * inputData.height > 0) {
+            let imagedata = bufferContext.createImageData(
+                inputData.width, inputData.height);
+
+            generatePixels(inputData, imagedata);
+            bufferContext.putImageData(imagedata, 0, 0);
         }
 
-        return generateImage(
-            width, height, 
-            generateTestPixels(numBlocks)
-        );
+        return imageState;
     },
 
     populateElement: function(imageState, bgraphElement) {

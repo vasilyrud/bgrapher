@@ -20,7 +20,6 @@ describe(require('path').basename(__filename), () => {
 
 const fakeGrapher = {
     initBgraph: () => {},
-    initTestBgraphLarge: () => {},
     getClientWidth: (s) => { return s.cw; },
     getClientHeight: (s) => { return s.ch; },
     setClientSize: (s,w,h) => { s.cw = w; s.ch = h; },
@@ -222,18 +221,6 @@ describe('initBgraph lookups', () => {
             it (`doesn't return any edgeEnd for ${x} ${y}`, () => {
                 expect(bgrapher._edgeEndsLookup.get(x, y)).to.be.null;
             });
-        });
-    });
-
-    describe('initTestBgraphLarge', () => {
-        let bgrapher = new BGrapher(fakeGrapher);
-        bgrapher._initTestBgraphLarge(2,2);
-        const bgraphState = new BgraphState();
-
-        it (`does not generate lookup`, () => {
-            expect(bgrapher.curBlock(bgraphState, {x: 0,y: 0})).to.be.null;
-            expect(bgrapher.curBlock(bgraphState, {x: 1,y: 1})).to.be.null;
-            expect(bgrapher.curBlock(bgraphState, {x:-1,y:-1})).to.be.null;
         });
     });
 

@@ -144,20 +144,6 @@ describe('Generate image', () => {
     let testBlackDotLocations = [0,2,8,10];
     let testWhiteDotLocations = [1,3,4,5,6,7,9,11];
 
-    describe('initTestBgraphLarge', () => {
-        const bgraph = imageImpl.initTestBgraphLarge(2,2);
-
-        it('Generates the right image size', () => {
-            expect(bgraph.buffer.width).to.equal(4);
-            expect(bgraph.buffer.height).to.equal(4);
-        });
-
-        it('Generates the right image', () => {
-            testBlackDotLocations.forEach(i => testColor(bgraph, i, black));
-            testWhiteDotLocations.forEach(i => testColor(bgraph, i, transparent));
-        });
-    });
-
     describe('initBgraph only dots', () => {
         const bgraph = imageImpl.initBgraph(testOnlyDots(2,2));
 

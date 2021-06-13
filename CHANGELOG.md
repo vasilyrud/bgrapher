@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+### Removed
+- Get rid of large test non-interactive bgraph.
+
 ## [0.1.0] - 2021-06-09
 
 ### Added
