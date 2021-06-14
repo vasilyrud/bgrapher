@@ -13,18 +13,18 @@ it('Correct default data', () => {
 
 it('Subscription works', () => {
 	let toggledDraws1 = [];
-	const fakeBGrapher1 = {
+	const fakeBgrapher1 = {
 		draw: (s) => toggledDraws1.push(s)
 	};
 
 	let toggledDraws2 = [];
-	const fakeBGrapher2 = {
+	const fakeBgrapher2 = {
 		draw: (s) => toggledDraws2.push(s)
 	};
 
 	const state = new BgraphState();
-	state.attach(fakeBGrapher1);
-	state.attach(fakeBGrapher2);
+	state.attach(fakeBgrapher1);
+	state.attach(fakeBgrapher2);
 
 	state.update();
 	expect(toggledDraws1.length).to.equal(1);

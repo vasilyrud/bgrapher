@@ -14,7 +14,7 @@ import colorBgraph from 'bgraphs/color.json';
 import { BgraphState } from 'bgraphstate.js'
 import testOnlyDots from 'bgraphs/testonlydots.js';
 import testDotsEdges from 'bgraphs/testdotsedges.js';
-import bgrapherRewire, {BGrapher} from 'bgrapher.js'
+import bgrapherRewire, {Bgrapher} from 'bgrapher.js'
 
 describe(require('path').basename(__filename), () => {
 
@@ -31,8 +31,8 @@ describe('initBgraph data', () => {
         const expectedIDs = [0,1,2,3];
 
         let bgraphers = {
-            'object': new BGrapher(fakeGrapher),
-            'string': new BGrapher(fakeGrapher),
+            'object': new Bgrapher(fakeGrapher),
+            'string': new Bgrapher(fakeGrapher),
         };
         bgraphers['object'].initBgraph(inputData);
         bgraphers['string'].initBgraph(JSON.stringify(inputData));
@@ -73,7 +73,7 @@ describe('initBgraph data', () => {
             [12,3,[10],false],[13,3,[11],false],[14,3,[ 0],true],[15,3,[ 1],true],
         ];
 
-        let bgrapher = new BGrapher(fakeGrapher);
+        let bgrapher = new Bgrapher(fakeGrapher);
         bgrapher.initBgraph(inputData);
 
         it(`Generates the right block edgeEnds data`, () => {
@@ -101,7 +101,7 @@ describe('initBgraph data', () => {
     describe('sample graphs', () => {
         let bgrapher;
         beforeEach(function() {
-            bgrapher = new BGrapher(fakeGrapher);
+            bgrapher = new Bgrapher(fakeGrapher);
         });
 
         it('Generates empty bgraph', () => {
@@ -143,7 +143,7 @@ describe('initBgraph data', () => {
 
 describe('initBgraph lookups', () => {
     describe('testOnlyDots', () => {
-        let bgrapher = new BGrapher(fakeGrapher);
+        let bgrapher = new Bgrapher(fakeGrapher);
         bgrapher.initBgraph(testOnlyDots(2,2));
 
         const validCoords = [
@@ -178,7 +178,7 @@ describe('initBgraph lookups', () => {
     });
 
     describe('testDotsEdges', () => {
-        let bgrapher = new BGrapher(fakeGrapher);
+        let bgrapher = new Bgrapher(fakeGrapher);
         bgrapher.initBgraph(testDotsEdges(2,2));
 
         const validBlockCoords = [
@@ -227,7 +227,7 @@ describe('initBgraph lookups', () => {
     describe('sample graphs', () => {
         let bgrapher;
         beforeEach(function() {
-            bgrapher = new BGrapher(fakeGrapher);
+            bgrapher = new Bgrapher(fakeGrapher);
         });
 
         function testLookup(lookup, i, expectedID) {
@@ -332,7 +332,7 @@ describe('bgrapher interfaces', () => {
             clientHeight: 20,
         };
 
-        let bgrapher = new BGrapher(populateGrapher, undefined, populateEvents);
+        let bgrapher = new Bgrapher(populateGrapher, undefined, populateEvents);
 
         let calledDraw;
         bgrapher.draw = () => { calledDraw = true; };
@@ -376,7 +376,7 @@ describe('bgrapher interfaces', () => {
         });
 
         it('when empty', () => {
-            let bgrapher = new BGrapher(drawGrapher, drawBezier, drawEvents);
+            let bgrapher = new Bgrapher(drawGrapher, drawBezier, drawEvents);
             bgrapher.activeBlocks = () => [];
             bgrapher.activeEdgeEnds = () => [];
             bgrapher.activeEdges = () => [];
@@ -394,7 +394,7 @@ describe('bgrapher interfaces', () => {
         });
 
         it('when non-empty', () => {
-            let bgrapher = new BGrapher(drawGrapher, drawBezier, drawEvents);
+            let bgrapher = new Bgrapher(drawGrapher, drawBezier, drawEvents);
             bgrapher.activeBlocks = () => [{id:1}, {id:2}];
             bgrapher.activeEdgeEnds = () => [{id:3}, {id:4}];
             bgrapher.activeEdges = () => [[{id:5},{id:6}], [{id:7},{id:8}]];
@@ -414,7 +414,7 @@ describe('bgrapher interfaces', () => {
 
     describe('size functions', () => {
         it('gets client dimensions', () => {
-            let bgrapher = new BGrapher(fakeGrapher);
+            let bgrapher = new Bgrapher(fakeGrapher);
             bgrapher._grapherState = { cw: 12 , ch: 34 };
 
             expect(bgrapher.clientWidth()).to.equal(12);
@@ -422,7 +422,7 @@ describe('bgrapher interfaces', () => {
         });
 
         it('change client dimensions', () => {
-            let bgrapher = new BGrapher(fakeGrapher);
+            let bgrapher = new Bgrapher(fakeGrapher);
             bgrapher._grapherState = { cw: 12 , ch: 34 };
             bgrapher._bgraphElement = {
                 clientWidth: 56,
@@ -440,7 +440,7 @@ describe('bgrapher interfaces', () => {
 describe('interaction', () => {
     let bgrapher;
     beforeEach(function() {
-        bgrapher = new BGrapher(fakeGrapher);
+        bgrapher = new Bgrapher(fakeGrapher);
         bgrapher.initBgraph(edgesBgraph);
     });
 

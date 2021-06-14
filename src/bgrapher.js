@@ -50,7 +50,7 @@ function _initEdgeEndsData(inputData) {
     return edgeEndsData;
 }
 
-var BGrapher = function(
+var Bgrapher = function(
     grapherImpl = imageImpl,
     edgesImpl   = bezierImpl,
     eventsImpl  = bgraphEventsImpl,
@@ -501,4 +501,4 @@ var BGrapher = function(
     }
 };
 
-export { BGrapher }
+export { Bgrapher }

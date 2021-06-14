@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+### Changed
+- Standardize capitalization to "Bgraph" instead of "BGraph".
+
 ### Removed
 - Get rid of large test non-interactive bgraph.
 

@@ -21,7 +21,7 @@ import ReactDOM from 'react-dom';
 
 import { BlockInfo } from './BlockInfo.jsx'
 
-import { BGrapher, BgraphState } from '../src/index.js'
+import { Bgrapher, BgraphState } from '../src/index.js'
 
 import defaultBgraph from '../src/bgraphs/default.json';
 import outedgesBgraph from '../src/bgraphs/outedges.json';
@@ -30,9 +30,9 @@ import emptyBgraph from '../src/bgraphs/empty.json';
 import testOnlyDots from '../src/bgraphs/testonlydots.js';
 import testDotsEdges from '../src/bgraphs/testdotsedges.js';
 
-function BGraph(props) {
+function Bgraph(props) {
     const [bgrapher,] = React.useState(() => {
-        const bgrapher = new BGrapher();
+        const bgrapher = new Bgrapher();
 
         if (props.bgraphType == 'graph') {
             bgrapher.initBgraph(props.bgraphStr);
@@ -69,13 +69,13 @@ function BGraph(props) {
     );
 }
 
-function BGraphGroup(props) {
-    // Don't use React state since this state is managed by BGrapher
+function BgraphGroup(props) {
+    // Don't use React state since this state is managed by Bgrapher
     let bgraphState = new BgraphState();
 
     const bgraphs = Object.entries(props.bgraphers)
         .map(([key, bgraph]) => 
-            <BGraph
+            <Bgraph
                 key={key} 
                 bgraphStr={bgraph.bgraphStr} 
                 bgraphType={bgraph.bgraphType}
@@ -90,7 +90,7 @@ function BGraphGroup(props) {
     );
 }
 
-function BGraphForm(props) {
+function BgraphForm(props) {
     const bgraphChoices = {
         default: defaultBgraph,
         outedges: outedgesBgraph,
@@ -186,8 +186,8 @@ function RootHolder(props) {
     }
 
     return (atForm 
-        ? <BGraphForm  onSubmit={onFormSubmit} /> 
-        : <BGraphGroup bgraphers={bgraphers} />
+        ? <BgraphForm  onSubmit={onFormSubmit} /> 
+        : <BgraphGroup bgraphers={bgraphers} />
     );
 }
 
