@@ -23,12 +23,12 @@ import { BlockInfo } from './BlockInfo.jsx'
 
 import { Bgrapher, BgraphState } from '../src/index.js'
 
-import defaultBgraph from '../src/bgraphs/default.json';
-import outedgesBgraph from '../src/bgraphs/outedges.json';
-import edgesBgraph from '../src/bgraphs/edges.json';
-import emptyBgraph from '../src/bgraphs/empty.json';
-import testOnlyDots from '../src/bgraphs/testonlydots.js';
-import testDotsEdges from '../src/bgraphs/testdotsedges.js';
+import defaultBgraph from '../test/bgraphs/default.json';
+import outedgesBgraph from '../test/bgraphs/outedges.json';
+import edgesBgraph from '../test/bgraphs/edges.json';
+import emptyBgraph from '../test/bgraphs/empty.json';
+import testOnlyDots from '../test/bgraphs/testonlydots.js';
+import testDotsEdges from '../test/bgraphs/testdotsedges.js';
 
 function Bgraph(props) {
     const [bgrapher,] = React.useState(() => {

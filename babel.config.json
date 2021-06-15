@@ -12,7 +12,7 @@
         "test": {
             "plugins": [
                 ["babel-plugin-module-resolver", {
-                    "root": ["./src"]
+                    "root": ["./src", "./test"]
                 }],
                 ["babel-plugin-rewire"]
             ]
