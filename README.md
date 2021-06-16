@@ -1,8 +1,8 @@
 # bgrapher
 
-Bgrapher presents as much information about a graph as possible in a concise format, while removing all unecessary noise. This lets you focus on the bigger picture, while still allowing you focus in on the details as needed.
+Bgrapher presents as much information about a graph as possible in a concise format, while removing all unnecessary noise. This lets you focus on the bigger picture, while still allowing you to focus in on the details as needed.
 
-Bgrapher works particularly well for visualizing large, sparce, directed, hierarchichal graphs. This may seem too specific to be useful, but chances are that your graph meets these constraints. Anything that you might want to draw with `dot`, but which doesn't neatly fit into a single image, is a good candidate for Bgrapher.
+Bgrapher works particularly well for visualizing large, sparse, directed, hierarchical graphs. This may seem too specific to be useful, but chances are that your graph meets these constraints. Anything that you might want to draw with `dot`, but which doesn't neatly fit into a single image, is a good candidate for Bgrapher.
 
 ## Getting started
 
@@ -30,7 +30,7 @@ yourBgrapher.initBgraph(yourBgraph);
 yourBgrapher.populateElement(yourBgraphState, yourElement);
 ```
 
-But, say, you don't have a Bgraph yet. If so, you can create one using the format descriped below.
+If your graph is not in Bgraph format yet, you can create it using the format described below.
 
 ## Bgraph format
 
@@ -47,23 +47,23 @@ Bgraphs are formatted in JSON. Nodes are represented with `block`s and edges are
 }
 ```
 
-As well as all additional propoerties:
+As well as all additional properties:
 
-`width` & `height`: The total dimensions of the bgraph. This should be made sufficiently large to conain all of your `block`s/`edgeEnd`s.
-
-`bgColor`: Background color that is behind all `block`s and `edgeEnd`s.
-
-`highlightBgColor` & `highlightFgColor`: Highlight colors for highlighting graph interactions. Choosing 2 contrasting colors for these values improves visibility.
+| Property                                | Description                                                                                                               |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `width` & `height`                      | The total dimensions of the Bgraph. This should be made sufficiently large to contain all of your `block`s/`edgeEnd`s.    |
+| `bgColor`                               | Background color that is behind all `block`s and `edgeEnd`s.                                                              |
+| `highlightBgColor` & `highlightFgColor` | Highlight colors for highlighting graph interactions. Choosing 2 contrasting colors for these values improves visibility. |
 
 ### Block
 
 Each `block` consists of, crucially, an _(`x`,`y`)_ location and an `id`, as well as other properties that define how it appears in Bgrapher:
 
-`width` & `height`: Dimensions of the rectangle representing the block in the Bgraph.
-
-`depth`: How the `block` is ordered relative to others in the same place. Higher depth `block`s appear above lower depth `block`s.
-
-`color`: A decimal representation of the color (e.g., `"#123456"` ==> `1193046`).
+| Property                                | Description                                                                                                               |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `width` & `height`                      | Dimensions of the rectangle representing the block in the Bgraph.                                                         |
+| `depth`                                 | How the `block` is ordered relative to others in the same place. Higher depth `block`s appear above lower depth `block`s. |
+| `color`                                 | A decimal representation of the color (e.g., `"#123456"` ==> `1193046`).                                                  |
 
 A `block` also holds a list of `edgeEnd` `id`s, which helps provide contextual highlighting when interacting with a `block` in Bgrapher; however, these can also point to any other `edgeEnd`s in the graph.
 
@@ -71,11 +71,11 @@ A `block` also holds a list of `edgeEnd` `id`s, which helps provide contextual h
 
 Like `block`s, each `edgeEnd` consists of an _(`x`,`y`)_ location and an `id`, as well as some additional properties:
 
-`isSource`: `true`/`false`. Whether the `edgeEnd` represents a start of an edge or the end of an edge.
-
-`color`: Same format as `block`s.
-
-`direction`: `"up"`/`"down"`/`"left"`/`"right"`. Influences how a highlited edge appears when drawn.
+| Property                                | Description                                                                                                               |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `isSource`                              | `true`/`false`. Whether the `edgeEnd` represents a start of an edge or the end of an edge.                                |
+| `color`                                 | Same format as `block`s.                                                                                                  |
+| `direction`                             | `"up"`/`"down"`/`"left"`/`"right"`. Influences how a highlighted edge appears when drawn.                                 |
 
 Like a `block`, an `edgeEnd` also holds a list of `edgeEnd` `id`s, representing all the `edgeEnd`s that this `edgeEnd` is coming from/going to. It is best to have each `edgeEnd` point back in its corresponding list.
 
@@ -87,7 +87,9 @@ Additionally, an `edgeEnd` can correspond to a particular `block`, which is repr
 
 [A more complicated example](test/bgraphs/default.json) with more `block`s and `edgeEnd`s.
 
-## Advanced usage
+## API
+
+### Callbacks
 
 ### Shared state
 
