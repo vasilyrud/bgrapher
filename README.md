@@ -1,8 +1,11 @@
 # bgrapher
 
-Bgrapher presents as much information about a graph as possible in a concise format, while removing all unnecessary noise. This lets you focus on the bigger picture, while still allowing you to focus in on the details as needed.
+Bgrapher presents as much information about a graph as possible in a concise format, while removing all unnecessary noise. 
+This lets you focus on the bigger picture, while still allowing you to focus in on the details as needed.
 
-Bgrapher works particularly well for visualizing large, sparse, directed, hierarchical graphs. This may seem too specific to be useful, but chances are that your graph meets these constraints. Anything that you might want to draw with `dot`, but which doesn't neatly fit into a single image, is a good candidate for Bgrapher.
+Bgrapher works particularly well for visualizing large, sparse, directed, hierarchical graphs. 
+This may seem too specific to be useful, but chances are that your graph meets these constraints. 
+Anything that you might want to draw with `dot`, but which doesn't neatly fit into a single image, is a good candidate for Bgrapher.
 
 ## Getting started
 
@@ -34,11 +37,13 @@ If your graph is not in Bgraph format yet, you can create it using the format de
 
 ## Bgraph format
 
-Bgraphs are like any other graphs, except optimized for efficient drawing and greatest flexibility. Mainly, this means that you may need to do a bit more prep work "offline" before diving in.
+Bgraphs are like any other graphs, except optimized for speed and flexibility. 
+This means that you may need to do a bit more prep work "offline" before rendering a graph.
 
 ### Bgraph structure
 
-Bgraphs are formatted in JSON. Nodes are represented with `block`s and edges are pairs of `edgeEnd`s. A Bgraph contains a list of each:
+Bgraphs are formatted in JSON. Nodes are represented with `block`s and edges are pairs of `edgeEnd`s. 
+A Bgraph contains a list of each:
 
 ```
 {
@@ -77,9 +82,11 @@ Like `block`s, each `edgeEnd` consists of an _(`x`,`y`)_ location and an `id`, a
 | `color`                                 | Same format as `block`s.                                                                                                  |
 | `direction`                             | `"up"`/`"down"`/`"left"`/`"right"`. Influences how a highlighted edge appears when drawn.                                 |
 
-Like a `block`, an `edgeEnd` also holds a list of `edgeEnd` `id`s, representing all the `edgeEnd`s that this `edgeEnd` is coming from/going to. It is best to have each `edgeEnd` point back in its corresponding list.
+Like a `block`, an `edgeEnd` also holds a list of `edgeEnd` `id`s, representing all the `edgeEnd`s that this `edgeEnd` is coming from/going to. 
+It is best to have each `edgeEnd` point back in its corresponding list.
 
-Additionally, an `edgeEnd` can correspond to a particular `block`, which is represented by the `block`'s `id`. It is best to have the `block` point back to the corresponding `edgeEnd`s that refer to it.
+Additionally, an `edgeEnd` can correspond to a particular `block`, which is represented by the `block`'s `id`. 
+It is best to have the `block` point back to the corresponding `edgeEnd`s that refer to it.
 
 ### Sample Bgraphs
 
@@ -89,13 +96,65 @@ Additionally, an `edgeEnd` can correspond to a particular `block`, which is repr
 
 ## API
 
+A Bgrapher object contains all of the data provided by the user in the `blocksData` and `edgeEndsData` member variables, keyed by each `block`'s or `edgeEnd`'s corresponding ID.
+
+### Methods
+
+new Bgrapher()
+
+initBgraph(bgraph)
+
+populateElement(bgraphState, bgraphElement)
+
+draw(bgraphState)
+
+clientWidth()
+clientHeight()
+
+activeBlocks()
+activeEdgeEnds()
+activeEdges()
+
+hoveredBlock()
+hoveredEdgeEnd()
+
 ### Callbacks
 
-### Shared state
+Several callback function allow you to be notified of various user interactions with the Bgraph.
+
+| Callback                            | Description                                                                                                                                |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `onHoverBlock` & `onHoverEdgeEnd`   | Register callback to be called when the user hovers over an element in the graph.                                                          |
+| `onToggleBlock` & `onToggleEdgeEnd` | Register callback to be called when the user toggles an element in the graph, meaning that they click to highlight the node and edges.     |
+| `onSelectBlock` & `onSelectEdgeEnd` | Register callback to be called when the user selects an element, seeking to extract more information about it, by default via right-click. |
+
+For all callbacks, the relevant activated `block` or `edgeEnd` data is passed in to each provided callback as-is from the input Bgraph provided by the user.
+
+### Advanced methods
+
+toggleBlock(blockID)
+toggleEdgeEnd(edgeEndID)
+
+selectBlock(blockID)
+selectEdgeEnd(edgeEndID)
+
+hoverBlock(blockID)
+hoverEdgeEnd(edgeEndID)
+
+curBlock(bgraphState, cur)
+curEdgeEnd(bgraphState, cur)
+
+updateClientSize()
+
+### External state
+
+new BgraphState()
+update()
 
 #### BgraphState versus React state
 
-Don't let React manage your BgraphState! Bgrapher regenerates only the relevant parts of the graph, while React won't know any better than to refresh the entire HTML element.
+Don't let React manage your BgraphState! 
+Bgrapher regenerates only the relevant parts of the graph, while React won't know any better than to refresh the entire HTML element.
 
 In other words, instead of this:
 
