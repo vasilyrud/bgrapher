@@ -56,7 +56,7 @@ function Bgraph(props) {
     }
 
     React.useEffect(() => {
-        bgrapher.populateElement(props.bgraphState, bgraphElement.current);
+        bgrapher.populateElement(bgraphElement.current, props.bgraphState);
         bgrapher.onSelectBlock(showBlockInfo);
     }, []); // Only run on mount
 

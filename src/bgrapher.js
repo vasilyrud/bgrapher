@@ -104,7 +104,7 @@ var Bgrapher = function(
         this._toggledEdgeIDs = new EdgeSet();
     }
 
-    this.populateElement = function(bgraphState, bgraphElement) {
+    this.populateElement = function(bgraphElement, bgraphState) {
         this._bgraphElement = bgraphElement;
 
         this._grapherImpl.populateElement(this._grapherState, this._bgraphElement);

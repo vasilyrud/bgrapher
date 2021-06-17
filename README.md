@@ -18,7 +18,7 @@ Say you already have a Bgraph, and would like to draw `yourBgraph` inside `yourE
     let yourBgraphState = new bgrapher.BgraphState();
     let yourBgrapher    = new bgrapher.Bgrapher();
     yourBgrapher.initBgraph(yourBgraph);
-    yourBgrapher.populateElement(yourBgraphState, yourElement);
+    yourBgrapher.populateElement(yourElement, yourBgraphState);
 </script>
 ```
 
@@ -30,7 +30,7 @@ import { BgraphState, BGrapher } from 'bgrapher';
 let yourBgraphState = new BgraphState();
 let yourBgrapher    = new Bgrapher();
 yourBgrapher.initBgraph(yourBgraph);
-yourBgrapher.populateElement(yourBgraphState, yourElement);
+yourBgrapher.populateElement(yourElement, yourBgraphState);
 ```
 
 If your graph is not in Bgraph format yet, you can create it using the format described below.
@@ -104,7 +104,7 @@ new Bgrapher()
 
 initBgraph(bgraph)
 
-populateElement(bgraphState, bgraphElement)
+populateElement(bgraphElement, bgraphState)
 
 draw(bgraphState)
 
@@ -141,8 +141,8 @@ selectEdgeEnd(edgeEndID)
 hoverBlock(blockID)
 hoverEdgeEnd(edgeEndID)
 
-curBlock(bgraphState, cur)
-curEdgeEnd(bgraphState, cur)
+curBlock(cur, bgraphState)
+curEdgeEnd(cur, bgraphState)
 
 updateClientSize()
 

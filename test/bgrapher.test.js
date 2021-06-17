@@ -337,7 +337,7 @@ describe('bgrapher interfaces', () => {
         let calledDraw;
         bgrapher.draw = () => { calledDraw = true; };
 
-        bgrapher.populateElement(bgraphState, element);
+        bgrapher.populateElement(element, bgraphState);
 
         expect(bgraphState.bgraphers.length).to.equal(1);
         expect(calledPopulate).to.equal(element);
