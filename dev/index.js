@@ -63,6 +63,7 @@ function Bgraph(props) {
         bgrapher.populateElement(bgraphElement.current, props.bgraphState);
         // bgrapher.populateElement(bgraphElement.current);
         // setBgrapher(new Bgrapher(props.bgraphStr, bgraphElement.current));
+        // setBgrapher(new Bgrapher(props.bgraphStr, bgraphElement.current, props.bgraphState));
 
         bgrapher.onSelectBlock(showBlockInfo);
     }, []); // Only run on mount

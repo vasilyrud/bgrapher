@@ -54,6 +54,7 @@ function _initEdgeEndsData(inputData) {
 var Bgrapher = function(
     bgraph  = null,
     element = null,
+    bgraphState = null,
 ) {
     this._grapherImpl = imageImpl;
     this._edgesImpl   = bezierImpl;
@@ -503,7 +504,7 @@ var Bgrapher = function(
     if (bgraph !== null) {
         this.initBgraph(bgraph); }
     if (element !== null) {
-        this.populateElement(element); }
+        this.populateElement(element, bgraphState); }
 };
 
 export { Bgrapher }

@@ -148,23 +148,23 @@ This can be achieved by using a shared bgraph state.
 
 To use bgraph state that is shared across bgrapher objects:
 1. Instantiate a `new BgraphState()` to be used by all of your bgraphers.
-2. Call `populateElement` with `yourBgraphState` passed in.
+2. Instantiate `new Bgrapher()`s with `yourBgraphState` passed in.
 
 For example:
 
 ```
+import { BGrapher, BgraphState } from 'bgrapher';
 let yourBgraphState = new BgraphState();
 
-let yourBgrapher1 = new Bgrapher(yourBgraph1);
-yourBgrapher1.populateElement(yourElement1, yourBgraphState);
-
-let yourBgrapher2 = new Bgrapher(yourBgraph2);
-yourBgrapher2.populateElement(yourElement2, yourBgraphState);
+let yourBgrapher1 = new Bgrapher(yourBgraph1, yourElement1, yourBgraphState);
+let yourBgrapher2 = new Bgrapher(yourBgraph2, yourElement2, yourBgraphState);
 ```
+
+When working with a shared state, it makes the most sense for both bgraphs to have the same dimensions.
 
 #### BgraphState versus React state
 
-Don't let React manage your BgraphState! 
+Don't let React manage your BgraphState!
 Bgrapher regenerates only the relevant parts of the graph, while React won't know any better than to refresh the entire HTML element.
 
 In other words, instead of this:

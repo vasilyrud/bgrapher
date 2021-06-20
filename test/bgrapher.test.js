@@ -330,6 +330,19 @@ describe('bgrapher interfaces', () => {
             element = document.createElement('div');
         });
 
+        it('new Bgrapher init with external state', () => {
+            let bgraphState = new BgraphState();
+            let bgrapher = new Bgrapher(oneEdgeBgraph, element, bgraphState);
+
+            // Called initBgraph
+            expect(Object.keys(bgrapher.blocksData).length).to.equal(1);
+            expect(Object.keys(bgrapher.edgeEndsData).length).to.equal(2);
+
+            // Called populateElement
+            expect(bgrapher.bgraphState.bgraphers.length).to.equal(1);
+            expect(bgrapher.bgraphState).to.equal(bgraphState);
+        });
+
         it('new Bgrapher basic init', () => {
             let bgrapher = new Bgrapher(oneEdgeBgraph, element);
 
