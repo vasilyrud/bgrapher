@@ -549,7 +549,6 @@ const endOffset = Object.freeze({
 });
 
 const bezierImpl = {
-
     generatePoints: function(startEdgeEnd, endEdgeEnd) {
         const [start       , end         ] = ((startEdgeEnd.isSource)
             ? [startEdgeEnd, endEdgeEnd  ] 

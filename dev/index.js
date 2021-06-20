@@ -31,24 +31,28 @@ import testOnlyDots from '../test/bgraphs/testonlydots.js';
 import testDotsEdges from '../test/bgraphs/testdotsedges.js';
 
 function Bgraph(props) {
-    const [bgrapher,] = React.useState(() => {
-        const bgrapher = new Bgrapher();
+    const [bgrapher, setBgrapher] = React.useState(() => {
+        let bgrapher;
 
         if (props.bgraphType == 'graph') {
-            bgrapher.initBgraph(props.bgraphStr);
+            bgrapher = new Bgrapher(props.bgraphStr);
+
         } else if (props.bgraphType == 'testBlocks') {
+            bgrapher = new Bgrapher();
             bgrapher.initBgraph(testOnlyDots(1000, 10000));
+
         } else if (props.bgraphType == 'testEdges') {
+            bgrapher = new Bgrapher();
             bgrapher.initBgraph(testDotsEdges(1000, 1000));
         }
 
-        return bgrapher
+        return bgrapher;
     });
     const [blockData, setBlockData] = React.useState(null);
     const bgraphElement = React.createRef();
 
     function hideBlockInfo() {
-        setBlockData(null)
+        setBlockData(null);
     }
 
     function showBlockInfo(data) {
@@ -57,6 +61,9 @@ function Bgraph(props) {
 
     React.useEffect(() => {
         bgrapher.populateElement(bgraphElement.current, props.bgraphState);
+        // bgrapher.populateElement(bgraphElement.current);
+        // setBgrapher(new Bgrapher(props.bgraphStr, bgraphElement.current));
+
         bgrapher.onSelectBlock(showBlockInfo);
     }, []); // Only run on mount
 

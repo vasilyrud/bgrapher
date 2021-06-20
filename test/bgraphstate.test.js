@@ -14,12 +14,12 @@ it('Correct default data', () => {
 it('Subscription works', () => {
 	let toggledDraws1 = [];
 	const fakeBgrapher1 = {
-		draw: (s) => toggledDraws1.push(s)
+		draw: () => toggledDraws1.push(true)
 	};
 
 	let toggledDraws2 = [];
 	const fakeBgrapher2 = {
-		draw: (s) => toggledDraws2.push(s)
+		draw: () => toggledDraws2.push(true)
 	};
 
 	const state = new BgraphState();
@@ -28,16 +28,12 @@ it('Subscription works', () => {
 
 	state.update();
 	expect(toggledDraws1.length).to.equal(1);
-	expect(toggledDraws1[0].zoom).to.equal(1);
 	expect(toggledDraws2.length).to.equal(1);
-	expect(toggledDraws2[0].zoom).to.equal(1);
 
 	state.zoom = 5;
 	state.update();
 	expect(toggledDraws1.length).to.equal(2);
-	expect(toggledDraws1[1].zoom).to.equal(5);
 	expect(toggledDraws2.length).to.equal(2);
-	expect(toggledDraws2[1].zoom).to.equal(5);
 });
 
 });

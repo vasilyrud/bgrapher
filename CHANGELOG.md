@@ -1,7 +1,11 @@
 ## [Unreleased]
 
+### Added
+- Add a simpler `new Bgrapher()` interface by using an internal, per-Bgrapher state by default.
+
 ### Changed
 - Standardize capitalization to "Bgraph" instead of "BGraph".
+- Remove bgraphState from function signature of `Bgrapher.draw()`.
 
 ### Removed
 - Get rid of large test non-interactive bgraph.

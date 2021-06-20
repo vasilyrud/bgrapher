@@ -13,24 +13,16 @@ Say you already have a Bgraph, and would like to draw `yourBgraph` inside `yourE
 
 ```
 <script src="https://unpkg.com/bgrapher/dist/bgrapher.min.js"></script>
-
 <script>
-    let yourBgraphState = new bgrapher.BgraphState();
-    let yourBgrapher    = new bgrapher.Bgrapher();
-    yourBgrapher.initBgraph(yourBgraph);
-    yourBgrapher.populateElement(yourElement, yourBgraphState);
+    let yourBgrapher = new bgrapher.Bgrapher(yourBgraph, yourElement);
 </script>
 ```
 
 Or, if installed via npm:
 
 ```
-import { BgraphState, BGrapher } from 'bgrapher';
-
-let yourBgraphState = new BgraphState();
-let yourBgrapher    = new Bgrapher();
-yourBgrapher.initBgraph(yourBgraph);
-yourBgrapher.populateElement(yourElement, yourBgraphState);
+import { BGrapher } from 'bgrapher';
+let yourBgrapher = new Bgrapher(yourBgraph, yourElement);
 ```
 
 If your graph is not in Bgraph format yet, you can create it using the format described below.
@@ -104,9 +96,9 @@ new Bgrapher()
 
 initBgraph(bgraph)
 
-populateElement(bgraphElement, bgraphState)
+populateElement(bgraphElement, \[bgraphState\])
 
-draw(bgraphState)
+draw()
 
 clientWidth()
 clientHeight()
@@ -141,8 +133,8 @@ selectEdgeEnd(edgeEndID)
 hoverBlock(blockID)
 hoverEdgeEnd(edgeEndID)
 
-curBlock(cur, bgraphState)
-curEdgeEnd(cur, bgraphState)
+curBlock(cur)
+curEdgeEnd(cur)
 
 updateClientSize()
 
@@ -150,6 +142,25 @@ updateClientSize()
 
 new BgraphState()
 update()
+
+It can be convenient to sync user interaction across multiple bgraphers.
+This can be achieved by using a shared bgraph state.
+
+To use bgraph state that is shared across bgrapher objects:
+1. Instantiate a `new BgraphState()` to be used by all of your bgraphers.
+2. Call `populateElement` with `yourBgraphState` passed in.
+
+For example:
+
+```
+let yourBgraphState = new BgraphState();
+
+let yourBgrapher1 = new Bgrapher(yourBgraph1);
+yourBgrapher1.populateElement(yourElement1, yourBgraphState);
+
+let yourBgrapher2 = new Bgrapher(yourBgraph2);
+yourBgrapher2.populateElement(yourElement2, yourBgraphState);
+```
 
 #### BgraphState versus React state
 

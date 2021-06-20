@@ -135,9 +135,9 @@ function mousemovePan(bgraphState, eventState, bgrapher, event) {
     eventState.panningPrev.y = getLocal('y', event);
 }
 
-function hoverBgraph(bgraphState, eventState, bgrapher) {
-    const hoveredBlock   = bgrapher.curBlock(bgraphState, eventState.cur);
-    const hoveredEdgeEnd = bgrapher.curEdgeEnd(bgraphState, eventState.cur);
+function hoverBgraph(eventState, bgrapher) {
+    const hoveredBlock   = bgrapher.curBlock(eventState.cur);
+    const hoveredEdgeEnd = bgrapher.curEdgeEnd(eventState.cur);
 
     if (hoveredEdgeEnd) {
         bgrapher.hoverBlock(null);
@@ -152,7 +152,7 @@ function hoverBgraph(bgraphState, eventState, bgrapher) {
 }
 
 function mousemoveHover(bgraphState, eventState, bgrapher) {
-    hoverBgraph(bgraphState, eventState, bgrapher);
+    hoverBgraph(eventState, bgrapher);
     bgraphState.update();
 }
 
@@ -176,7 +176,7 @@ let eventHandlers = {
         bgraphState.offset.x = getZoomOffset('x', bgraphState, eventState, bgrapher, deltaUsed);
         bgraphState.offset.y = getZoomOffset('y', bgraphState, eventState, bgrapher, deltaUsed);
 
-        hoverBgraph(bgraphState, eventState, bgrapher);
+        hoverBgraph(eventState, bgrapher);
         bgraphState.update();
     },
     mousedown: function(bgraphState, eventState, bgrapher, event) {
@@ -253,7 +253,6 @@ let eventHandlers = {
 };
 
 const bgraphEventsImpl = {
-
     initEvents: function(bgraphState, bgrapher, bgraphElement) {
         let eventState = new BgraphEventState();
 

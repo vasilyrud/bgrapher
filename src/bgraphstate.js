@@ -29,7 +29,7 @@ function BgraphState() {
 
     this.update = function() {
         for (const bgrapher of this.bgraphers) {
-            bgrapher.draw(this);
+            bgrapher.draw();
         }
     };
 }

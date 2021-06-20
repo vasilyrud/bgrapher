@@ -16,6 +16,11 @@ import testOnlyDots from 'bgraphs/testonlydots.js';
 import testDotsEdges from 'bgraphs/testdotsedges.js';
 import bgrapherRewire, {Bgrapher} from 'bgrapher.js'
 
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+var document = (new JSDOM(`...`)).window.document;
+global.document = document;
+
 describe(require('path').basename(__filename), () => {
 
 const fakeGrapher = {
@@ -31,10 +36,14 @@ describe('initBgraph data', () => {
         const expectedIDs = [0,1,2,3];
 
         let bgraphers = {
-            'object': new Bgrapher(fakeGrapher),
-            'string': new Bgrapher(fakeGrapher),
+            'object': new Bgrapher(),
+            'string': new Bgrapher(),
         };
+
+        bgraphers['object']._grapherImpl = fakeGrapher;
         bgraphers['object'].initBgraph(inputData);
+
+        bgraphers['string']._grapherImpl = fakeGrapher;
         bgraphers['string'].initBgraph(JSON.stringify(inputData));
 
         Object.entries(bgraphers).forEach(([description,bgrapher]) => {
@@ -52,8 +61,8 @@ describe('initBgraph data', () => {
             });
 
             it(`Can lookup cur block ${description}`, () => {
-                const bgraphState = new BgraphState();
-                expect(bgrapher.curBlock(bgraphState, {x:0,y:0}).id).to.be.equal(0);
+                bgrapher.bgraphState = new BgraphState();
+                expect(bgrapher.curBlock({x:0,y:0}).id).to.be.equal(0);
             });
         });
     });
@@ -73,7 +82,8 @@ describe('initBgraph data', () => {
             [12,3,[10],false],[13,3,[11],false],[14,3,[ 0],true],[15,3,[ 1],true],
         ];
 
-        let bgrapher = new Bgrapher(fakeGrapher);
+        let bgrapher = new Bgrapher();
+        bgrapher._grapherImpl = fakeGrapher;
         bgrapher.initBgraph(inputData);
 
         it(`Generates the right block edgeEnds data`, () => {
@@ -93,15 +103,16 @@ describe('initBgraph data', () => {
         });
 
         it(`Can lookup cur edgeEnd`, () => {
-            const bgraphState = new BgraphState();
-            expect(bgrapher.curEdgeEnd(bgraphState, {x:0,y:0}).id).to.be.equal(0);
+            bgrapher.bgraphState = new BgraphState();
+            expect(bgrapher.curEdgeEnd({x:0,y:0}).id).to.be.equal(0);
         });
     });
 
     describe('sample graphs', () => {
         let bgrapher;
         beforeEach(function() {
-            bgrapher = new Bgrapher(fakeGrapher);
+            bgrapher = new Bgrapher();
+            bgrapher._grapherImpl = fakeGrapher;
         });
 
         it('Generates empty bgraph', () => {
@@ -143,7 +154,8 @@ describe('initBgraph data', () => {
 
 describe('initBgraph lookups', () => {
     describe('testOnlyDots', () => {
-        let bgrapher = new Bgrapher(fakeGrapher);
+        let bgrapher = new Bgrapher();
+        bgrapher._grapherImpl = fakeGrapher;
         bgrapher.initBgraph(testOnlyDots(2,2));
 
         const validCoords = [
@@ -178,7 +190,8 @@ describe('initBgraph lookups', () => {
     });
 
     describe('testDotsEdges', () => {
-        let bgrapher = new Bgrapher(fakeGrapher);
+        let bgrapher = new Bgrapher();
+        bgrapher._grapherImpl = fakeGrapher;
         bgrapher.initBgraph(testDotsEdges(2,2));
 
         const validBlockCoords = [
@@ -227,7 +240,8 @@ describe('initBgraph lookups', () => {
     describe('sample graphs', () => {
         let bgrapher;
         beforeEach(function() {
-            bgrapher = new Bgrapher(fakeGrapher);
+            bgrapher = new Bgrapher();
+            bgrapher._grapherImpl = fakeGrapher;
         });
 
         function testLookup(lookup, i, expectedID) {
@@ -310,44 +324,104 @@ describe('initBgraph lookups', () => {
 });
 
 describe('bgrapher interfaces', () => {
-    it('populateElement calls the right functions', () => {
-        const bgraphState = new BgraphState();
-        expect(bgraphState.bgraphers.length).to.equal(0);
+    describe('new Bgrapher', () => {
+        let element;
+        beforeEach(function() {
+            element = document.createElement('div');
+        });
 
-        let calledPopulate;
-        let calledSetSize;
-        const populateGrapher = {
-            populateElement: (u,element) => { calledPopulate = element; },
-            setClientSize: (u,w,h) => { calledSetSize = [w,h]; },
-            drawBgraph: () => {},
-        };
+        it('new Bgrapher basic init', () => {
+            let bgrapher = new Bgrapher(oneEdgeBgraph, element);
 
-        let calledEvents;
-        const populateEvents = {
-            initEvents: (u,v,element) => { calledEvents = element; },
-        };
+            // Called initBgraph
+            expect(Object.keys(bgrapher.blocksData).length).to.equal(1);
+            expect(Object.keys(bgrapher.edgeEndsData).length).to.equal(2);
 
-        let element = {
-            clientWidth:  10,
-            clientHeight: 20,
-        };
+            // Called populateElement
+            expect(bgrapher.bgraphState.bgraphers.length).to.equal(1);
+        });
 
-        let bgrapher = new Bgrapher(populateGrapher, undefined, populateEvents);
+        it('new Bgrapher init only bgraph', () => {
+            let bgrapher = new Bgrapher(oneEdgeBgraph);
 
-        let calledDraw;
-        bgrapher.draw = () => { calledDraw = true; };
+            // Called initBgraph
+            expect(Object.keys(bgrapher.blocksData).length).to.equal(1);
+            expect(Object.keys(bgrapher.edgeEndsData).length).to.equal(2);
 
-        bgrapher.populateElement(element, bgraphState);
+            // Didn't call populateElement
+            expect(bgrapher.bgraphState).to.be.undefined;
+        });
 
-        expect(bgraphState.bgraphers.length).to.equal(1);
-        expect(calledPopulate).to.equal(element);
-        expect(calledSetSize).to.eql([10,20]);
-        expect(calledEvents).to.equal(element);
-        expect(calledDraw).to.be.true;
+        it('new Bgrapher init without inputs', () => {
+            let bgrapher = new Bgrapher();
+
+            // Didn't call initBgraph
+            expect(bgrapher.blocksData).to.be.undefined;
+            expect(bgrapher.edgeEndsData).to.be.undefined;
+
+            // Didn't call populateElement
+            expect(bgrapher.bgraphState).to.be.undefined;
+        });
+    });
+
+    describe('populateElement', () => {
+        let bgrapher, bgraphState, populateGrapher, populateEvents, element;
+        let calledPopulate, calledSetSize, calledEvents, calledDraw;
+
+        beforeEach(function() {
+            bgraphState = new BgraphState();
+            expect(bgraphState.bgraphers.length).to.equal(0);
+
+            populateGrapher = {
+                populateElement: (u,element) => { calledPopulate = element; },
+                setClientSize: (u,w,h) => { calledSetSize = [w,h]; },
+                drawBgraph: () => {},
+            };
+
+            populateEvents = {
+                initEvents: (u,v,element) => { calledEvents = element; },
+            };
+
+            element = {
+                clientWidth:  10,
+                clientHeight: 20,
+            };
+
+            bgrapher = new Bgrapher();
+            bgrapher._grapherImpl = populateGrapher;
+            bgrapher._eventsImpl  = populateEvents;
+            bgrapher.draw = () => { calledDraw = true; };
+        });
+
+        it('populateElement both inputs', () => {
+            bgrapher.populateElement(element, bgraphState);
+
+            expect(bgraphState.bgraphers.length).to.equal(1);
+            expect(bgrapher.bgraphState).to.equal(bgraphState);
+            expect(bgrapher.bgraphState.bgraphers.length).to.equal(1);
+
+            expect(calledPopulate).to.equal(element);
+            expect(calledSetSize).to.eql([10,20]);
+            expect(calledEvents).to.equal(element);
+            expect(calledDraw).to.be.true;
+        });
+
+        it('populateElement only element creates local bgraphState', () => {
+            bgrapher.populateElement(element);
+
+            expect(bgraphState.bgraphers.length).to.equal(0);
+            expect(bgrapher.bgraphState).to.not.equal(bgraphState);
+            expect(bgrapher.bgraphState.bgraphers.length).to.equal(1);
+
+            expect(calledPopulate).to.equal(element);
+            expect(calledSetSize).to.eql([10,20]);
+            expect(calledEvents).to.equal(element);
+            expect(calledDraw).to.be.true;
+        });
     });
 
     describe('draw', () => {
-        let bgraphState, drawGrapher, drawBezier, drawEvents;
+        let bgrapher, bgraphState, drawGrapher, drawBezier, drawEvents;
         let calledDraw, calledInfo, calledCoord, calledBlock, calledEdgeEnd, calledEdge;
 
         beforeEach(function() {
@@ -373,17 +447,22 @@ describe('bgrapher interfaces', () => {
             calledBlock = [];
             calledEdgeEnd = [];
             calledEdge = [];
+
+            bgrapher = new Bgrapher();
+            bgrapher.bgraphState  = bgraphState;
+            bgrapher._grapherImpl = drawGrapher;
+            bgrapher._edgesImpl   = drawBezier;
+            bgrapher._eventsImpl  = drawEvents;
         });
 
         it('when empty', () => {
-            let bgrapher = new Bgrapher(drawGrapher, drawBezier, drawEvents);
             bgrapher.activeBlocks = () => [];
             bgrapher.activeEdgeEnds = () => [];
             bgrapher.activeEdges = () => [];
             bgrapher.hoveredBlock = () => null;
             bgrapher.hoveredEdgeEnd = () => null;
 
-            bgrapher.draw(bgraphState);
+            bgrapher.draw();
 
             expect(calledDraw).to.be.true;
             expect(calledInfo).to.be.false;
@@ -394,14 +473,13 @@ describe('bgrapher interfaces', () => {
         });
 
         it('when non-empty', () => {
-            let bgrapher = new Bgrapher(drawGrapher, drawBezier, drawEvents);
             bgrapher.activeBlocks = () => [{id:1}, {id:2}];
             bgrapher.activeEdgeEnds = () => [{id:3}, {id:4}];
             bgrapher.activeEdges = () => [[{id:5},{id:6}], [{id:7},{id:8}]];
             bgrapher.hoveredBlock = () => { return {id:1}; };
             bgrapher.hoveredEdgeEnd = () => { return {id:3}; };
 
-            bgrapher.draw(bgraphState);
+            bgrapher.draw();
 
             expect(calledDraw).to.be.true;
             expect(calledInfo).to.be.true;
@@ -414,7 +492,9 @@ describe('bgrapher interfaces', () => {
 
     describe('size functions', () => {
         it('gets client dimensions', () => {
-            let bgrapher = new Bgrapher(fakeGrapher);
+            let bgrapher = new Bgrapher();
+            bgrapher._grapherImpl = fakeGrapher;
+
             bgrapher._grapherState = { cw: 12 , ch: 34 };
 
             expect(bgrapher.clientWidth()).to.equal(12);
@@ -422,7 +502,9 @@ describe('bgrapher interfaces', () => {
         });
 
         it('change client dimensions', () => {
-            let bgrapher = new Bgrapher(fakeGrapher);
+            let bgrapher = new Bgrapher();
+            bgrapher._grapherImpl = fakeGrapher;
+
             bgrapher._grapherState = { cw: 12 , ch: 34 };
             bgrapher._bgraphElement = {
                 clientWidth: 56,
@@ -440,7 +522,8 @@ describe('bgrapher interfaces', () => {
 describe('interaction', () => {
     let bgrapher;
     beforeEach(function() {
-        bgrapher = new Bgrapher(fakeGrapher);
+        bgrapher = new Bgrapher();
+        bgrapher._grapherImpl = fakeGrapher;
         bgrapher.initBgraph(edgesBgraph);
     });
 

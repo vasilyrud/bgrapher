@@ -240,7 +240,7 @@ describe('event helpers', () => {
                 hoverEdgeEnd: (e) => { hoveredEdgeEnd = e; },
             };
 
-            hoverBgraph(bgraphState, fakeEventState, fakeBgrapher);
+            hoverBgraph(fakeEventState, fakeBgrapher);
             expect(hoveredBlock).to.equal(nextBlock);
             expect(hoveredEdgeEnd).to.equal(nextEdgeEnd);
         }
