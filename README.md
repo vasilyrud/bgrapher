@@ -27,9 +27,11 @@ let yourBgrapher = new Bgrapher(yourBgraph, yourElement);
 
 If your graph is not in Bgraph format yet, you can create it using the format described below.
 
+---------------------------------------
+
 ## Bgraph format
 
-Bgraphs are like any other graphs, except optimized for speed and flexibility. 
+Bgraphs are like any other graphs, except optimized for speed and flexibility on the frontend. 
 This means that you may need to do a bit more prep work "offline" before rendering a graph.
 
 ### Bgraph structure
@@ -86,9 +88,9 @@ It is best to have the `block` point back to the corresponding `edgeEnd`s that r
 
 [A more complicated example](test/bgraphs/default.json) with more `block`s and `edgeEnd`s.
 
-## Bgrapher interface
+---------------------------------------
 
-### Data
+## `Bgrapher` data
 
 A Bgrapher object contains all of the data provided by the user in the `Bgrapher.blocksData` and `Bgrapher.edgeEndsData` member variables, keyed by each `block`'s or `edgeEnd`'s corresponding ID.
 All of the metadata is also held at the Bgrapher object level.
@@ -119,9 +121,9 @@ let edgeEndsOf12 = yourBgrapher.blocksData[12].edgeEnds; // [0, 100]
 
 Treat these as read-only to avoid undefined behavior.
 
-### Methods
+## `Bgrapher` methods
 
-#### `Bgrapher`
+### `Bgrapher`
 
 ```
 Bgrapher([yourBgraph [, yourElement [, yourBgraphState]]])
@@ -135,7 +137,7 @@ let yourBgrapher = new Bgrapher(yourBgraph, yourElement);
 
 Where you simply specify the input bgraph and where you want the bgraph to be displayed.
 
-##### Parameters
+#### Parameters
 
 `yourBgraph`: Either a javascript object or a JSON string containing the bgraph to be displayed.
 
@@ -143,30 +145,30 @@ Where you simply specify the input bgraph and where you want the bgraph to be di
 
 `yourBgraphState`: Externally-managed state of the user's interaction with the bgraph, such as the user's zoom and offset.
 
-#### `activeBlocks` & `activeEdgeEnds`
+### `Bgrapher.activeBlocks` & `Bgrapher.activeEdgeEnds`
 
 ```
 activeBlocks()
 activeEdgeEnds()
 ```
 
-##### Return value
+#### Return value
 
 Return either the objects of the active `block`s or active `edgeEnd`s in the bgraph.
 "Active" `block`s/`edgeEnd`s include any which the user selected or hovered over, and which are thus highlighted in the bgraph.
 
-#### `activeEdges`
+### `Bgrapher.activeEdges`
 
 ```
 activeEdges()
 ```
 
-##### Return value
+#### Return value
 
 Returns a pair of active `edgeEnd` objects.
 Since edges aren't highlighted directly, these are the result of user interaction with `block`s and `edgeEnd`s.
 
-#### `toggleBlock` & `toggleEdgeEnd`
+### `Bgrapher.toggleBlock` & `Bgrapher.toggleEdgeEnd`
 
 ```
 toggleBlock(blockID)
@@ -175,11 +177,11 @@ toggleEdgeEnd(edgeEndID)
 
 Toggling a `block` or `edgeEnd` using these functions is equivalent to a user clicking on them.
 
-##### Parameters
+#### Parameters
 
 `blockID`/`edgeEndID`: ID of either the `block` or `edgeEnd` which you are toggling.
 
-#### `selectBlock` & `selectEdgeEnd`
+### `Bgrapher.selectBlock` & `Bgrapher.selectEdgeEnd`
 
 ```
 selectBlock(blockID)
@@ -188,11 +190,11 @@ selectEdgeEnd(edgeEndID)
 
 Selecting a `block` or `edgeEnd` using these functions is equivalent to a user right-clicking on them.
 
-##### Parameters
+#### Parameters
 
 `blockID`/`edgeEndID`: ID of either the `block` or `edgeEnd` which you are toggling.
 
-#### `hoverBlock` & `hoverEdgeEnd`
+### `Bgrapher.hoverBlock` & `Bgrapher.hoverEdgeEnd`
 
 ```
 hoverBlock(blockID)
@@ -201,49 +203,49 @@ hoverEdgeEnd(edgeEndID)
 
 Hovering a `block` or `edgeEnd` using these functions is equivalent to a user hovering over them.
 
-##### Parameters
+#### Parameters
 
 `blockID`/`edgeEndID`: ID of either the `block` or `edgeEnd` which you are toggling.
 
-### Callbacks
+## `Bgrapher` Callbacks
 
-#### `onHoverBlock` & `onHoverEdgeEnd`
+### `Bgrapher.onHoverBlock` & `Bgrapher.onHoverEdgeEnd`
 
 ```
 onHoverBlock(yourCallback)
 onHoverEdgeEnd(yourCallback)
 ```
 
-##### Parameters
+#### Parameters
 
 `yourCallback`: The callback to be called when the user hovers over an element in the graph.
 `block` or `edgeEnd` object is passed in to the callback.
 
-#### `onToggleBlock` & `onToggleEdgeEnd`
+### `Bgrapher.onToggleBlock` & `Bgrapher.onToggleEdgeEnd`
 
 ```
 onHoverBlock(yourCallback)
 onHoverEdgeEnd(yourCallback)
 ```
 
-##### Parameters
+#### Parameters
 
 `yourCallback`: The callback to be called when the user toggles an element in the graph, meaning that they click to highlight the node and edges.
 `block` or `edgeEnd` object is passed in to the callback.
 
-#### `onSelectBlock` & `onSelectEdgeEnd`
+### `Bgrapher.onSelectBlock` & `Bgrapher.onSelectEdgeEnd`
 
 ```
 onHoverBlock(yourCallback)
 onHoverEdgeEnd(yourCallback)
 ```
 
-##### Parameters
+#### Parameters
 
 `yourCallback`: The callback to be called when the user selects an element, seeking to extract more information about it, by default via right-click.
 `block` or `edgeEnd` object is passed in to the callback.
 
-### User interaction state
+## Shared `BgraphState` for multiple `Bgrapher`s
 
 It can be convenient to sync user interaction across multiple bgraphers.
 This can be achieved by using a shared bgraph state.
@@ -264,7 +266,7 @@ let yourBgrapher2 = new Bgrapher(yourBgraph2, yourElement2, yourBgraphState);
 
 When working with a shared state, it makes the most sense for both bgraphs to have the same dimensions.
 
-#### `BgraphState`
+### `BgraphState`
 
 ```
 new BgraphState()
@@ -272,7 +274,7 @@ new BgraphState()
 
 The BgraphState object contains the user's location/zoom level within the bgraph, as well as a list of Bgraphers subscribed to be notified of state changes.
 
-#### `update`
+### `BgraphState.update`
 
 ```
 update()
@@ -283,7 +285,7 @@ Any `Bgrapher`s that are subscribed to be notified of state changes are notified
 
 To ensure that `Bgrapher`s are subscribed, pass in `yourBgraphState` to the `new Bgrapher()` constructor, or to the `populateElement` call.
 
-#### `BgraphState` versus React state
+### `BgraphState` versus React state
 
 Don't let React manage your BgraphState!
 Bgrapher regenerates only the relevant parts of the graph, while React won't know any better than to refresh the entire HTML element.
@@ -300,23 +302,23 @@ Do this:
 this.myBgraphState = new BgraphState();
 ```
 
-### Other interfaces
+## Other `Bgrapher` interfaces
 
-#### `hoveredBlock` & `hoveredEdgeEnd`
+### `Bgrapher.hoveredBlock` & `Bgrapher.hoveredEdgeEnd`
 
 ```
 hoveredBlock()
 hoveredEdgeEnd()
 ```
 
-##### Return value
+#### Return value
 
 Return only the current hovered `block` or `edgeEnd` in the bgraph.
 Return `null` if no `block` or `edgeEnd` currently hovered.
 
 Prefer to use `onHoverBlock` & `onHoverEdgeEnd` instead.
 
-#### `initBgraph`
+### `Bgrapher.initBgraph`
 
 ```
 initBgraph(bgraph)
@@ -324,11 +326,11 @@ initBgraph(bgraph)
 
 Prefer to call `new Bgrapher()` when possible instead.
 
-##### Parameters
+#### Parameters
 
 `yourBgraph`: Either a javascript object or a JSON string containing the bgraph to be displayed.
 
-#### `populateElement`
+### `Bgrapher.populateElement`
 
 ```
 populateElement(yourElement [, yourBgraphState])
@@ -338,13 +340,13 @@ Populates element and optionally registers `Bgrapher` with an external `BgraphSt
 
 Prefer to call `new Bgrapher()` when possible instead.
 
-##### Parameters
+#### Parameters
 
 `yourElement`: An HTML element within which the Bgrapher will draw the bgraph.
 
 `yourBgraphState`: Externally-managed state of the user's interaction with the bgraph, such as the user's zoom and offset.
 
-#### `draw`
+### `Bgrapher.draw`
 
 ```
 draw()
@@ -354,18 +356,18 @@ Re-draws the bgrapher using the latest `BgraphState`.
 
 If using an external `BgraphState`, prefer to call `BgraphState.update()` instead.
 
-#### `clientWidth` & `clientHeight`
+### `Bgrapher.clientWidth` & `Bgrapher.clientHeight`
 
 ```
 clientWidth()
 clientHeight()
 ```
 
-##### Return value
+#### Return value
 
 Return the width or height of the Bgrapher element within `yourElement`, based on the underlying Bgrapher implementation used.
 
-#### `updateClientSize`
+### `Bgrapher.updateClientSize`
 
 ```
 updateClientSize()
@@ -376,21 +378,23 @@ Useful if the dimensions of the element change.
 
 This is called automatically whenever the window is re-sized.
 
-#### `curBlock` & `curEdgeEnd`
+### `Bgrapher.curBlock` & `Bgrapher.curEdgeEnd`
 
 ```
 curBlock(cur)
 curEdgeEnd(cur)
 ```
 
-##### Parameters
+#### Parameters
 
 `cur`: Object of the form `{x: yourX, y: yourY}`, where the `x,y` coordinate corresponds to a location relative to the bgraph.
 For example, this can correspond to a mouse cursor location, but it would not correspond to the `x,y` coordinate of a `block` or `edgeEnd` as specified in the input bgraph object.
 
-##### Return value
+#### Return value
 
 Returns the `block` or `edgeEnd` object at the specified location.
+
+---------------------------------------
 
 ## Development
 
