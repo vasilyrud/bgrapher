@@ -2031,6 +2031,26 @@ describe('interaction', () => {
         expect(bgrapher.selectBlock(0)).to.be.true;
         expect(bgrapher.selectEdgeEnd(0)).to.be.true;
     });
+
+    describe('ignore nulls in active returns', () => {
+        it('activeBlocks ignores nulls', () => {
+            bgrapher._toggledBlockIDs.add(1);
+            bgrapher._toggledBlockIDs.add(null);
+            expect(activeBlockIDs(bgrapher)).to.eql([1]);
+        });
+
+        it('activeEdgeEnds ignores nulls', () => {
+            bgrapher._toggledEdgeEndIDs.add(2);
+            bgrapher._toggledEdgeEndIDs.add(null);
+            expect(activeEdgeEndIDs(bgrapher)).to.eql([2]);
+        });
+
+        it('activeEdges ignores nulls', () => {
+            bgrapher._toggledEdgeIDs.add(0,2);
+            bgrapher._toggledEdgeIDs.add(null);
+            expect(activeEdgeIDs(bgrapher)).to.eql([[0,2]]);
+        });
+    });
 });
 
 });
