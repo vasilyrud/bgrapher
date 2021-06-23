@@ -10,7 +10,7 @@
             "id": 0,
             "x": 0, "y": 0,
             "color": 0,
-            "direction": "down",
+            "direction": 3,
             "isSource": true,
             "block": null,
             "edgeEnds": [
@@ -21,7 +21,7 @@
             "id": 100,
             "x": 1, "y": 1,
             "color": 0,
-            "direction": "up",
+            "direction": 1,
             "isSource": false,
             "block": null,
             "edgeEnds": [

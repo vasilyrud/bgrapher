@@ -56,7 +56,7 @@ As well as all additional properties:
 
 ### Block
 
-Each `block` consists of, crucially, an _(`x`,`y`)_ location and an `id`, as well as other properties that define how it appears in Bgrapher:
+Each `block` consists of, crucially, an (`x`,`y`) location and an `id`, as well as other properties that define how it appears in Bgrapher:
 
 | Property                                | Description                                                                                                               |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -68,13 +68,13 @@ A `block` also holds a list of `edgeEnd` `id`s, which helps provide contextual h
 
 ### EdgeEnd
 
-Like `block`s, each `edgeEnd` consists of an _(`x`,`y`)_ location and an `id`, as well as some additional properties:
+Like `block`s, each `edgeEnd` consists of an (`x`,`y`) location and an `id`, as well as some additional properties:
 
 | Property                                | Description                                                                                                               |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `isSource`                              | `true`/`false`. Whether the `edgeEnd` represents a start of an edge or the end of an edge.                                |
 | `color`                                 | Same format as `block`s.                                                                                                  |
-| `direction`                             | `"up"`/`"down"`/`"left"`/`"right"`. Influences how a highlighted edge appears when drawn.                                 |
+| `direction`                             | `1`/`2`/`3`/`4`, which correspond to up/right/down/left. Influences how a highlighted edge appears when drawn.            |
 
 Like a `block`, an `edgeEnd` also holds a list of `edgeEnd` `id`s, representing all the `edgeEnd`s that this `edgeEnd` is coming from/going to. 
 It is best to have each `edgeEnd` point back in its corresponding list.

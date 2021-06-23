@@ -16,7 +16,6 @@ limitations under the License.
 
 import {
     curBgraphPixel, 
-    Direction, 
     BlocksLookup, 
     EdgeEndsLookup,
 } from './common/lookup.js'
@@ -26,29 +25,16 @@ import { bezierImpl } from './edgesimpl/bezier.js'
 import { bgraphEventsImpl } from './eventsimpl/bgraphevents.js'
 import { BgraphState } from './bgraphstate.js'
 
-function _initBlocksData(inputData) {
-    let blocksData = {};
-    const numBlocks = inputData.blocks.length;
+function _initData(inData) {
+    let outData = {};
+    const N = inData.length;
 
-    for (let i = 0; i < numBlocks; i++) {
-        const block = inputData.blocks[i];
-        blocksData[block.id] = block;
+    for (let i = 0; i < N; i++) {
+        const item = inData[i];
+        outData[item.id] = item;
     }
 
-    return blocksData;
-}
-
-function _initEdgeEndsData(inputData) {
-    let edgeEndsData = {};
-    const numEdgeEnds = inputData.edgeEnds.length;
-
-    for (let i = 0; i < numEdgeEnds; i++) {
-        const edgeEnd = inputData.edgeEnds[i];
-        edgeEndsData[edgeEnd.id] = edgeEnd;
-        edgeEndsData[edgeEnd.id].direction = Direction[edgeEnd.direction];
-    }
-
-    return edgeEndsData;
+    return outData;
 }
 
 var Bgrapher = function(
@@ -86,8 +72,8 @@ var Bgrapher = function(
         this.bgColor = inputData.bgColor;
         this.highlightBgColor = inputData.highlightBgColor;
         this.highlightFgColor = inputData.highlightFgColor;
-        this.blocksData   = _initBlocksData(inputData);
-        this.edgeEndsData = _initEdgeEndsData(inputData);
+        this.blocksData   = _initData(inputData.blocks);
+        this.edgeEndsData = _initData(inputData.edgeEnds);
 
         this._blocksLookup   = new BlocksLookup(inputData);
         this._edgeEndsLookup = new EdgeEndsLookup(inputData);

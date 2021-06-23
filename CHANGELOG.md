@@ -6,6 +6,7 @@
 ### Changed
 - Standardize capitalization to "Bgraph" instead of "BGraph".
 - Remove bgraphState from function signature of `Bgrapher.draw()`.
+- Use `1`/`2`/`3`/`4` for directions in bgraph format rather than `up`/`right`/`down`/`left`.
 
 ### Removed
 - Get rid of large test non-interactive bgraph.

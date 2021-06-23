@@ -172,7 +172,7 @@
             "x": 2,
             "y": 3,
             "color": 0,
-            "direction": "down",
+            "direction": 3,
             "isSource": true,
             "block": 2,
             "edgeEnds": [
@@ -184,7 +184,7 @@
             "x": 7,
             "y": 2,
             "color": 0,
-            "direction": "right",
+            "direction": 2,
             "isSource": true,
             "block": 3,
             "edgeEnds": [
@@ -196,7 +196,7 @@
             "x": 5,
             "y": 2,
             "color": 0,
-            "direction": "right",
+            "direction": 2,
             "isSource": false,
             "block": 3,
             "edgeEnds": [
@@ -208,7 +208,7 @@
             "x": 9,
             "y": 2,
             "color": 0,
-            "direction": "right",
+            "direction": 2,
             "isSource": false,
             "block": 4,
             "edgeEnds": [
@@ -220,7 +220,7 @@
             "x": 9,
             "y": 3,
             "color": 0,
-            "direction": "right",
+            "direction": 2,
             "isSource": false,
             "block": 4,
             "edgeEnds": [
@@ -232,7 +232,7 @@
             "x": 15,
             "y": 30,
             "color": 0,
-            "direction": "right",
+            "direction": 2,
             "isSource": true,
             "block": 6,
             "edgeEnds": [
@@ -244,7 +244,7 @@
             "x": 14,
             "y": 29,
             "color": 0,
-            "direction": "down",
+            "direction": 3,
             "isSource": false,
             "block": 6,
             "edgeEnds": [
@@ -256,7 +256,7 @@
             "x": 16,
             "y": 5,
             "color": 0,
-            "direction": "down",
+            "direction": 3,
             "isSource": true,
             "block": 7,
             "edgeEnds": [
@@ -268,7 +268,7 @@
             "x": 20,
             "y": 21,
             "color": 0,
-            "direction": "down",
+            "direction": 3,
             "isSource": true,
             "block": 9,
             "edgeEnds": [
@@ -280,7 +280,7 @@
             "x": 21,
             "y": 20,
             "color": 0,
-            "direction": "right",
+            "direction": 2,
             "isSource": true,
             "block": 9,
             "edgeEnds": [
@@ -292,7 +292,7 @@
             "x": 20,
             "y": 19,
             "color": 0,
-            "direction": "down",
+            "direction": 3,
             "isSource": false,
             "block": 9,
             "edgeEnds": [
@@ -304,7 +304,7 @@
             "x": 19,
             "y": 20,
             "color": 0,
-            "direction": "right",
+            "direction": 2,
             "isSource": false,
             "block": 9,
             "edgeEnds": [
@@ -316,7 +316,7 @@
             "x": 20,
             "y": 23,
             "color": 0,
-            "direction": "down",
+            "direction": 3,
             "isSource": false,
             "block": 10,
             "edgeEnds": [
@@ -328,7 +328,7 @@
             "x": 19,
             "y": 24,
             "color": 0,
-            "direction": "right",
+            "direction": 2,
             "isSource": false,
             "block": 10,
             "edgeEnds": [
@@ -340,7 +340,7 @@
             "x": 22,
             "y": 7,
             "color": 0,
-            "direction": "down",
+            "direction": 3,
             "isSource": true,
             "block": 11,
             "edgeEnds": [
@@ -352,7 +352,7 @@
             "x": 23,
             "y": 6,
             "color": 0,
-            "direction": "right",
+            "direction": 2,
             "isSource": true,
             "block": 11,
             "edgeEnds": [
@@ -364,7 +364,7 @@
             "x": 22,
             "y": 11,
             "color": 0,
-            "direction": "down",
+            "direction": 3,
             "isSource": true,
             "block": 12,
             "edgeEnds": [
@@ -376,7 +376,7 @@
             "x": 23,
             "y": 10,
             "color": 0,
-            "direction": "right",
+            "direction": 2,
             "isSource": true,
             "block": 12,
             "edgeEnds": [
@@ -388,7 +388,7 @@
             "x": 22,
             "y": 9,
             "color": 0,
-            "direction": "down",
+            "direction": 3,
             "isSource": false,
             "block": 12,
             "edgeEnds": [
@@ -400,7 +400,7 @@
             "x": 22,
             "y": 13,
             "color": 0,
-            "direction": "down",
+            "direction": 3,
             "isSource": false,
             "block": 13,
             "edgeEnds": [
