@@ -1,11 +1,9 @@
-# bgrapher
-[![npm](https://img.shields.io/npm/v/bgrapher?style=flat-square)](https://www.npmjs.com/package/bgrapher)
+# bgrapher [![npm](https://img.shields.io/npm/v/bgrapher?style=flat-square)](https://www.npmjs.com/package/bgrapher)
 
 Bgrapher presents as much information about a graph as possible in a concise format, while removing all unnecessary noise. 
 This lets you focus on the bigger picture, while still allowing you to focus in on the details as needed.
 
 Bgrapher works particularly well for visualizing large, sparse, directed, hierarchical graphs. 
-This may seem too specific to be useful, but chances are that your graph meets these constraints. 
 Anything that you might want to draw with `dot`, but which doesn't neatly fit into a single image, is a good candidate for Bgrapher.
 
 ## Getting started
