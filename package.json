@@ -12,6 +12,14 @@
     "build:dev": "NODE_ENV=development rollup -c rollup.config.dev.js -w",
     "build:dev:ci": "NODE_ENV=development rollup -c rollup.config.dev.ci.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vasilyrud/bgrapher"
+  },
+  "keywords": [
+    "graph",
+    "visualization"
+  ],
   "author": "Vasily Rudchenko",
   "license": "Apache-2.0",
   "devDependencies": {
