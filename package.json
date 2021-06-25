@@ -8,7 +8,8 @@
     "test": "NODE_ENV=test mocha 'test/**/*.js' --require @babel/register",
     "test:cov": "NODE_ENV=test nyc --reporter=text mocha 'test/**/*.js' --require @babel/register",
     "build": "rollup -c rollup.config.js",
-    "build:dev": "NODE_ENV=development rollup -c rollup.config.dev.js -w"
+    "build:dev": "NODE_ENV=development rollup -c rollup.config.dev.js -w",
+    "build:dev:ci": "NODE_ENV=development rollup -c rollup.config.dev.ci.js"
   },
   "author": "Vasily Rudchenko",
   "license": "Apache-2.0",

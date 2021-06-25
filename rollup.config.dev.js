@@ -1,45 +1,23 @@
+import devConfig from './rollup.config.dev.ci';
+
 import serve from 'rollup-plugin-serve';
 import livereload from 'rollup-plugin-livereload';
-import babel from '@rollup/plugin-babel';
-import { nodeResolve } from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import replace from '@rollup/plugin-replace';
-import json from '@rollup/plugin-json';
-import postcss from 'rollup-plugin-postcss';
 
-export default {
-    input: 'dev/index.js',
-    plugins: [
-        postcss({
-            extensions: ['.css'],
-        }),
-        replace({
-            preventAssignment: true,
-            'process.env.NODE_ENV': JSON.stringify('development')
-        }),
-        nodeResolve({
-            extensions: ['.js', '.jsx']
-        }),
-        commonjs({
-            include: ['node_modules/**']
-        }),
-        babel({}),
-        serve({
-            open: false,
-            verbose: true,
-            contentBase: ['', 'dev'],
-            historyApiFallback: true,
-            host: 'localhost',
-            port: 3000
-        }),
-        livereload({
-            watch: 'dev'
-        }),
-        json({}),
-    ],
-    output: {
-        file: 'dev/app.js',
-        format: 'es',
-        sourcemap: true
-    }
-};
+let config = devConfig;
+config.plugins.push(
+    serve({
+        open: false,
+        verbose: true,
+        contentBase: ['', 'dev'],
+        historyApiFallback: true,
+        host: 'localhost',
+        port: 3000
+    })
+);
+config.plugins.push(
+    livereload({
+        watch: 'dev'
+    })
+);
+
+export default config;
