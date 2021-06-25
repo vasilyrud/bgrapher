@@ -1,21 +1,21 @@
 {
-    "presets": [
-        ["@babel/preset-react"],
-        ["@babel/preset-env", {
-            "modules": "auto",
-            "targets": {
-                "esmodules": true
-            }
-        }]
-    ],
-    "env": {
-        "test": {
-            "plugins": [
-                ["babel-plugin-module-resolver", {
-                    "root": ["./src", "./test"]
-                }],
-                ["babel-plugin-rewire"]
-            ]
-        }
+  "presets": [
+    ["@babel/preset-react"],
+    ["@babel/preset-env", {
+      "modules": "auto",
+      "targets": {
+        "esmodules": true
+      }
+    }]
+  ],
+  "env": {
+    "test": {
+      "plugins": [
+        ["babel-plugin-module-resolver", {
+          "root": ["./src", "./test"]
+        }],
+        ["babel-plugin-rewire"]
+      ]
     }
+  }
 }

@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+  http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,44 +20,44 @@ const BLACK = 0;
 const WHITE = 16777215;
 
 function testOnlyDots(numCols, numRows) {
-    /*
-        Creates a numCols x numRows grid of 1x1 blocks.
-        Does not create any edges.
-    */
-    let width  = numCols * ITEM_WIDTH;
-    let height = numRows * ITEM_HEIGHT;
-    let numBlocks = numCols * numRows;
-    if (process.env.NODE_ENV !== 'test') {
-        console.log(`Making ${numBlocks} test blocks.`);
-    }
+  /*
+    Creates a numCols x numRows grid of 1x1 blocks.
+    Does not create any edges.
+  */
+  let width  = numCols * ITEM_WIDTH;
+  let height = numRows * ITEM_HEIGHT;
+  let numBlocks = numCols * numRows;
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(`Making ${numBlocks} test blocks.`);
+  }
 
-    let testInput = {
-        width : width, height: height,
-        bgColor: WHITE, highlightBgColor: WHITE, highlightFgColor: BLACK,
-        blocks: [], edgeEnds: [],
+  let testInput = {
+    width : width, height: height,
+    bgColor: WHITE, highlightBgColor: WHITE, highlightFgColor: BLACK,
+    blocks: [], edgeEnds: [],
+  };
+
+  let i = 0, x = 0, y = 0;
+  while (i < numBlocks) {
+
+    testInput.blocks[i] = {
+      id   : i,
+      x    : x, y     : y,
+      width: 1, height: 1,
+      depth: 1, color : 0,
+      label: `This is block ${i}`,
+      edgeEnds: [],
     };
 
-    let i = 0, x = 0, y = 0;
-    while (i < numBlocks) {
-
-        testInput.blocks[i] = {
-            id   : i,
-            x    : x, y     : y,
-            width: 1, height: 1,
-            depth: 1, color : 0,
-            label: `This is block ${i}`,
-            edgeEnds: [],
-        };
-
-        i += 1;
-        x += ITEM_WIDTH;
-        if (x >= width) {
-            x = 0;
-            y += ITEM_HEIGHT;
-        }
+    i += 1;
+    x += ITEM_WIDTH;
+    if (x >= width) {
+      x = 0;
+      y += ITEM_HEIGHT;
     }
+  }
 
-    return testInput;
+  return testInput;
 }
 
 export default testOnlyDots;

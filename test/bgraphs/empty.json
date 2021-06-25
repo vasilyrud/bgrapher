@@ -1,9 +1,9 @@
 {
-    "width":  0,
-    "height": 0,
-    "bgColor": 16777215,
-    "highlightBgColor": 16777215,
-    "highlightFgColor": 0,
-    "blocks": [],
-    "edgeEnds": []
+  "width":  0,
+  "height": 0,
+  "bgColor": 16777215,
+  "highlightBgColor": 16777215,
+  "highlightFgColor": 0,
+  "blocks": [],
+  "edgeEnds": []
 }

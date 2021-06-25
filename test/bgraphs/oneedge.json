@@ -1,43 +1,43 @@
 {
-    "width":  4,
-    "height": 4,
-    "bgColor": 16777215,
-    "highlightBgColor": 16777215,
-    "highlightFgColor": 0,
-    "blocks": [
-        {
-            "id": 0,
-            "x": 0, "y": 0,
-            "width": 2, "height": 1,
-            "depth": 0, "color": 1,
-            "edgeEnds": [
-                0,
-                100
-            ]
-        }
-    ],
-    "edgeEnds": [
-        {
-            "id": 0,
-            "x": 0, "y": 1,
-            "color": 0,
-            "direction": 3,
-            "isSource": true,
-            "block": 0,
-            "edgeEnds": [
-                100
-            ]
-        },
-        {
-            "id": 100,
-            "x": 1, "y": 1,
-            "color": 0,
-            "direction": 1,
-            "isSource": false,
-            "block": 0,
-            "edgeEnds": [
-                0
-            ]
-        }
-    ]
+  "width":  4,
+  "height": 4,
+  "bgColor": 16777215,
+  "highlightBgColor": 16777215,
+  "highlightFgColor": 0,
+  "blocks": [
+    {
+      "id": 0,
+      "x": 0, "y": 0,
+      "width": 2, "height": 1,
+      "depth": 0, "color": 1,
+      "edgeEnds": [
+        0,
+        100
+      ]
+    }
+  ],
+  "edgeEnds": [
+    {
+      "id": 0,
+      "x": 0, "y": 1,
+      "color": 0,
+      "direction": 3,
+      "isSource": true,
+      "block": 0,
+      "edgeEnds": [
+        100
+      ]
+    },
+    {
+      "id": 100,
+      "x": 1, "y": 1,
+      "color": 0,
+      "direction": 1,
+      "isSource": false,
+      "block": 0,
+      "edgeEnds": [
+        0
+      ]
+    }
+  ]
 }

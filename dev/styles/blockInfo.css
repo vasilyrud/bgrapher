@@ -1,52 +1,52 @@
 .blockInfoHolder {
-    width: 200px;
-    height: 300px;
-    background: #fff;
-    position: absolute;
-    bottom: 8px;
-    left: 8px;
-    z-index: 10;
-    font-family: sans-serif;
+  width: 200px;
+  height: 300px;
+  background: #fff;
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 10;
+  font-family: sans-serif;
 }
 
 .blockInfo {
-    display: flex;
-    flex-flow: column;
-    height: 100%;
+  display: flex;
+  flex-flow: column;
+  height: 100%;
 }
 
 .infoTopBar {
-    flex: 0 0 auto;
+  flex: 0 0 auto;
 }
 
 .infoContent {
-    flex: 1 1 auto;
-    overflow: scroll;
-    margin: 0 0 0 0;
-    padding: 0 10px 0 10px;
+  flex: 1 1 auto;
+  overflow: scroll;
+  margin: 0 0 0 0;
+  padding: 0 10px 0 10px;
 }
 
 .closeButton {
-    position: relative;
-    float: right;
-    width: 20px;
-    height: 20px;
-    margin: 0;
-    padding: 2px;
-    font-size: 30px;
-    text-indent: 1px;
-    line-height: 15px;
-    color: #000;
-    user-select: none;
+  position: relative;
+  float: right;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 2px;
+  font-size: 30px;
+  text-indent: 1px;
+  line-height: 15px;
+  color: #000;
+  user-select: none;
 }
 
 .idBrackets {
-    color: #aaa;
+  color: #aaa;
 }
 
 .blockTitle {
-    font-size: 22px;
-    font-weight: normal;
-    margin: 0;
-    padding: 0;
+  font-size: 22px;
+  font-weight: normal;
+  margin: 0;
+  padding: 0;
 }

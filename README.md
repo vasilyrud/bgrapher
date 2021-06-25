@@ -13,7 +13,7 @@ Say you already have a bgraph, and would like to draw `yourBgraph` inside `yourE
 ```
 <script src="https://unpkg.com/bgrapher/dist/bgrapher.min.js"></script>
 <script>
-    let yourBgrapher = new bgrapher.Bgrapher(yourBgraph, yourElement);
+  let yourBgrapher = new bgrapher.Bgrapher(yourBgraph, yourElement);
 </script>
 ```
 
@@ -47,13 +47,13 @@ For example, this is a `4` by `4` bgraph with a white background (`16777215` cor
 
 ```
 {
-    "width":  4,
-    "height": 4,
-    "bgColor": 16777215,
-    "highlightFgColor": 0,
-    "highlightBgColor": 16777215,
-    "blocks": [],
-    "edgeEnds": []
+  "width":  4,
+  "height": 4,
+  "bgColor": 16777215,
+  "highlightFgColor": 0,
+  "highlightBgColor": 16777215,
+  "blocks": [],
+  "edgeEnds": []
 }
 ```
 
@@ -75,20 +75,20 @@ Typically, this is a list of `edgeEnd`s that correspond to edges going to and fr
 This is an example of a `2` by `1`, `#000001`-colored block, located at the top-left of the bgraph (`0`,`0`), which has two `edgeEnd`s (`0` and `100`) associated with it:
 
 ```
-    ...
-    "blocks": [
-        {
-            "id": 0,
-            "x": 0, "y": 0,
-            "width": 2, "height": 1,
-            "depth": 0, "color": 1,
-            "edgeEnds": [
-                0,
-                100
-            ]
-        }
-    ],
-    ...
+  ...
+  "blocks": [
+    {
+      "id": 0,
+      "x": 0, "y": 0,
+      "width": 2, "height": 1,
+      "depth": 0, "color": 1,
+      "edgeEnds": [
+        0,
+        100
+      ]
+    }
+  ],
+  ...
 ```
 
 ### Bgraph edgeEnds
@@ -113,32 +113,32 @@ Both are edge ends to one another (as evident from each `edgeEnds` array), and b
 One is the source (`"isSource": true`) and is pointing downward (`"direction": 3`) while the other is a destination (`"isSource": false`) and is pointing up (`"direction": 1`).
 
 ```
-    ...
-    "edgeEnds": [
-        {
-            "id": 0,
-            "x": 0, "y": 1,
-            "color": 0,
-            "direction": 3,
-            "isSource": true,
-            "block": 0,
-            "edgeEnds": [
-                100
-            ]
-        },
-        {
-            "id": 100,
-            "x": 1, "y": 1,
-            "color": 0,
-            "direction": 1,
-            "isSource": false,
-            "block": 0,
-            "edgeEnds": [
-                0
-            ]
-        }
-    ]
-    ...
+  ...
+  "edgeEnds": [
+    {
+      "id": 0,
+      "x": 0, "y": 1,
+      "color": 0,
+      "direction": 3,
+      "isSource": true,
+      "block": 0,
+      "edgeEnds": [
+        100
+      ]
+    },
+    {
+      "id": 100,
+      "x": 1, "y": 1,
+      "color": 0,
+      "direction": 1,
+      "isSource": false,
+      "block": 0,
+      "edgeEnds": [
+        0
+      ]
+    }
+  ]
+  ...
 ```
 
 In total, this example bgraph represents a single node with a loop.
@@ -157,19 +157,19 @@ For example:
 
 ```
 let yourBgrapher = new Bgrapher({
-    width:  4,
-    height: 4,
+  width:  4,
+  height: 4,
+  ...
+  blocks: [
     ...
-    blocks: [
-        ...
-        {
-            id: 12,
-            edgeEnds: [0, 100],
-            ...
-        },
-        ...
-    ],
+    {
+      id: 12,
+      edgeEnds: [0, 100],
+      ...
+    },
     ...
+  ],
+  ...
 }, yourElement);
 
 let bgraphWidth  = yourBgrapher.width;  // 4

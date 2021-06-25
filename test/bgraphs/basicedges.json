@@ -1,32 +1,32 @@
 {
-    "width":  4,
-    "height": 4,
-    "bgColor": 16777215,
-    "highlightBgColor": 16777215,
-    "highlightFgColor": 0,
-    "blocks": [],
-    "edgeEnds": [
-        {
-            "id": 0,
-            "x": 0, "y": 0,
-            "color": 0,
-            "direction": 3,
-            "isSource": true,
-            "block": null,
-            "edgeEnds": [
-                1
-            ]
-        },
-        {
-            "id": 100,
-            "x": 1, "y": 1,
-            "color": 0,
-            "direction": 1,
-            "isSource": false,
-            "block": null,
-            "edgeEnds": [
-                0
-            ]
-        }
-    ]
+  "width":  4,
+  "height": 4,
+  "bgColor": 16777215,
+  "highlightBgColor": 16777215,
+  "highlightFgColor": 0,
+  "blocks": [],
+  "edgeEnds": [
+    {
+      "id": 0,
+      "x": 0, "y": 0,
+      "color": 0,
+      "direction": 3,
+      "isSource": true,
+      "block": null,
+      "edgeEnds": [
+        1
+      ]
+    },
+    {
+      "id": 100,
+      "x": 1, "y": 1,
+      "color": 0,
+      "direction": 1,
+      "isSource": false,
+      "block": null,
+      "edgeEnds": [
+        0
+      ]
+    }
+  ]
 }

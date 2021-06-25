@@ -6,29 +6,29 @@ import json from '@rollup/plugin-json';
 import postcss from 'rollup-plugin-postcss';
 
 let config = {
-    input: 'dev/index.js',
-    plugins: [
-        postcss({
-            extensions: ['.css'],
-        }),
-        replace({
-            preventAssignment: true,
-            'process.env.NODE_ENV': JSON.stringify('development')
-        }),
-        nodeResolve({
-            extensions: ['.js', '.jsx']
-        }),
-        commonjs({
-            include: ['node_modules/**']
-        }),
-        babel({}),
-        json({}),
-    ],
-    output: {
-        file: 'dev/app.js',
-        format: 'es',
-        sourcemap: true
-    },
+  input: 'dev/index.js',
+  plugins: [
+    postcss({
+      extensions: ['.css'],
+    }),
+    replace({
+      preventAssignment: true,
+      'process.env.NODE_ENV': JSON.stringify('development')
+    }),
+    nodeResolve({
+      extensions: ['.js', '.jsx']
+    }),
+    commonjs({
+      include: ['node_modules/**']
+    }),
+    babel({}),
+    json({}),
+  ],
+  output: {
+    file: 'dev/app.js',
+    format: 'es',
+    sourcemap: true
+  },
 };
 
 export default config;
