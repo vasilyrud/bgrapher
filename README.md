@@ -1,4 +1,4 @@
-# bgrapher [![npm](https://img.shields.io/npm/v/bgrapher?style=flat-square)](https://www.npmjs.com/package/bgrapher) [![Travis (.com)](https://img.shields.io/travis/com/vasilyrud/bgrapher?style=flat-square)](https://travis-ci.com/github/vasilyrud/bgrapher)
+# bgrapher [![npm](https://img.shields.io/npm/v/bgrapher)](https://www.npmjs.com/package/bgrapher) [![Travis (.com)](https://img.shields.io/travis/com/vasilyrud/bgrapher)](https://travis-ci.com/github/vasilyrud/bgrapher) [![Coveralls](https://img.shields.io/coveralls/github/vasilyrud/bgrapher)](https://coveralls.io/github/vasilyrud/bgrapher)
 
 Bgrapher presents as much information about a graph as possible in a concise format, while removing all unnecessary noise. 
 This lets you focus on the bigger picture, while still allowing you to focus in on the details as needed.
