@@ -8,7 +8,7 @@ Anything that you might want to draw with `dot`, but which doesn't neatly fit in
 
 ## Getting started
 
-Say you already have a Bgraph, and would like to draw `yourBgraph` inside `yourElement = document.createElement('div')`, you can do so directly:
+Say you already have a bgraph, and would like to draw `yourBgraph` inside `yourElement = document.createElement('div')`, you can do so directly:
 
 ```
 <script src="https://unpkg.com/bgrapher/dist/bgrapher.min.js"></script>
@@ -20,13 +20,11 @@ Say you already have a Bgraph, and would like to draw `yourBgraph` inside `yourE
 Or, if installed via npm:
 
 ```
-import { BGrapher } from 'bgrapher';
+import { Bgrapher } from 'bgrapher';
 let yourBgrapher = new Bgrapher(yourBgraph, yourElement);
 ```
 
-If your graph is not in Bgraph format yet, you can create it using the format described below.
-
----------------------------------------
+If your graph is not in bgraph format yet, you can create it using the format described below.
 
 ## Bgraph format
 
@@ -35,64 +33,125 @@ This means that you may need to do a bit more prep work "offline" before renderi
 
 ### Bgraph structure
 
-Bgraphs are formatted in JSON. Nodes are represented with `block`s and edges are pairs of `edgeEnd`s. 
-A Bgraph contains a list of each:
+Bgraphs are formatted in JSON. 
+Nodes are represented with `block`s and edges are pairs of `edgeEnd`s. 
+A bgraph must contain a list of each, as well as all required properties:
+
+| Property                                | Description                                                                                                               |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `width` & `height`                      | The total dimensions of the bgraph. This should be sufficiently large to contain all of your `block`s/`edgeEnd`s.         |
+| `bgColor`                               | Background color of the bgraph.                                                                                           |
+| `highlightBgColor` & `highlightFgColor` | Highlight colors for highlighting graph interactions. Choosing 2 contrasting colors for these values improves visibility. |
+
+For example, this is a `4` by `4` bgraph with a white background (`16777215` corresponds to `#ffffff`), black on white highlights (`0` and `16777215`), and no `block`s or `edgeEnd`s:
 
 ```
 {
-    "blocks": [...],
-    "edgeEnds": [...]
+    "width":  4,
+    "height": 4,
+    "bgColor": 16777215,
+    "highlightFgColor": 0,
+    "highlightBgColor": 16777215,
+    "blocks": [],
+    "edgeEnds": []
 }
 ```
 
-As well as all additional properties:
+`block`s and `edgeEnd`s are objects that can be added to the two lists in order to define a graph.
+
+### Bgraph blocks
+
+Each `block` consists of, crucially, an (`x`,`y`) location and an `id`, as well as other properties that define how it appears in a bgraph:
 
 | Property                                | Description                                                                                                               |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `width` & `height`                      | The total dimensions of the Bgraph. This should be made sufficiently large to contain all of your `block`s/`edgeEnd`s.    |
-| `bgColor`                               | Background color that is behind all `block`s and `edgeEnd`s.                                                              |
-| `highlightBgColor` & `highlightFgColor` | Highlight colors for highlighting graph interactions. Choosing 2 contrasting colors for these values improves visibility. |
+| `width` & `height`                      | Dimensions of the rectangle representing the block in the bgraph.                                                         |
+| `depth`                                 | How the `block` is ordered relative to others. Higher depth `block`s appear above lower depth `block`s.                   |
+| `color`                                 | A decimal representation of the `block`'s color (e.g., `"#123456"` ==> `1193046`).                                        |
 
-### Block
+A `block` also holds an `edgeEnds` list of `edgeEnd` IDs, which helps provide contextual highlighting when interacting with a `block` using Bgrapher.
+Typically, this is a list of `edgeEnd`s that correspond to edges going to and from the given `block`.
 
-Each `block` consists of, crucially, an (`x`,`y`) location and an `id`, as well as other properties that define how it appears in Bgrapher:
+This is an example of a `2` by `1`, `#000001`-colored block, located at the top-left of the bgraph (`0`,`0`), which has two `edgeEnd`s (`0` and `100`) associated with it:
 
-| Property                                | Description                                                                                                               |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `width` & `height`                      | Dimensions of the rectangle representing the block in the Bgraph.                                                         |
-| `depth`                                 | How the `block` is ordered relative to others in the same place. Higher depth `block`s appear above lower depth `block`s. |
-| `color`                                 | A decimal representation of the color (e.g., `"#123456"` ==> `1193046`).                                                  |
+```
+    ...
+    "blocks": [
+        {
+            "id": 0,
+            "x": 0, "y": 0,
+            "width": 2, "height": 1,
+            "depth": 0, "color": 1,
+            "edgeEnds": [
+                0,
+                100
+            ]
+        }
+    ],
+    ...
+```
 
-A `block` also holds a list of `edgeEnd` `id`s, which helps provide contextual highlighting when interacting with a `block` in Bgrapher; however, these can also point to any other `edgeEnd`s in the graph.
-
-### EdgeEnd
+### Bgraph edgeEnds
 
 Like `block`s, each `edgeEnd` consists of an (`x`,`y`) location and an `id`, as well as some additional properties:
 
 | Property                                | Description                                                                                                               |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `isSource`                              | `true`/`false`. Whether the `edgeEnd` represents a start of an edge or the end of an edge.                                |
-| `color`                                 | Same format as `block`s.                                                                                                  |
 | `direction`                             | `1`/`2`/`3`/`4`, which correspond to up/right/down/left. Influences how a highlighted edge appears when drawn.            |
+| `color`                                 | Same format as for `block`s.                                                                                              |
 
-Like a `block`, an `edgeEnd` also holds a list of `edgeEnd` `id`s, representing all the `edgeEnd`s that this `edgeEnd` is coming from/going to. 
-It is best to have each `edgeEnd` point back in its corresponding list.
+Like a `block`, an `edgeEnd` also holds an `edgeEnds` list of `edgeEnd` IDs, representing all the `edgeEnd`s that this `edgeEnd` is coming from/going to. 
+An `edgeEnd` usually has at least one other `edgeEnd` in this list, in order to form a complete edge, with a source `edgeEnd` and a destination `edgeEnd`.
 
-Additionally, an `edgeEnd` can correspond to a particular `block`, which is represented by the `block`'s `id`. 
+Additionally, an `edgeEnd` can correspond to a particular `block`, which is represented by the `block`'s ID. 
 It is best to have the `block` point back to the corresponding `edgeEnd`s that refer to it.
 
-### Sample Bgraphs
+Below is an example of the `edgeEnd`s from the `block` above. 
+The first is at the bottom-left of the block (`0`,`1`), while the other is at the bottom-right (`1`,`1`). Both are colored black (`#000000`).
+Both are edge ends to one another (as evident from each `edgeEnds` array), and both correspond to block `0`.
+One is the source (`"isSource": true`) and is pointing downward (`"direction": 3`) while the other is a destination (`"isSource": false`) and is pointing up (`"direction": 1`).
 
-[A simple example](test/bgraphs/oneedge.json) with a single `block` and a single edge to itself.
+```
+    ...
+    "edgeEnds": [
+        {
+            "id": 0,
+            "x": 0, "y": 1,
+            "color": 0,
+            "direction": 3,
+            "isSource": true,
+            "block": 0,
+            "edgeEnds": [
+                100
+            ]
+        },
+        {
+            "id": 100,
+            "x": 1, "y": 1,
+            "color": 0,
+            "direction": 1,
+            "isSource": false,
+            "block": 0,
+            "edgeEnds": [
+                0
+            ]
+        }
+    ]
+    ...
+```
 
-[A more complicated example](test/bgraphs/default.json) with more `block`s and `edgeEnd`s.
+In total, this example bgraph represents a single node with a loop.
+Note that this is only one of the many ways in which this graph could be represented in bgraph format.
 
 ---------------------------------------
 
-## `Bgrapher` data
+The rest of the info is about the `Bgrapher` JS object and its various interfaces.
 
-A Bgrapher object contains all of the data provided by the user in the `Bgrapher.blocksData` and `Bgrapher.edgeEndsData` member variables, keyed by each `block`'s or `edgeEnd`'s corresponding ID.
-All of the metadata is also held at the Bgrapher object level.
+## Member variables
+
+A Bgrapher object contains all of the data that you provide to it in the `Bgrapher.blocksData` and `Bgrapher.edgeEndsData` member variables, keyed by each `block`'s or `edgeEnd`'s corresponding ID.
+All of the metadata is also held in the Bgrapher object itself.
 
 For example:
 
@@ -119,10 +178,11 @@ let edgeEndsOf12 = yourBgrapher.blocksData[12].edgeEnds; // [0, 100]
 ```
 
 Treat these as read-only to avoid undefined behavior.
+Instead use `Bgrapher` methods to make changes to the bgraph data.
 
-## `Bgrapher` methods
+## Methods
 
-### `Bgrapher`
+### `Bgrapher` constructor
 
 ```
 Bgrapher([yourBgraph [, yourElement [, yourBgraphState]]])
@@ -153,7 +213,7 @@ activeEdgeEnds()
 
 #### Return value
 
-Return either the objects of the active `block`s or active `edgeEnd`s in the bgraph.
+Returns either the objects of the active `block`s or active `edgeEnd`s in the bgraph.
 "Active" `block`s/`edgeEnd`s include any which the user selected or hovered over, and which are thus highlighted in the bgraph.
 
 ### `Bgrapher.activeEdges`
@@ -206,7 +266,7 @@ Hovering a `block` or `edgeEnd` using these functions is equivalent to a user ho
 
 `blockID`/`edgeEndID`: ID of either the `block` or `edgeEnd` which you are toggling.
 
-## `Bgrapher` Callbacks
+## Callbacks
 
 ### `Bgrapher.onHoverBlock` & `Bgrapher.onHoverEdgeEnd`
 
@@ -229,7 +289,7 @@ onHoverEdgeEnd(yourCallback)
 
 #### Parameters
 
-`yourCallback`: The callback to be called when the user toggles an element in the graph, meaning that they click to highlight the node and edges.
+`yourCallback`: The callback to be called when the user toggles an element in the graph, meaning that they click to highlight a node and its edges.
 `block` or `edgeEnd` object is passed in to the callback.
 
 ### `Bgrapher.onSelectBlock` & `Bgrapher.onSelectEdgeEnd`
@@ -256,14 +316,14 @@ To use bgraph state that is shared across bgrapher objects:
 For example:
 
 ```
-import { BGrapher, BgraphState } from 'bgrapher';
+import { Bgrapher, BgraphState } from 'bgrapher';
 let yourBgraphState = new BgraphState();
 
 let yourBgrapher1 = new Bgrapher(yourBgraph1, yourElement1, yourBgraphState);
 let yourBgrapher2 = new Bgrapher(yourBgraph2, yourElement2, yourBgraphState);
 ```
 
-When working with a shared state, it makes the most sense for both bgraphs to have the same dimensions.
+When working with a shared state, ensure that both bgraphs have the same dimensions.
 
 ### `BgraphState`
 
@@ -279,7 +339,7 @@ The BgraphState object contains the user's location/zoom level within the bgraph
 update()
 ```
 
-This is the preferred method to use if you need to force-update the current user interaction state (e.g., if modifying `BgraphState` manually).
+This is the preferred method to use if you need to force-update all `Bgrapher`s state (e.g., if modifying `BgraphState` manually).
 Any `Bgrapher`s that are subscribed to be notified of state changes are notified when `yourBgraphState`'s `update` method is called.
 
 To ensure that `Bgrapher`s are subscribed, pass in `yourBgraphState` to the `new Bgrapher()` constructor, or to the `populateElement` call.
@@ -292,7 +352,7 @@ Bgrapher regenerates only the relevant parts of the graph, while React won't kno
 In other words, instead of this:
 
 ```
-this.state = {myBgraphState: new BgraphState()};
+this.state = { myBgraphState: new BgraphState() };
 ```
 
 Do this:
@@ -301,7 +361,7 @@ Do this:
 this.myBgraphState = new BgraphState();
 ```
 
-## Other `Bgrapher` interfaces
+## Other interfaces
 
 ### `Bgrapher.hoveredBlock` & `Bgrapher.hoveredEdgeEnd`
 
@@ -312,8 +372,8 @@ hoveredEdgeEnd()
 
 #### Return value
 
-Return only the current hovered `block` or `edgeEnd` in the bgraph.
-Return `null` if no `block` or `edgeEnd` currently hovered.
+Returns only the current hovered `block` or `edgeEnd` in the bgraph.
+Returns `null` if no `block` or `edgeEnd` is currently hovered.
 
 Prefer to use `onHoverBlock` & `onHoverEdgeEnd` instead.
 
@@ -323,7 +383,7 @@ Prefer to use `onHoverBlock` & `onHoverEdgeEnd` instead.
 initBgraph(bgraph)
 ```
 
-Prefer to call `new Bgrapher()` when possible instead.
+Useful for re-initializing the data used to construct the bgraph.
 
 #### Parameters
 
@@ -335,9 +395,9 @@ Prefer to call `new Bgrapher()` when possible instead.
 populateElement(yourElement [, yourBgraphState])
 ```
 
-Populates element and optionally registers `Bgrapher` with an external `BgraphState`. 
-
-Prefer to call `new Bgrapher()` when possible instead.
+Populates `yourElement` and optionally registers `Bgrapher` with an external `BgraphState`. 
+Useful for moving a bgraph to another element.
+You must pass the `BgraphState` explicitly for it to be preserved.
 
 #### Parameters
 
@@ -364,7 +424,7 @@ clientHeight()
 
 #### Return value
 
-Return the width or height of the Bgrapher element within `yourElement`, based on the underlying Bgrapher implementation used.
+Returns the width or height of the Bgrapher element within `yourElement`, based on the underlying Bgrapher implementation used.
 
 ### `Bgrapher.updateClientSize`
 
