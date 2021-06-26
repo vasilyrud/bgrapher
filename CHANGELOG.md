@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.0.0] - 2021-06-25
+
 ### Added
 - Add a simpler `new Bgrapher()` interface by using an internal, per-Bgrapher state by default.
 
