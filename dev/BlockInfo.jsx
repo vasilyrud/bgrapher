@@ -62,7 +62,7 @@ function InfoContent(props) {
 
   return (
     <div className="infoContent">
-      <BlockTitle id={blockData.id} title={blockData.text} />
+      <BlockTitle id={blockData.id} title={blockData.label} />
       <p>
         <BlockLocation x={blockData.x} y={blockData.y} />
         <br />

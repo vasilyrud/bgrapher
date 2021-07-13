@@ -24,6 +24,7 @@
   overflow: scroll;
   margin: 0 0 0 0;
   padding: 0 10px 0 10px;
+  overflow-wrap: break-word;
 }
 
 .closeButton {
