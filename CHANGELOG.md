@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+### Changed
+- Control showing debug info via Bgrapher object's `debug` attribute rather than via node env.
+
 ### Fixed
 - Fix dev example block info element to use "label" rather than "text".
 

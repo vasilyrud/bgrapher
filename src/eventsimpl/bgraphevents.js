@@ -240,9 +240,7 @@ let eventHandlers = {
         !eventState.withinClickRange()
     ) eventState.isClick = false;
 
-    if (process.env.NODE_ENV === 'development' || 
-        process.env.NODE_ENV === 'test'
-    ) bgrapher._printCoords(bgraphState, eventState.cur);
+    if (bgrapher.debug === true) bgrapher._printCoords(bgraphState, eventState.cur);
   },
   resize: function(bgraphState, eventState, bgrapher, event) {
     initView(bgraphState, bgrapher);

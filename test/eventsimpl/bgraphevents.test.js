@@ -282,6 +282,7 @@ describe('events', () => {
 
     fakeBgrapher = {
       width: 500, height: 500,
+      debug: true,
       clientWidth: () => 50, clientHeight: () => 50,
       updateClientSize: () => {},
       _printCoords: () => { printedCoords = true; },

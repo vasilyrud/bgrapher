@@ -462,6 +462,7 @@ describe('bgrapher interfaces', () => {
       calledEdge = [];
 
       bgrapher = new Bgrapher();
+      bgrapher.debug = true;
       bgrapher.bgraphState  = bgraphState;
       bgrapher._grapherImpl = drawGrapher;
       bgrapher._edgesImpl   = drawBezier;

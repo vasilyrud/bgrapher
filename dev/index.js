@@ -46,6 +46,7 @@ function Bgraph(props) {
       bgrapher.initBgraph(testDotsEdges(1000, 1000));
     }
 
+    bgrapher.debug = true;
     return bgrapher;
   });
   const [blockData, setBlockData] = React.useState(null);

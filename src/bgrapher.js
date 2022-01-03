@@ -60,6 +60,8 @@ var Bgrapher = function(
   this.onSelectBlock   = function(cb) { this.selectBlockCallback   = cb; }
   this.onSelectEdgeEnd = function(cb) { this.selectEdgeEndCallback = cb; }
 
+  this.debug = false;
+
   this.initBgraph = function(bgraph) {
     const inputData = (typeof bgraph === 'string' || bgraph instanceof String)
       ? JSON.parse(bgraph)
@@ -123,9 +125,7 @@ var Bgrapher = function(
     this._drawEdgeEnds();
     this._drawEdges();
 
-    if (process.env.NODE_ENV === 'development' ||
-        process.env.NODE_ENV === 'test'
-    ) {
+    if (this.debug) {
       this._drawHoverInfo();
       this._printCoords();
     }
