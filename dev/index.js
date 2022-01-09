@@ -39,7 +39,7 @@ function Bgraph(props) {
 
     } else if (props.bgraphType == 'testBlocks') {
       bgrapher = new Bgrapher();
-      bgrapher.initBgraph(testOnlyDots(1000, 10000));
+      bgrapher.initBgraph(testOnlyDots(350, 350));
 
     } else if (props.bgraphType == 'testEdges') {
       bgrapher = new Bgrapher();
@@ -65,6 +65,10 @@ function Bgraph(props) {
     // bgrapher.populateElement(bgraphElement.current);
     // setBgrapher(new Bgrapher(props.bgraphStr, bgraphElement.current));
     // setBgrapher(new Bgrapher(props.bgraphStr, bgraphElement.current, props.bgraphState));
+
+    // For testing
+    window.bgrapher = bgrapher;
+    window.bgraphState = props.bgraphState;
 
     bgrapher.onSelectBlock(showBlockInfo);
   }, []); // Only run on mount

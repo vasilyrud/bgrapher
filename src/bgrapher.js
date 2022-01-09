@@ -471,6 +471,11 @@ var Bgrapher = function(
     return true;
   }
 
+  this.centerView = function() {
+    this._eventsImpl.center(this.bgraphState, this);
+    this.draw();
+  }
+
   this.curBlock = function(cur) {
     const x = curBgraphPixel('x', this.bgraphState, cur);
     const y = curBgraphPixel('y', this.bgraphState, cur);

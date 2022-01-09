@@ -435,7 +435,7 @@ describe('bgrapher interfaces', () => {
 
   describe('draw', () => {
     let bgrapher, bgraphState, drawGrapher, drawBezier, drawEvents;
-    let calledDraw, calledInfo, calledCoord, calledBlock, calledEdgeEnd, calledEdge;
+    let calledDraw, calledInfo, calledCoord, calledCenter, calledBlock, calledEdgeEnd, calledEdge;
 
     beforeEach(function() {
       bgraphState = new BgraphState();
@@ -451,12 +451,14 @@ describe('bgrapher interfaces', () => {
         generatePoints: (s,e) => { return [s,e]; }
       };
       drawEvents = {
-        cur: () => { return {x:1,y:2}; }
+        cur: () => { return {x:1,y:2}; },
+        center: (bgraphState, bgrapher) => { calledCenter = {s:bgraphState, b:bgrapher}; },
       };
 
       calledDraw = false;
       calledInfo = false;
       calledCoord = false;
+      calledCenter = false;
       calledBlock = [];
       calledEdgeEnd = [];
       calledEdge = [];
@@ -481,6 +483,7 @@ describe('bgrapher interfaces', () => {
       expect(calledDraw).to.be.true;
       expect(calledInfo).to.be.false;
       expect(calledCoord).to.be.true;
+      expect(calledCenter).to.be.false;
       expect(calledBlock).to.eql([]);
       expect(calledEdgeEnd).to.eql([]);
       expect(calledEdge).to.eql([]);
@@ -498,9 +501,23 @@ describe('bgrapher interfaces', () => {
       expect(calledDraw).to.be.true;
       expect(calledInfo).to.be.true;
       expect(calledCoord).to.be.true;
+      expect(calledCenter).to.be.false;
       expect(calledBlock).to.eql([{id:1}, {id:2}]);
       expect(calledEdgeEnd).to.eql([{id:3}, {id:4}]);
       expect(calledEdge).to.eql([[{id:5},{id:6}], [{id:7},{id:8}]]);
+    });
+
+    it('called on centerView', () => {
+      bgrapher.activeBlocks = () => [];
+      bgrapher.activeEdgeEnds = () => [];
+      bgrapher.activeEdges = () => [];
+      bgrapher.hoveredBlock = () => null;
+      bgrapher.hoveredEdgeEnd = () => null;
+
+      bgrapher.centerView();
+
+      expect(calledDraw).to.be.true;
+      expect(calledCenter).to.eql({s:bgraphState, b:bgrapher});
     });
   });
 

@@ -7,9 +7,12 @@ const BgraphEventState = bgrapheventsRewire.__get__('BgraphEventState');
 const getLocal = bgrapheventsRewire.__get__('getLocal');
 const getZoom = bgrapheventsRewire.__get__('getZoom');
 const coordValues = bgrapheventsRewire.__get__('coordValues');
+const centerMargin = bgrapheventsRewire.__get__('centerMargin');
 const getMargin = bgrapheventsRewire.__get__('getMargin');
 const constrainOffset = bgrapheventsRewire.__get__('constrainOffset');
 const getInitOffset = bgrapheventsRewire.__get__('getInitOffset');
+const getResizeOffset = bgrapheventsRewire.__get__('getResizeOffset');
+const getCenterOffset = bgrapheventsRewire.__get__('getCenterOffset');
 const getPanOffset = bgrapheventsRewire.__get__('getPanOffset');
 const getZoomOffset = bgrapheventsRewire.__get__('getZoomOffset');
 const hoverBgraph = bgrapheventsRewire.__get__('hoverBgraph');
@@ -143,24 +146,76 @@ describe('event helpers', () => {
     });
   });
 
-  describe('getMargin', () => {
-    it('returns margin without zoom', () => {
+  describe('centerMargin', () => {
+    function testCenterMargin([zoom, bgraphSize, clientSize, expected]) {
       let bgraphState = new BgraphState();
-      expect(getMargin(bgraphState, 500, 50)).to.eql(100);
-      expect(getMargin(bgraphState, 10, 500)).to.eql(245);
+      bgraphState.zoom = zoom;
+
+      it(`zoom ${zoom}, bgraphSize ${bgraphSize}, clientSize ${clientSize}`, () => {
+        expect(centerMargin(bgraphState, bgraphSize, clientSize)).to.eql(expected);
+      });
+    }
+
+    describe('center same bgraph as client', () => {
+      [
+        [ 1, 50,  50, 0],
+        [10, 50, 500, 0],
+      ].forEach(testCenterMargin);
     });
 
-    it('returns margin with zoom', () => {
+    describe('center smaller bgraph than client', () => {
+      [
+        [ 1, 10, 500, 245],
+        [10, 10, 500,  20],
+      ].forEach(testCenterMargin);
+    });
+
+    describe('center larger bgraph than client', () => {
+      [
+        [ 1, 500, 50, -225  ],
+        [10, 500, 50, -247.5],
+      ].forEach(testCenterMargin);
+    });
+  });
+
+  describe('getMargin', () => {
+    function testGetMargin([zoom, ratio, bgraphSize, clientSize, expected]) {
       let bgraphState = new BgraphState();
-      bgraphState.zoom = 10;
-      expect(getMargin(bgraphState, 500, 50)).to.eql(10);
-      expect(getMargin(bgraphState, 10, 500)).to.eql(20);
+      bgraphState.zoom = zoom;
+      bgraphState.marginRatio = ratio;
+
+      it(`zoom ${zoom}, marginRatio ${ratio}, bgraphSize ${bgraphSize}, clientSize ${clientSize}`, () => {
+        expect(getMargin(bgraphState, bgraphSize, clientSize)).to.eql(expected);
+      });
+    }
+
+    describe('same bgraph as client', () => {
+      [
+        [ 1, 1, 50,  50, 50],
+        [10, 1, 50, 500, 50],
+      ].forEach(testGetMargin);
+    });
+
+    describe('smaller bgraph than client and smaller margin', () => {
+      [
+        [ 1, 0.2, 10, 500, 245],
+        [10, 0.2, 10, 500,  20],
+      ].forEach(testGetMargin);
+    });
+
+    describe('larger bgraph than client', () => {
+      [
+        [ 1, 1, 500, 50, 50],
+        [10, 1, 500, 50,  5],
+        [10, 0, 500, 50,  0],
+      ].forEach(testGetMargin);
     });
   });
 
   describe('constrainOffset', () => {
     function testNewOffset([zoom, offset, bsize, csize, expected]) {
       let bgraphState = new BgraphState();
+      bgraphState.marginRatio = 100 / csize; // constrained to always be 100
       bgraphState.zoom = zoom;
 
       it(`zoom ${zoom}, bgraph ${bsize}, client ${csize}, desired offset ${offset}`, () => {
@@ -190,19 +245,55 @@ describe('event helpers', () => {
   });
 
   describe('get offset', () => {
-    const fakeBgrapher = {
-      width: 500, height: 500,
-      clientWidth: () => 50, clientHeight: () => 50,
-    };
+    let fakeBgrapher;
+    let bgraphState;
 
-    let bgraphState = new BgraphState();
-    bgraphState.zoom = 10;
-    bgraphState.offset.x = 5;
-    bgraphState.offset.y = 6;
+    beforeEach(function() {
+      fakeBgrapher = {
+        width: 500, height: 500,
+        clientWidth: () => 50, clientHeight: () => 50,
+      };
 
-    it('getInitOffset returns as-is', () => {
-      expect(getInitOffset('x', bgraphState, fakeBgrapher)).to.equal(bgraphState.offset.x);
-      expect(getInitOffset('y', bgraphState, fakeBgrapher)).to.equal(bgraphState.offset.y);
+      bgraphState = new BgraphState();
+      bgraphState.zoom = 10;
+      bgraphState.offset.x = -5;
+      bgraphState.offset.y = -6;
+      bgraphState.marginRatio = 0.1;
+    });
+
+    it('getResizeOffset returns as-is', () => {
+      expect(getResizeOffset('x', bgraphState, fakeBgrapher)).to.equal(bgraphState.offset.x);
+      expect(getResizeOffset('y', bgraphState, fakeBgrapher)).to.equal(bgraphState.offset.y);
+    });
+
+    it('getCenterOffset returns centered', () => {
+      expect(getCenterOffset('x', bgraphState, fakeBgrapher)).to.equal(-247.5);
+      expect(getCenterOffset('y', bgraphState, fakeBgrapher)).to.equal(-247.5);
+    });
+
+    describe('getInitOffset', () => {
+      it('getInitOffset returns in corner', () => {
+        expect(getInitOffset('x', bgraphState, fakeBgrapher)).to.equal(0);
+        expect(getInitOffset('y', bgraphState, fakeBgrapher)).to.equal(0);
+      });
+
+      it('getInitOffset returns centered for small bgraph', () => {
+        fakeBgrapher = {
+          width: 5, height: 5,
+          clientWidth: () => 50000, clientHeight: () => 50000,
+        };
+        expect(getInitOffset('x', bgraphState, fakeBgrapher)).to.equal(2497.5);
+        expect(getInitOffset('y', bgraphState, fakeBgrapher)).to.equal(2497.5);
+      });
+
+      it('getInitOffset returns centered for bgraph with margin', () => {
+        fakeBgrapher = {
+          width: 45, height: 45,
+          clientWidth: () => 500, clientHeight: () => 500,
+        };
+        expect(getInitOffset('x', bgraphState, fakeBgrapher)).to.equal(2.5);
+        expect(getInitOffset('y', bgraphState, fakeBgrapher)).to.equal(2.5);
+      });
     });
 
     it('getPanOffset returns moved', () => {
@@ -212,8 +303,8 @@ describe('event helpers', () => {
       eventState.cur.x = 7;
       eventState.cur.y = 9;
 
-      expect(getPanOffset('x', bgraphState, eventState, fakeBgrapher)).to.almost.equal(5.4);
-      expect(getPanOffset('y', bgraphState, eventState, fakeBgrapher)).to.almost.equal(6.5);
+      expect(getPanOffset('x', bgraphState, eventState, fakeBgrapher)).to.almost.equal(-4.6);
+      expect(getPanOffset('y', bgraphState, eventState, fakeBgrapher)).to.almost.equal(-5.5);
     });
 
     it('getZoomOffset returns zoomed', () => {
@@ -221,8 +312,8 @@ describe('event helpers', () => {
       eventState.cur.x = 7;
       eventState.cur.y = 9;
 
-      expect(getZoomOffset('x', bgraphState, eventState, fakeBgrapher,  50)).to.almost.equal(5.1);
-      expect(getZoomOffset('y', bgraphState, eventState, fakeBgrapher, 150)).to.almost.equal(6.3);
+      expect(getZoomOffset('x', bgraphState, eventState, fakeBgrapher,  50)).to.almost.equal(-4.94);
+      expect(getZoomOffset('y', bgraphState, eventState, fakeBgrapher, 150)).to.almost.equal(-5.75);
     });
   });
 
@@ -342,6 +433,7 @@ describe('events', () => {
     fakeBgrapher.height = 10;
     fakeBgrapher.clientWidth  = () => 500;
     fakeBgrapher.clientHeight = () => 500;
+    bgraphState.marginRatio = 0;
 
     window.dispatchEvent(new window.UIEvent('resize'));
 
@@ -573,6 +665,20 @@ describe('events', () => {
 
     expect(calledUpdate).to.be.false;
     expect(preventedDefault).to.be.true;
+  });
+
+  it('center', () => {
+    fakeBgrapher.width  = 50;
+    fakeBgrapher.height = 40;
+    fakeBgrapher.clientWidth  = () => 500;
+    fakeBgrapher.clientHeight = () => 500;
+
+    bgraphEventsImpl.initEvents(bgraphState, fakeBgrapher, element);
+    bgraphEventsImpl.center(bgraphState, fakeBgrapher);
+
+    expect(bgraphState.zoom).to.equal(1);
+    expect(bgraphState.offset.x).to.equal(225);
+    expect(bgraphState.offset.y).to.equal(230);
   });
 });
 

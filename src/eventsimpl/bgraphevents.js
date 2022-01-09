@@ -17,7 +17,6 @@ limitations under the License.
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 100;
 const ZOOM_FRICTION = 550; // Higher number means lower speed
-const MARGIN_PIXELS = 100;
 const CLICK_DELTA = 1;
 
 function BgraphEventState() {
@@ -74,15 +73,34 @@ function coordValues(coord, bgrapher) {
     : [bgrapher.height, bgrapher.clientHeight()];
 }
 
+function centerMargin(bgraphState, bgraphSize, clientSize) {
+  /*
+    Get the margin needed to center the element.
+    + - - - - - - - - +
+    | C    + - +      |
+    |<---->| B |<---->|
+    |      + - +      |
+    + - - - - - - - - +
+    Also works for when the bgraph is larger than the client.
+  */
+  return (clientSize - bgraphSize * bgraphState.zoom) / (2 * bgraphState.zoom);
+  //  == ((clientSize / bgraphState.zoom) - bgraphSize) / 2
+}
+
 function getMargin(bgraphState, bgraphSize, clientSize) {
+  /*
+    Get either the margin based on the marginRatio, 
+    or, if whole bgraph fits on screen, the distance 
+    needed to center the element.
+  */
   return Math.max(
-    MARGIN_PIXELS / bgraphState.zoom,
-    (clientSize - bgraphSize * bgraphState.zoom) / (2 * bgraphState.zoom)
+    (bgraphState.marginRatio * clientSize) / bgraphState.zoom,
+    centerMargin(bgraphState, bgraphSize, clientSize)
   );
 }
 
 function constrainOffset(offset, bgraphState, bgraphSize, clientSize) {
-  let margin = getMargin(bgraphState, bgraphSize, clientSize)
+  let margin = getMargin(bgraphState, bgraphSize, clientSize);
   let innerLimit = margin;
   let outerLimit = clientSize / bgraphState.zoom - bgraphSize - margin;
 
@@ -99,12 +117,34 @@ function constrainOffset(offset, bgraphState, bgraphSize, clientSize) {
   return offset;
 }
 
-function getInitOffset(coord, bgraphState, bgrapher) {
+function getResizeOffset(coord, bgraphState, bgrapher) {
   const [bgraphSize, clientSize] = coordValues(coord, bgrapher);
 
   let newOffset = bgraphState.offset[coord];
 
   return constrainOffset(newOffset, bgraphState, bgraphSize, clientSize);
+}
+
+function getCenterOffset(coord, bgraphState, bgrapher) {
+  const [bgraphSize, clientSize] = coordValues(coord, bgrapher);
+
+  let newOffset = centerMargin(bgraphState, bgraphSize, clientSize);
+
+  return constrainOffset(newOffset, bgraphState, bgraphSize, clientSize);
+}
+
+function getInitOffset(coord, bgraphState, bgrapher) {
+  const [bgraphSize, clientSize] = coordValues(coord, bgrapher);
+
+  let newOffset = 0;
+  let oldMarginRatio = bgraphState.marginRatio;
+
+  // Force centering of the bgraph, even if there is originally a margin.
+  bgraphState.marginRatio = 0;
+  newOffset = constrainOffset(newOffset, bgraphState, bgraphSize, clientSize);
+  bgraphState.marginRatio = oldMarginRatio;
+
+  return newOffset;
 }
 
 function getPanOffset(coord, bgraphState, eventState, bgrapher) {
@@ -154,11 +194,6 @@ function hoverBgraph(eventState, bgrapher) {
 function mousemoveHover(bgraphState, eventState, bgrapher) {
   hoverBgraph(eventState, bgrapher);
   bgraphState.update();
-}
-
-function initView(bgraphState, bgrapher) {
-  bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);
-  bgraphState.offset.y = getInitOffset('y', bgraphState, bgrapher);
 }
 
 let eventHandlers = {
@@ -243,7 +278,8 @@ let eventHandlers = {
     if (bgrapher.debug === true) bgrapher._printCoords(bgraphState, eventState.cur);
   },
   resize: function(bgraphState, eventState, bgrapher, event) {
-    initView(bgraphState, bgrapher);
+    bgraphState.offset.x = getResizeOffset('x', bgraphState, bgrapher);
+    bgraphState.offset.y = getResizeOffset('y', bgraphState, bgrapher);
 
     bgrapher.updateClientSize();
     bgraphState.update();
@@ -263,7 +299,8 @@ const bgraphEventsImpl = {
       );
     }
 
-    initView(bgraphState, bgrapher);
+    bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);
+    bgraphState.offset.y = getInitOffset('y', bgraphState, bgrapher);
     return eventState;
   },
 
@@ -271,6 +308,11 @@ const bgraphEventsImpl = {
     if (!eventState.hover) return { x: null, y: null};
     return eventState.cur;
   },
+
+  center: function(bgraphState, bgrapher) {
+    bgraphState.offset.x = getCenterOffset('x', bgraphState, bgrapher);
+    bgraphState.offset.y = getCenterOffset('y', bgraphState, bgrapher);
+  }
 };
 
 export { bgraphEventsImpl }

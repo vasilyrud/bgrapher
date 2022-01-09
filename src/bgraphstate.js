@@ -20,6 +20,7 @@ function BgraphState() {
     x: 0,
     y: 0,
   };
+  this.marginRatio = 1.0;
 
   this.bgraphers = [];
 
@@ -28,9 +29,11 @@ function BgraphState() {
   };
 
   this.update = function() {
-    for (const bgrapher of this.bgraphers) {
-      bgrapher.draw();
-    }
+    this.bgraphers.forEach(b => b.draw());
+  };
+
+  this.center = function() {
+    this.bgraphers.forEach(b => b.centerView());
   };
 }
 

@@ -344,6 +344,14 @@ Any `Bgrapher`s that are subscribed to be notified of state changes are notified
 
 To ensure that `Bgrapher`s are subscribed, pass in `yourBgraphState` to the `new Bgrapher()` constructor, or to the `populateElement` call.
 
+### `BgraphState.center`
+
+```
+center()
+```
+
+Centers (i.e., places client view in the middle of the bgraph) all bgraphs that are subscribed to the `BgraphState`.
+
 ### `BgraphState` versus React state
 
 Don't let React manage your BgraphState!
@@ -414,6 +422,16 @@ draw()
 Re-draws the bgrapher using the latest `BgraphState`.
 
 If using an external `BgraphState`, prefer to call `BgraphState.update()` instead.
+
+### `Bgrapher.centerView`
+
+```
+centerView()
+```
+
+Re-draws the bgrapher with client view in the center of the bgraph.
+
+If using an external `BgraphState`, prefer to call `BgraphState.center()` instead.
 
 ### `Bgrapher.clientWidth` & `Bgrapher.clientHeight`
 

@@ -1,10 +1,16 @@
 ## [Unreleased]
 
+### Added
+- Allow controlling bgraph margin via `bgraphState`.
+- Add `centerView` and `center` interfaces for centering a bgraph on screen.
+
 ### Changed
 - Control showing debug info via Bgrapher object's `debug` attribute rather than via node env.
+- Change default margin to 100% of client width.
 
 ### Fixed
 - Fix dev example block info element to use "label" rather than "text".
+- Fix issue with initial offset where size of screen is smaller than graph + margin but larger than graph.
 
 ## [1.0.0] - 2021-06-25
 
