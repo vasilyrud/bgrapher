@@ -20,15 +20,12 @@ const ZOOM_FRICTION = 550; // Higher number means lower speed
 const CLICK_DELTA = 1;
 
 function BgraphEventState() {
+  this.eventHandlers = {};
+
   this.isClick = false;
   this.clickStart = {
     x: 0,
     y: 0,
-  };
-
-  this.withinClickRange = function() {
-    return (Math.abs(this.cur.x - this.clickStart.x) <= CLICK_DELTA &&
-            Math.abs(this.cur.y - this.clickStart.y) <= CLICK_DELTA);
   };
 
   this.panning = false;
@@ -41,6 +38,11 @@ function BgraphEventState() {
   this.cur = {
     x: 0,
     y: 0,
+  };
+
+  this.withinClickRange = function() {
+    return (Math.abs(this.cur.x - this.clickStart.x) <= CLICK_DELTA &&
+            Math.abs(this.cur.y - this.clickStart.y) <= CLICK_DELTA);
   };
 }
 
@@ -293,10 +295,10 @@ const bgraphEventsImpl = {
     for (const eventType in eventHandlers) {
       let target = (eventType === 'resize') ? window : bgraphElement;
 
-      target.addEventListener(eventType, 
-        eventHandlers[eventType]
-          .bind(null, bgraphState, eventState, bgrapher)
-      );
+      eventState.eventHandlers[eventType] = eventHandlers[eventType]
+        .bind(null, bgraphState, eventState, bgrapher);
+
+      target.addEventListener(eventType, eventState.eventHandlers[eventType]);
     }
 
     bgraphState.offset.x = getInitOffset('x', bgraphState, bgrapher);

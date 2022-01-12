@@ -69,6 +69,7 @@ function Bgraph(props) {
     // For testing
     window.bgrapher = bgrapher;
     window.bgraphState = props.bgraphState;
+    window.bgraphElement = bgraphElement.current;
 
     bgrapher.onSelectBlock(showBlockInfo);
   }, []); // Only run on mount
