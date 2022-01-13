@@ -392,6 +392,7 @@ describe('events', () => {
 
     element = document.createElement('div');
     eventState = bgraphEventsImpl.initEvents(bgraphState, fakeBgrapher, element);
+    fakeBgrapher._eventState = eventState;
 
     calledUpdate = false;
     preventedDefault = false;
@@ -679,6 +680,29 @@ describe('events', () => {
     expect(bgraphState.zoom).to.equal(1);
     expect(bgraphState.offset.x).to.equal(225);
     expect(bgraphState.offset.y).to.equal(230);
+  });
+
+  it('remove event listener mouse wheel', () => {
+    // Test on wheel event listener, but could have used other events, too.
+    element.removeEventListener('wheel', fakeBgrapher._eventState.eventHandlers['wheel']);
+
+    element.dispatchEvent(new window.WheelEvent('wheel', {
+      clientX: 5, clientY: 7,
+      target: {getBoundingClientRect: () => {
+        return {left: 0, top: 0};
+      }},
+      deltaY: -100,
+    }));
+
+    expect(bgraphState.offset.x).to.equal(0);
+    expect(bgraphState.offset.y).to.equal(0);
+    expect(bgraphState.zoom).to.equal(1);
+
+    expect(eventState.cur.x).to.equal(0);
+    expect(eventState.cur.y).to.equal(0);
+    expect(eventState.hover).to.be.false;
+
+    expect(calledUpdate).to.be.false;
   });
 });
 
