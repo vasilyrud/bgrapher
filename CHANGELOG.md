@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.1.0] - 2022-01-15
+
 ### Added
 - Allow controlling bgraph margin via `bgraphState`.
 - Add `centerView` and `center` interfaces for centering a bgraph on screen.
