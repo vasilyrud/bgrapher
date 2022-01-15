@@ -7,6 +7,7 @@
 ### Changed
 - Control showing debug info via Bgrapher object's `debug` attribute rather than via node env.
 - Change default margin to 100% of client width.
+- Set default colors for bgraph background and highlights if none are specified.
 
 ### Fixed
 - Fix dev example block info element to use "label" rather than "text".

@@ -10,6 +10,7 @@ import sameDepthBgraph from 'bgraphs/samedepth.json';
 import overlapEdgeEndBlockBgraph from 'bgraphs/overlapedgeendblock.json';
 import edgesBgraph from 'bgraphs/edges.json';
 import colorBgraph from 'bgraphs/color.json';
+import defaultColorBgraph from 'bgraphs/defaultcolor.json';
 
 import { BgraphState } from 'bgraphstate.js'
 import testOnlyDots from 'bgraphs/testonlydots.js';
@@ -148,6 +149,14 @@ describe('initBgraph data', () => {
       expect(bgrapher.bgColor).to.equal(1);
       expect(bgrapher.highlightBgColor).to.equal(2);
       expect(bgrapher.highlightFgColor).to.equal(3);
+    });
+
+    it('Generates the right default color', () => {
+      bgrapher.initBgraph(defaultColorBgraph);
+  
+      expect(bgrapher.bgColor).to.equal(16777215);
+      expect(bgrapher.highlightBgColor).to.equal(16777215);
+      expect(bgrapher.highlightFgColor).to.equal(0);
     });
   });
 });

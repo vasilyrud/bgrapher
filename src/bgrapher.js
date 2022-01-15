@@ -71,9 +71,11 @@ var Bgrapher = function(
 
     this.width  = inputData.width;
     this.height = inputData.height;
-    this.bgColor = inputData.bgColor;
-    this.highlightBgColor = inputData.highlightBgColor;
-    this.highlightFgColor = inputData.highlightFgColor;
+
+    this.bgColor = inputData.bgColor ?? 16777215;
+    this.highlightBgColor = inputData.highlightBgColor ?? 16777215;
+    this.highlightFgColor = inputData.highlightFgColor ?? 0;
+
     this.blocksData   = _initData(inputData.blocks);
     this.edgeEndsData = _initData(inputData.edgeEnds);
 
