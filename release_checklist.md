@@ -5,7 +5,7 @@ Release checklist
 3. Update version in CHANGELOG
 4. Run build CI
 5. Create a git Release+tag (both title and tag are vA.B.C, description is CHANGELOG content)
-6. Run `npm run build` & `build:dev:ci`
+6. Run `npm run build` & `npm run build:dev:ci`
 7. Run `npm publish` (push the package to npm)
 
 CHANGELOG types of changes
