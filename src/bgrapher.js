@@ -25,6 +25,9 @@ import { bezierImpl } from './edgesimpl/bezier.js'
 import { bgraphEventsImpl } from './eventsimpl/bgraphevents.js'
 import { BgraphState } from './bgraphstate.js'
 
+import { Validator } from 'jsonschema'
+import bgraphSchema from './schema/bgraph.json'
+
 function _initData(inData) {
   let outData = {};
   const N = inData.length;
@@ -37,10 +40,28 @@ function _initData(inData) {
   return outData;
 }
 
+function _findDuplicateIDs(inData) {
+  let seenIDs = new Set();
+  let duplicates = new Set();
+
+  const N = inData.length;
+  for (let i = 0; i < N; i++) {
+    const id = inData[i].id;
+    if (seenIDs.has(id)) {
+      duplicates.add(id);
+    } else {
+      seenIDs.add(id);
+    }
+  }
+
+  return [...duplicates];
+}
+
 var Bgrapher = function(
   bgraph  = null,
   element = null,
   bgraphState = null,
+  checkBgraph = true,
 ) {
   this._grapherImpl = imageImpl;
   this._edgesImpl   = bezierImpl;
@@ -63,9 +84,29 @@ var Bgrapher = function(
   this.debug = false;
 
   this.initBgraph = function(bgraph) {
-    const inputData = (typeof bgraph === 'string' || bgraph instanceof String)
-      ? JSON.parse(bgraph)
-      : bgraph;
+    let inputData;
+    if (typeof bgraph === 'string' || bgraph instanceof String) {
+      try {
+        inputData = JSON.parse(bgraph);
+      } catch (error) { return error.message; }
+    } else {
+      inputData = bgraph;
+    }
+
+    if (checkBgraph === true) {
+      // Check against JSON schema
+      const validator = new Validator();
+      const validationResult = validator.validate(inputData, bgraphSchema);
+      if (!validationResult.valid) {
+        return validationResult.errors.map(error => error.stack).join('\n');
+      }
+
+      // All block and edgeEnd IDs must be unique
+      const duplicateIDErrors = this.checkDuplicateIDs(inputData);
+      if (duplicateIDErrors !== "") {
+        return duplicateIDErrors;
+      }
+    }
 
     this._grapherState = this._grapherImpl.initBgraph(inputData);
 
@@ -79,6 +120,14 @@ var Bgrapher = function(
     this.blocksData   = _initData(inputData.blocks);
     this.edgeEndsData = _initData(inputData.edgeEnds);
 
+    if (checkBgraph === true) {
+      // Check against valid bgraph conditions
+      const checkError = this.checkBgraph();
+      if (checkError !== "") {
+        return checkError;
+      }
+    }
+
     this._blocksLookup   = new BlocksLookup(inputData);
     this._edgeEndsLookup = new EdgeEndsLookup(inputData);
 
@@ -90,6 +139,87 @@ var Bgrapher = function(
     this._toggledEdgeEndIDs = new Set();
     this._hoveredEdgeIDs = new EdgeSet();
     this._toggledEdgeIDs = new EdgeSet();
+
+    return "";
+  }
+
+  this.checkDuplicateIDs = function(inputData) {
+    let duplicateIDErrors = [];
+
+    const duplicateBlocks = _findDuplicateIDs(inputData.blocks);
+    if (duplicateBlocks.length > 0) {
+      duplicateIDErrors.push(`Found duplicate block IDs: ${duplicateBlocks.join(', ')}`);
+    }
+
+    const duplicateEdgeEnds = _findDuplicateIDs(inputData.edgeEnds);
+    if (duplicateEdgeEnds.length > 0) {
+      duplicateIDErrors.push(`Found duplicate edgeEnd IDs: ${duplicateEdgeEnds.join(', ')}`);
+    }
+
+    return duplicateIDErrors.join('\n');
+  }
+
+  this.checkBgraph = function() {
+    let errors = [];
+
+    for (const block of Object.values(this.blocksData)) {
+      if (block.width > this.width || block.height > this.height) {
+        errors.push(`Block ${block.id} has dimensions larger than the bgraph size.`);
+      }
+
+      if (block.x + block.width > this.width || block.y + block.height > this.height) {
+        errors.push(`Block ${block.id} is out of bounds of the bgraph.`);
+      }
+
+      for (const eeId of block.edgeEnds) {
+        if (!(eeId in this.edgeEndsData)) {
+          errors.push(`EdgeEnd ${eeId} in Block ${block.id} is not present in the global edgeEnds list.`);
+        } else {
+          const targetBlockId = this.edgeEndsData[eeId].block;
+          if (targetBlockId === null || targetBlockId !== block.id) {
+            errors.push(`EdgeEnd ${eeId} in Block ${block.id} does not reference the block.`);
+          }
+        }
+      }
+    }
+
+    for (const edgeEnd of Object.values(this.edgeEndsData)) {
+      if (!edgeEnd.edgeEnds || edgeEnd.edgeEnds.length === 0) {
+        errors.push(`EdgeEnd ${edgeEnd.id} has an empty edgeEnds list.`);
+      }
+
+      if (edgeEnd.edgeEnds.includes(edgeEnd.id)) {
+        errors.push(`EdgeEnd ${edgeEnd.id} points to itself.`);
+      }
+
+      if (edgeEnd.block !== null) {
+        if (!(edgeEnd.block in this.blocksData)) {
+          errors.push(`EdgeEnd ${edgeEnd.id} references a non-existent block ${edgeEnd.block}.`);
+        } else {
+          if (!this.blocksData[edgeEnd.block].edgeEnds.includes(edgeEnd.id)) {
+            errors.push(`Block ${edgeEnd.block} does not reference back to EdgeEnd ${edgeEnd.id}.`);
+          }
+        }
+      }
+
+      for (const eeId of edgeEnd.edgeEnds) {
+        if (!(eeId in this.edgeEndsData)) {
+          errors.push(`EdgeEnd ${eeId} in EdgeEnd ${edgeEnd.id} is not present in the global edgeEnds list.`);
+        } else {
+          const targetEdgeEnd = this.edgeEndsData[eeId];
+
+          if (edgeEnd.isSource === targetEdgeEnd.isSource) {
+            errors.push(`EdgeEnd ${edgeEnd.id} (${edgeEnd.isSource ? 'source' : 'target'}) connects to another ${targetEdgeEnd.isSource ? 'source' : 'target'} EdgeEnd ${eeId}.`);
+          }
+
+          if (!targetEdgeEnd.edgeEnds.includes(edgeEnd.id) || !edgeEnd.edgeEnds.includes(targetEdgeEnd.id)) {
+            errors.push(`EdgeEnd ${edgeEnd.id} and EdgeEnd ${eeId} do not reference each other.`);
+          }
+        }
+      }
+    }
+
+    return errors.join("\n");
   }
 
   this.populateElement = function(bgraphElement, bgraphState = null) {

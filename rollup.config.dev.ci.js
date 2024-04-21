@@ -1,5 +1,6 @@
 import babel from '@rollup/plugin-babel';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+import polyfillNode from 'rollup-plugin-polyfill-node';
 import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
 import json from '@rollup/plugin-json';
@@ -16,8 +17,10 @@ let config = {
       'process.env.NODE_ENV': JSON.stringify('development')
     }),
     nodeResolve({
+      preferBuiltins: false,
       extensions: ['.js', '.jsx']
     }),
+    polyfillNode({}),
     commonjs({
       include: ['node_modules/**']
     }),

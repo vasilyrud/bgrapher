@@ -1,14 +1,25 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import { terser } from 'rollup-plugin-terser';
-import babel from '@rollup/plugin-babel';
+import polyfillNode from 'rollup-plugin-polyfill-node';
+import json from '@rollup/plugin-json';
+import commonjs from '@rollup/plugin-commonjs';
 
 import pkg from './package.json';
 const prodFile = 'src/index.js';
+const pluginsList = [
+  nodeResolve({
+    preferBuiltins: false,
+  }),
+  polyfillNode({}),
+  commonjs({
+    include: ['node_modules/**'],
+  }),
+  json({}),
+];
 
 export default [
   { // For ESM and CommonJS imports
     input: prodFile,
-    plugins: [nodeResolve()],
+    plugins: pluginsList,
     output: [
       {
         dir: 'dist/esm',
@@ -26,7 +37,7 @@ export default [
   },
   { // For <script> tag and RequireJS
     input: prodFile,
-    plugins: [nodeResolve(), babel({babelHelpers: 'bundled'}), terser()],
+    plugins: pluginsList,
     output: {
       file: `dist/${pkg.name}.min.js`,
       name: `${pkg.name}`,

@@ -33,7 +33,7 @@ This means that you may need to do a bit more prep work "offline" before renderi
 
 ### Bgraph structure
 
-Bgraphs are formatted in JSON. 
+Bgraphs are formatted in JSON. Comments cannot be used.
 Nodes are represented with `block`s and edges are pairs of `edgeEnd`s. 
 A bgraph must contain a list of each, as well as all required properties:
 
@@ -142,7 +142,38 @@ One is the source (`"isSource": true`) and is pointing downward (`"direction": 3
 ```
 
 In total, this example bgraph represents a single node with a loop.
-Note that this is only one of the many ways in which this graph could be represented in bgraph format.
+
+### Suggested bgraph style guide
+
+Note that the above is only one of the many ways in which this graph could be represented in bgraph format. The following style guide suggests one possible convention for writing out bgraphs, tailored to directed graphs.
+
+Representing nodes in a directed graph:
+- Have one `block` for each node in the graph.
+- Increment each `block`'s `id` by one from the previous `block`, starting from `0`.
+- Use at least `1` for both `height` and `width`.
+- Position `block`s at least 3 units away from other `block`s, unless those other blocks are parent hierarchies.
+- Use the maximum of the number of `edgeEnds` that correspond to the `block` and are located to the right or left of the `block` as the `height` of the `block`; use `1` if none are present.
+- Use the maximum of the number of `edgeEnds` that correspond to the `block` and are located above or below the `block` as the `width` of the `block`; use `1` if none are present.
+- Place all `edgeEnds` that correspond to the `block` either 1 unit below, above, to the left, or to the right of the `block`.
+- Place `edgeEnds` that are to the left or to the right within the height of the block; place `edgeEnds` that are above or below the block within the width of the block.
+- Ensure that `edgeEnds` that correspond to the `block` are listed in the `edgeEnds` list in the `block`. 
+
+Representing edges in a directed graph:
+- Use two `edgeEnd`s to represent an edge: one `edgeEnd` represents the beginning of the edge, and another `edgeEnd` represents the end of the edge.
+- Increment each `edgeEnd`'s `id` by one from the previous `edgeEnd`, starting from `0`.
+- Position `edgeEnd`s that are the start of an edge to the right of the `block` they correspond to and use `direction` pointing to the right.
+- Position `edgeEnd`s that are the end of an edge to the left of the `block` they correspond to and use `direction` pointing to the right.
+- Position `edgeEnd`s that are the start of an edge that crosses hierarchy below the `block` that the `edgeEnd` corresponds to and use `direction` pointing down.
+- Position `edgeEnd`s that are the end of an edge that crosses hierarchy above the `block` that the `edgeEnd` corresponds to and use `direction` pointing down.
+- Use `direction` to go right for edges that don't cross hierarchy and down for edges that do.
+- Place `edgeEnd`s next to each other contiguously and not in the same position.
+- Use `0` for block `depth` when no hierarchies exist in the graph.
+
+Representing hierarchies in a directed graph:
+- Use `block`s to represent hierarchies.
+- Use lower `depth` values for parent hierarchies and higher `depth` for child hierarchies. Use the highest `depth` for the `block`s that represent the nodes themselves.
+- Make sure that the `block`s used to represent hierarchies have `width` and `height` that encompass all the contents of the hierarchy, plus 2 units of padding on all sides.
+- For edges from/to the hierarchies themselves (rather than nodes within the hierarchies), follow the same convention as for `block`s.
 
 ---------------------------------------
 
@@ -478,7 +509,14 @@ Returns the `block` or `edgeEnd` object at the specified location.
 ### Run build
 
 ```
+npm install
 npm run build
+```
+
+Note that `jsdom` needs `canvas`, which may need the following:
+
+```
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
 ```
 
 ### Run tests

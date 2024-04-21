@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "bgraph",
+  "description": "A JSON representation of a bgraph.",
+  "type": "object",
+  "definitions": {
+    "id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "coord": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "color": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 16777215
+    },
+    "block": {
+      "type": "object",
+      "description": "Block in the bgraph.",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/id"
+        },
+        "x": {
+          "$ref": "#/definitions/coord"
+        },
+        "y": {
+          "$ref": "#/definitions/coord"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "depth": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "color": {
+          "$ref": "#/definitions/color"
+        },
+        "label": {
+          "type": "string"
+        },
+        "edgeEnds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/id"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "x",
+        "y",
+        "width",
+        "height",
+        "depth",
+        "color",
+        "edgeEnds"
+      ]
+    },
+    "edgeEnd": {
+      "type": "object",
+      "description": "End of an edge in the bgraph.",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/id"
+        },
+        "x": {
+          "$ref": "#/definitions/coord"
+        },
+        "y": {
+          "$ref": "#/definitions/coord"
+        },
+        "color": {
+          "$ref": "#/definitions/color"
+        },
+        "direction": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "isSource": {
+          "type": "boolean"
+        },
+        "label": {
+          "type": "string"
+        },
+        "block": {
+          "anyOf": [
+            { "$ref": "#/definitions/id" },
+            { "type": "null" }
+          ]
+        },
+        "edgeEnds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/id"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "x",
+        "y",
+        "color",
+        "direction",
+        "isSource",
+        "block",
+        "edgeEnds"
+      ]
+    }
+  },
+  "properties": {
+    "width": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "bgColor": {
+      "$ref": "#/definitions/color"
+    },
+    "highlightBgColor": {
+      "$ref": "#/definitions/color"
+    },
+    "highlightFgColor": {
+      "$ref": "#/definitions/color"
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/block"
+      }
+    },
+    "edgeEnds": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/edgeEnd"
+      }
+    }
+  },
+  "required": [
+    "width",
+    "height",
+    "blocks",
+    "edgeEnds"
+  ]
+}

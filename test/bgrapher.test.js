@@ -159,6 +159,272 @@ describe('initBgraph data', () => {
       expect(bgrapher.highlightFgColor).to.equal(0);
     });
   });
+
+  describe('invalid inputs', () => {
+    let bgrapher;
+    beforeEach(function() {
+      bgrapher = new Bgrapher();
+      bgrapher._grapherImpl = fakeGrapher;
+    });
+
+    it('invalid JSON', () => {
+      let invalidInput = 'invalid JSON string';
+
+      let parseError = bgrapher.initBgraph(invalidInput);
+      expect(parseError).to.contain("is not valid JSON");
+    });
+
+    describe('invalid schema', () => {
+      it('required property', () => {
+        let invalidInput = '{}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("instance requires property");
+      });
+
+      it('missing required properties', () => {
+        let invalidInput = '{"width": 100, "height": 100}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("instance requires property \"blocks\"");
+        expect(parseError).to.contain("instance requires property \"edgeEnds\"");
+      });
+
+      it('invalid property types', () => {
+        let invalidInput = '{"width": "100", "height": "100", "bgColor": "1", "highlightBgColor": "2", "highlightFgColor": "3", '
+          + '"blocks": {}, '
+          + '"edgeEnds": {}}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("width is not of a type");
+        expect(parseError).to.contain("height is not of a type");
+        expect(parseError).to.contain("bgColor is not of a type");
+        expect(parseError).to.contain("highlightBgColor is not of a type");
+        expect(parseError).to.contain("highlightFgColor is not of a type");
+        expect(parseError).to.contain("blocks is not of a type");
+        expect(parseError).to.contain("edgeEnds is not of a type");
+      });
+
+      it('negative dimensions', () => {
+        let invalidInput = '{"width": -100, "height": -100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [], '
+          + '"edgeEnds": []}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("width must be greater than or equal to 0");
+      });
+
+      it('invalid color values', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": -1, "highlightBgColor": 16777216, "highlightFgColor": 16777216, '
+          + '"blocks": [], '
+          + '"edgeEnds": []}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("bgColor must be greater than or equal to 0");
+        expect(parseError).to.contain("highlightBgColor must be less than or equal to 16777215");
+        expect(parseError).to.contain("highlightFgColor must be less than or equal to 16777215");
+      });
+
+      it('invalid block properties', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [{"id": 0}], '
+          + '"edgeEnds": []}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("blocks[0] requires property \"x\"");
+        expect(parseError).to.contain("blocks[0] requires property \"y\"");
+        expect(parseError).to.contain("blocks[0] requires property \"width\"");
+        expect(parseError).to.contain("blocks[0] requires property \"height\"");
+        expect(parseError).to.contain("blocks[0] requires property \"depth\"");
+        expect(parseError).to.contain("blocks[0] requires property \"color\"");
+        expect(parseError).to.contain("blocks[0] requires property \"edgeEnds\"");
+      });
+
+      it('negative block dimensions', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [{"id": 0, "x": 0, "y": 0, "width": -1, "height": -1, "depth": 0, "color": 1, "edgeEnds": []}], '
+          + '"edgeEnds": []}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("blocks[0].width must be greater than or equal to 1");
+        expect(parseError).to.contain("blocks[0].height must be greater than or equal to 1");
+      });
+
+      it('invalid edgeEnd properties', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [], '
+          + '"edgeEnds": [{"id": 0}]}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("edgeEnds[0] requires property \"x\"");
+        expect(parseError).to.contain("edgeEnds[0] requires property \"y\"");
+        expect(parseError).to.contain("edgeEnds[0] requires property \"color\"");
+        expect(parseError).to.contain("edgeEnds[0] requires property \"direction\"");
+        expect(parseError).to.contain("edgeEnds[0] requires property \"isSource\"");
+        expect(parseError).to.contain("edgeEnds[0] requires property \"block\"");
+        expect(parseError).to.contain("edgeEnds[0] requires property \"edgeEnds\"");
+      });
+
+      it('invalid direction values', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [], '
+          + '"edgeEnds": [{"id": 0, "x": 0, "y": 0, "color": 1, "direction": 5, "isSource": true, "block": null, "edgeEnds": []}]}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("edgeEnds[0].direction must be less than or equal to 4");
+      });
+
+      it('invalid isSource values', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [], '
+          + '"edgeEnds": [{"id": 0, "x": 0, "y": 0, "color": 1, "direction": 1, "isSource": "true", "block": null, "edgeEnds": []}]}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("edgeEnds[0].isSource is not of a type(s) boolean");
+      });
+
+      it('depth property validation', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [{"id": 0, "x": 0, "y": 0, "width": 1, "height": 1, "depth": -1, "color": 1, "edgeEnds": []}], '
+          + '"edgeEnds": []}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("blocks[0].depth must be greater than or equal to 0");
+      });
+    });
+
+    describe('invalid duplicate ids', () => {
+      it('duplicate IDs in blocks and edgeEnds', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": ['
+            + '{"id": 0, "x": 0, "y": 0, "width": 10, "height": 10, "depth": 1, "color": 1, "edgeEnds": []},'
+            + '{"id": 0, "x": 10, "y": 10, "width": 10, "height": 10, "depth": 1, "color": 2, "edgeEnds": []}], '
+          + '"edgeEnds": ['
+            + '{"id": 0, "x": 0, "y": 0, "color": 1, "direction": 1, "isSource": true, "block": 0, "edgeEnds": []},'
+            + '{"id": 0, "x": 10, "y": 10, "color": 2, "direction": 2, "isSource": false, "block": 1, "edgeEnds": []}]}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("Found duplicate block IDs: 0");
+        expect(parseError).to.contain("Found duplicate edgeEnd IDs: 0");
+      });
+    });
+
+    describe('invalid bgraph', () => {
+      it('block dimensions larger than bgraph size', () => {
+        let invalidInput = '{"width": 50, "height": 50, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [{"id": 0, "x": 0, "y": 0, "width": 100, "height": 100, "depth": 1, "color": 1, "edgeEnds": []}], '
+          + '"edgeEnds": []}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("Block 0 has dimensions larger than the bgraph size.");
+      });
+
+      it('block out of bounds of the bgraph', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [{"id": 0, "x": 90, "y": 90, "width": 20, "height": 20, "depth": 1, "color": 1, "edgeEnds": []}], '
+          + '"edgeEnds": []}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("Block 0 is out of bounds of the bgraph.");
+      });
+
+      it('edgeEnd in block not present in global edgeEnds list', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [{"id": 0, "x": 0, "y": 0, "width": 10, "height": 10, "depth": 1, "color": 1, "edgeEnds": [999]}], '
+          + '"edgeEnds": []}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("EdgeEnd 999 in Block 0 is not present in the global edgeEnds list.");
+      });
+
+      it('edgeEnd in block does not reference the block', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [{"id": 0, "x": 0, "y": 0, "width": 10, "height": 10, "depth": 1, "color": 1, "edgeEnds": [0]}], '
+          + '"edgeEnds": [{"id": 0, "x": 0, "y": 0, "color": 1, "direction": 1, "isSource": true, "block": 1, "edgeEnds": []}]}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("EdgeEnd 0 in Block 0 does not reference the block.");
+      });
+
+      it('edgeEnd has an empty edgeEnds list', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [], '
+          + '"edgeEnds": [{"id": 0, "x": 0, "y": 0, "color": 1, "direction": 1, "isSource": true, "block": null, "edgeEnds": []}]}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("EdgeEnd 0 has an empty edgeEnds list.");
+      });
+
+      it('edgeEnd points to itself', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [], '
+          + '"edgeEnds": [{"id": 0, "x": 0, "y": 0, "color": 1, "direction": 1, "isSource": true, "block": null, "edgeEnds": [0]}]}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("EdgeEnd 0 points to itself.");
+      });
+
+      it('edgeEnd references a non-existent block', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [{"id": 0, "x": 0, "y": 0, "width": 10, "height": 10, "depth": 1, "color": 1, "edgeEnds": [0]}], '
+          + '"edgeEnds": [{"id": 0, "x": 0, "y": 0, "color": 1, "direction": 1, "isSource": true, "block": 999, "edgeEnds": []}]}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("EdgeEnd 0 references a non-existent block 999.");
+      });
+
+      it('block does not reference back to edgeEnd', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [{"id": 0, "x": 0, "y": 0, "width": 10, "height": 10, "depth": 1, "color": 1, "edgeEnds": []}], '
+          + '"edgeEnds": [{"id": 0, "x": 0, "y": 0, "color": 1, "direction": 1, "isSource": true, "block": 0, "edgeEnds": []}]}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("Block 0 does not reference back to EdgeEnd 0.");
+      });
+
+      it('edgeEnd in edgeEnd is not present in global edgeEnds list', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [], '
+          + '"edgeEnds": [{"id": 0, "x": 0, "y": 0, "color": 1, "direction": 1, "isSource": true, "block": null, "edgeEnds": [999]}]}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("EdgeEnd 999 in EdgeEnd 0 is not present in the global edgeEnds list.");
+      });
+
+      it('edgeEnd and edgeEnd do not reference each other', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [], '
+          + '"edgeEnds": ['
+            + '{"id": 0, "x": 0, "y": 0, "color": 1, "direction": 1, "isSource": true, "block": null, "edgeEnds": [1]}, '
+            + '{"id": 1, "x": 10, "y": 10, "color": 2, "direction": 1, "isSource": false, "block": null, "edgeEnds": []}]}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("EdgeEnd 0 and EdgeEnd 1 do not reference each other.");
+      });
+
+      it('source edgeEnd connects to another source edgeEnd', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [], '
+          + '"edgeEnds": ['
+            + '{"id": 0, "x": 0, "y": 0, "color": 1, "direction": 1, "isSource": true, "block": null, "edgeEnds": [1]}, '
+            + '{"id": 1, "x": 10, "y": 10, "color": 2, "direction": 1, "isSource": true, "block": null, "edgeEnds": [0]}]}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("EdgeEnd 0 (source) connects to another source EdgeEnd 1.");
+      });
+
+      it('target edgeEnd connects to another target edgeEnd', () => {
+        let invalidInput = '{"width": 100, "height": 100, "bgColor": 1, "highlightBgColor": 2, "highlightFgColor": 3, '
+          + '"blocks": [], '
+          + '"edgeEnds": ['
+            + '{"id": 0, "x": 0, "y": 0, "color": 1, "direction": 1, "isSource": false, "block": null, "edgeEnds": [1]}, '
+            + '{"id": 1, "x": 10, "y": 10, "color": 2, "direction": 1, "isSource": false, "block": null, "edgeEnds": [0]}]}';
+
+        let parseError = bgrapher.initBgraph(invalidInput);
+        expect(parseError).to.contain("EdgeEnd 0 (target) connects to another target EdgeEnd 1.");
+      });
+    });
+  });
 });
 
 describe('initBgraph lookups', () => {
@@ -321,7 +587,7 @@ describe('initBgraph lookups', () => {
       [5,6,9,10].forEach(i => testLookup(bgrapher._blocksLookup, i, 100));
     });
 
-    it('overlapping edgEnd and block', () => {
+    it('overlapping edgeEnd and block', () => {
       bgrapher.initBgraph(overlapEdgeEndBlockBgraph);
 
       testLookup(bgrapher._blocksLookup, 0, 0);
@@ -842,8 +1108,8 @@ describe('interaction', () => {
       },
       {
         actns: [['hover','edgeEnd',5]],
-        edges: [],
-        eends: [5],
+        edges: [[5,6]],
+        eends: [5,6],
         blcks: [],
       },
       {
@@ -923,8 +1189,8 @@ describe('interaction', () => {
       },
       {
         actns: [['toggle','edgeEnd',5]],
-        edges: [],
-        eends: [5],
+        edges: [[5,6]],
+        eends: [5,6],
         blcks: [],
       },
       {
@@ -977,15 +1243,15 @@ describe('interaction', () => {
       {
         actns: [['toggle','edgeEnd',5],
                 ['hover','block',3]],
-        edges: [],
-        eends: [5],
+        edges: [[5,6]],
+        eends: [5,6],
         blcks: [3],
       },
       {
         actns: [['toggle','edgeEnd',5],
                 ['hover','block',2]],
-        edges: [[0,4]],
-        eends: [5,4,0],
+        edges: [[5,6],[0,4]],
+        eends: [5,6,4,0],
         blcks: [2],
       },
       {
@@ -1441,15 +1707,15 @@ describe('interaction', () => {
       {
         actns: [['toggle','edgeEnd',5],
                 ['hover','edgeEnd',4]],
-        edges: [[0,4]],
-        eends: [5,4,0],
+        edges: [[5,6],[0,4]],
+        eends: [5,6,4,0],
         blcks: [],
       },
       {
         actns: [['toggle','edgeEnd',4],
                 ['hover','edgeEnd',5]],
-        edges: [[0,4]],
-        eends: [4,0,5],
+        edges: [[0,4],[5,6]],
+        eends: [4,0,5,6],
         blcks: [],
       },
       {
@@ -1679,8 +1945,8 @@ describe('interaction', () => {
         actns: [['toggle','edgeEnd',5],
                 ['toggle','edgeEnd',4],
                 ['toggle','edgeEnd',4]],
-        edges: [],
-        eends: [5],
+        edges: [[5,6]],
+        eends: [5,6],
         blcks: [],
       },
       {
@@ -1745,8 +2011,8 @@ describe('interaction', () => {
       {
         actns: [['toggle','block',2],
                 ['toggle','edgeEnd',5]],
-        edges: [[0,4]],
-        eends: [4,0,5],
+        edges: [[0,4],[5,6]],
+        eends: [4,0,5,6],
         blcks: [2],
       },
       {

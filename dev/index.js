@@ -31,24 +31,7 @@ import testOnlyDots from '../test/bgraphs/testonlydots.js';
 import testDotsEdges from '../test/bgraphs/testdotsedges.js';
 
 function Bgraph(props) {
-  const [bgrapher, setBgrapher] = React.useState(() => {
-    let bgrapher;
-
-    if (props.bgraphType == 'graph') {
-      bgrapher = new Bgrapher(props.bgraphStr);
-
-    } else if (props.bgraphType == 'testBlocks') {
-      bgrapher = new Bgrapher();
-      bgrapher.initBgraph(testOnlyDots(350, 350));
-
-    } else if (props.bgraphType == 'testEdges') {
-      bgrapher = new Bgrapher();
-      bgrapher.initBgraph(testDotsEdges(1000, 1000));
-    }
-
-    bgrapher.debug = true;
-    return bgrapher;
-  });
+  const [bgrapher, setBgrapher] = React.useState(() => props.bgrapher);
   const [blockData, setBlockData] = React.useState(null);
   const bgraphElement = React.createRef();
 
@@ -91,8 +74,7 @@ function BgraphGroup(props) {
     .map(([key, bgraph]) => 
       <Bgraph
         key={key} 
-        bgraphStr={bgraph.bgraphStr} 
-        bgraphType={bgraph.bgraphType}
+        bgrapher={bgraph.bgrapher} 
         bgraphState={bgraphState}
       />
     );
@@ -168,6 +150,8 @@ function BgraphForm(props) {
       <button className="bgraphFormSubmit" onClick={handleSubmit("testEdges")}>
         Test edges
       </button>
+
+      <div className="fullWidth">{props.formError}</div>
     </form>
   );
 }
@@ -175,24 +159,53 @@ function BgraphForm(props) {
 function RootHolder(props) {
   const [atForm, setAtForm] = React.useState(true);
   const [bgraphers, setBgraphers] = React.useState({});
+  const [formError, setFormError] = React.useState("");
+
+  function makeBgrapher(bgraphStr, bgraphType) {
+    let bgrapher;
+    let bgraphError = "";
+
+    if (bgraphType == 'graph') {
+      bgrapher = new Bgrapher();
+      bgraphError = bgrapher.initBgraph(bgraphStr);
+
+    } else if (bgraphType == 'testBlocks') {
+      bgrapher = new Bgrapher(null, null, null, false);
+      bgraphError = bgrapher.initBgraph(testOnlyDots(350, 350));
+
+    } else if (bgraphType == 'testEdges') {
+      bgrapher = new Bgrapher(null, null, null, false);
+      bgraphError = bgrapher.initBgraph(testDotsEdges(1000, 1000));
+    }
+
+    if (bgraphError !== "") {
+      setFormError(bgraphError);
+      return;
+    }
+
+    bgrapher.debug = true;
+    return bgrapher;
+  }
 
   function onFormSubmit(bgraphStr, bgraphType) {
+    let bgrapher = makeBgrapher(bgraphStr, bgraphType);
+    if (typeof bgrapher === 'undefined') {
+      return;
+    }
+
     if (bgraphType === 'compare') {
       setBgraphers(bgraphers => ({ ...bgraphers, 
         main: {
-          bgraphStr:  bgraphStr,
-          bgraphType: 'graph',
+          'bgrapher': bgrapher,
         },
         comparedTo: {
-          bgraphStr:  bgraphStr,
-          bgraphType: 'graph',
+          'bgrapher': makeBgrapher(bgraphStr, bgraphType),
         }
       }));
     } else {
       setBgraphers(bgraphers => ({ ...bgraphers, 
         main: {
-          bgraphStr:  bgraphStr,
-          bgraphType: bgraphType,
+          'bgrapher': bgrapher,
         }
       }));
     }
@@ -200,7 +213,7 @@ function RootHolder(props) {
   }
 
   return (atForm 
-    ? <BgraphForm  onSubmit={onFormSubmit} /> 
+    ? <BgraphForm  onSubmit={onFormSubmit} formError={formError} /> 
     : <BgraphGroup bgraphers={bgraphers} />
   );
 }

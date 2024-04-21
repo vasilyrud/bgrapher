@@ -112,6 +112,18 @@
       "isSource": true,
       "block": null,
       "edgeEnds": [
+        6
+      ]
+    },
+    {
+      "id": 6,
+      "x": 4, "y": 2,
+      "color": 0,
+      "direction": 3,
+      "isSource": false,
+      "block": null,
+      "edgeEnds": [
+        5
       ]
     }
   ]
