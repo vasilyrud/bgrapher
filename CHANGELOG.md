@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [1.1.1] - 2024-04-28
+
+### Fixed
+- Return error when input violates bgraph schema or structure.
+
 ## [1.1.0] - 2022-01-15
 
 ### Added
