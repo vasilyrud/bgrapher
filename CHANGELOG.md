@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [1.1.2] - 2024-05-18
+
+### Fixed
+- Update package homepage.
+
 ## [1.1.1] - 2024-04-28
 
 ### Fixed
